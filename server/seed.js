@@ -52,8 +52,8 @@ export function seedVillage(now) {
     const refer = flags.some((f) => f.severity === "refer_now");
     const at = now - hoursAgo * HOUR;
     return {
-      id: "v" + (i + 1), at, type, personId: person.id, name, record, flags, ruleset: RULESET.id, said: [said], lang, via: "voice", asha: "Sample ASHA",
-      referral: refer ? (hoursAgo > 40 ? { status: "seen", at, seenAt: at + 5 * HOUR, by: "ANM" } : { status: "open", at }) : null,
+      id: "v" + (i + 1), sample: true, at, type, personId: person.id, name, record, flags, ruleset: RULESET.id, said: [said], lang, via: "voice", asha: "Sample ASHA",
+      referral: refer ? (hoursAgo > 40 ? { status: "seen", at, seenAt: at + 5 * HOUR, seenBy: "ANM" } : { status: "open", at }) : null,
     };
   }).sort((a, b) => a.at - b.at);
   return { village: { name: "Sample village", block: "Pune district", sample: true, asha: "Sample ASHA", anmPhone: "" }, people, visits };

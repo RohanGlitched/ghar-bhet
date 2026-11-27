@@ -13,7 +13,8 @@ test("reads numbers the way ASHAs say them", () => {
 test("a newborn visit in Roman Hindi", () => {
   const { record } = understand("Sunita ka baby, saat din ka hai. Wajan ek kilo saat sau gram. Doodh kam pee raha hai, aur pasli chal rahi hai.", "newborn");
   assert.deepEqual({ name: record.name, day: record.day, weight_g: record.weight_g, feeding: record.feeding, ci: record.symptoms.chest_indrawing }, { name: "Sunita", day: 7, weight_g: 1700, feeding: "poor", ci: true });
-  assert.deepEqual(flagCodes(record), ["nb_chest_indrawing", "nb_poor_feeding", "nb_very_low_weight"]);
+  // poor feeding + chest indrawing are two signs of the HBNC 2014 sepsis checklist
+  assert.deepEqual(flagCodes(record), ["nb_chest_indrawing", "nb_poor_feeding", "nb_sepsis_signs", "nb_very_low_weight"]);
 });
 
 test("a pregnancy visit with a self-correction", () => {
@@ -45,22 +46,41 @@ test("thresholds sit exactly where the manuals put them", () => {
   assert.ok(f({ type: "anc", bp_sys: 150, bp_dia: 111 }).includes("anc_imminent_eclampsia"));
   assert.ok(f({ type: "anc", hb: 6.9 }).includes("anc_severe_anaemia"));
   assert.ok(f({ type: "anc", hb: 7 }).includes("anc_moderate_anaemia"));
-  assert.ok(f({ type: "newborn", resp_rate: 61 }).includes("nb_fast_breathing"));
-  assert.ok(!f({ type: "newborn", resp_rate: 60 }).includes("nb_fast_breathing"));
+  assert.ok(f({ type: "newborn", resp_rate: 60 }).includes("nb_fast_breathing")); // CHO manual: 60 or more
+  assert.ok(!f({ type: "newborn", resp_rate: 59 }).includes("nb_fast_breathing"));
   assert.ok(f({ type: "newborn", weight_g: 1799 }).includes("nb_very_low_weight"));
   assert.ok(f({ type: "newborn", weight_g: 1800 }).includes("nb_low_weight"));
   assert.ok(f({ type: "newborn", temp_c: 37.5 }).includes("nb_fever"));
-  assert.ok(f({ type: "newborn", temp_c: 35.4 }).includes("nb_hypothermia"));
+  assert.ok(f({ type: "newborn", temp_c: 35.9 }).includes("nb_hypothermia")); // official SSBSK 2026: below 36
+  assert.ok(!f({ type: "newborn", temp_c: 36 }).includes("nb_hypothermia"));
   assert.ok(f({ type: "pnc", pads: 5 }).includes("pnc_heavy_bleeding"));
   assert.ok(!f({ type: "pnc", pads: 4 }).includes("pnc_heavy_bleeding"));
 });
 
 test("every rule names its source", () => {
-  assert.equal(RULE_TABLE.length, 37);
-  for (const r of RULE_TABLE) { assert.ok(r.source && r.source.length > 10, r.code); assert.ok(["refer_now", "watch"].includes(r.severity)); }
+  assert.equal(RULE_TABLE.length, 64);
+  for (const r of RULE_TABLE) {
+    assert.ok(r.source && r.source.length > 10, r.code);
+    assert.ok(r.threshold && r.threshold.length > 3, r.code + " has a threshold");
+    assert.ok(["refer_now", "watch"].includes(r.severity));
+    assert.equal(typeof r.urgent, "boolean");
+  }
 });
 
 test("Devanagari is shown in Roman letters", () => {
   assert.equal(romanize("सुनीता का बच्चा"), "sunita ka bachcha");
   assert.equal(romanize("पसली चल रही है"), "pasli chal rahi hai");
+});
+
+test("romanize never leaves Devanagari, on every sentence of the dev sets", async () => {
+  const { readFileSync } = await import("node:fs");
+  assert.equal(romanize("तिसऱ्या"), "tisarya"); // eyelash ra
+  const DEVANAGARI = new RegExp("[" + String.fromCharCode(0x900) + "-" + String.fromCharCode(0x97f) + "]");
+  for (const set of ["dev", "dev2", "dev3"]) {
+    const lines = readFileSync(new URL(`../eval/${set}.jsonl`, import.meta.url), "utf8").split(String.fromCharCode(10)).filter((l) => l.trim());
+    for (const line of lines) {
+      const { id, said } = JSON.parse(line);
+      assert.ok(!DEVANAGARI.test(romanize(said)), `${id}: ${romanize(said)}`);
+    }
+  }
 });

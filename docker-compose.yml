@@ -1,12 +1,14 @@
 # Start everything with one command:  docker compose up
 # Then open http://localhost:8080  (no keys, no accounts, no AI service)
+# Port 8080 taken? Run:  PORT=3000 docker compose up  and open http://localhost:3000
 services:
   app:
     build: .
     ports:
-      - "8080:8080"
+      - "${PORT:-8080}:8080"
     volumes:
       - register:/data
     restart: unless-stopped
+    stop_grace_period: 10s
 volumes:
   register:

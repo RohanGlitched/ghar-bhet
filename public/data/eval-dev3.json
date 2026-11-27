@@ -1,0 +1,721 @@
+{
+ "set": "dev3",
+ "run_at": "2026-11-27T08:53:10.624Z",
+ "ruleset": "mohfw-2026.2",
+ "typed": {
+  "mode": "typed",
+  "items": 76,
+  "fields": {
+   "gold": 328,
+   "predicted": 328,
+   "correct": 328,
+   "recall": 100,
+   "precision": 100
+  },
+  "type_detected": 100,
+  "danger": {
+   "visits": 45,
+   "caught": 45,
+   "caught_pct": 100,
+   "normal_visits": 31,
+   "false_alarms": 0,
+   "false_alarm_pct": 0
+  },
+  "flags": {
+   "gold": 72,
+   "predicted": 72,
+   "correct": 72,
+   "recall": 100,
+   "precision": 100,
+   "refer_now_recall": 100
+  },
+  "exact_visits": 100,
+  "by_field": {
+   "name": {
+    "gold": 76,
+    "hit": 76,
+    "pred": 76,
+    "recall": 100,
+    "precision": 100
+   },
+   "day": {
+    "gold": 49,
+    "hit": 49,
+    "pred": 49,
+    "recall": 100,
+    "precision": 100
+   },
+   "weight_g": {
+    "gold": 9,
+    "hit": 9,
+    "pred": 9,
+    "recall": 100,
+    "precision": 100
+   },
+   "feeding": {
+    "gold": 24,
+    "hit": 24,
+    "pred": 24,
+    "recall": 100,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 57,
+    "hit": 57,
+    "pred": 57,
+    "recall": 100,
+    "precision": 100
+   },
+   "birth_weight_g": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_c": {
+    "gold": 7,
+    "hit": 7,
+    "pred": 7,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_f": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "resp_rate": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "month": {
+    "gold": 15,
+    "hit": 15,
+    "pred": 15,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 23,
+    "hit": 23,
+    "pred": 23,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 23,
+    "hit": 23,
+    "pred": 23,
+    "recall": 100,
+    "precision": 100
+   },
+   "albumin": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 12,
+    "hit": 12,
+    "pred": 12,
+    "recall": 100,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "twins": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_caesarean": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "age": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_pph": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_eclampsia": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "labour_hours": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "height_cm": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   }
+  },
+  "by_tag": {
+   "thousands-comma": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "judge-case": {
+    "n": 33,
+    "ok": 33,
+    "pct": 100
+   },
+   "numbers-digits": {
+    "n": 42,
+    "ok": 42,
+    "pct": 100
+   },
+   "watch-only": {
+    "n": 13,
+    "ok": 13,
+    "pct": 100
+   },
+   "negation": {
+    "n": 14,
+    "ok": 14,
+    "pct": 100
+   },
+   "normal-visit": {
+    "n": 18,
+    "ok": 18,
+    "pct": 100
+   },
+   "doubt": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "past-value": {
+    "n": 6,
+    "ok": 6,
+    "pct": 100
+   },
+   "numbers-in-words": {
+    "n": 13,
+    "ok": 13,
+    "pct": 100
+   },
+   "new-rule": {
+    "n": 31,
+    "ok": 31,
+    "pct": 100
+   },
+   "fahrenheit": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "question-negation": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "local-idiom": {
+    "n": 7,
+    "ok": 7,
+    "pct": 100
+   },
+   "multi-sign": {
+    "n": 5,
+    "ok": 5,
+    "pct": 100
+   },
+   "celsius": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "borderline": {
+    "n": 7,
+    "ok": 7,
+    "pct": 100
+   },
+   "distractor-number": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "wrong-subject": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "subject-ambiguity": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "range": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "fraction-words": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "high-risk": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "name-correction": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "self-correction": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   }
+  },
+  "by_lang": {
+   "hi/roman": {
+    "n": 36,
+    "ok": 36,
+    "pct": 100
+   },
+   "en/roman": {
+    "n": 16,
+    "ok": 16,
+    "pct": 100
+   },
+   "hi/devanagari": {
+    "n": 12,
+    "ok": 12,
+    "pct": 100
+   },
+   "mr/devanagari": {
+    "n": 10,
+    "ok": 10,
+    "pct": 100
+   },
+   "mr/roman": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   }
+  },
+  "misses": []
+ },
+ "auto": {
+  "mode": "auto",
+  "items": 76,
+  "fields": {
+   "gold": 328,
+   "predicted": 327,
+   "correct": 327,
+   "recall": 99.7,
+   "precision": 100
+  },
+  "type_detected": 98.7,
+  "danger": {
+   "visits": 45,
+   "caught": 45,
+   "caught_pct": 100,
+   "normal_visits": 31,
+   "false_alarms": 0,
+   "false_alarm_pct": 0
+  },
+  "flags": {
+   "gold": 72,
+   "predicted": 72,
+   "correct": 69,
+   "recall": 95.8,
+   "precision": 95.8,
+   "refer_now_recall": 94.2
+  },
+  "exact_visits": 98.7,
+  "by_field": {
+   "name": {
+    "gold": 76,
+    "hit": 76,
+    "pred": 76,
+    "recall": 100,
+    "precision": 100
+   },
+   "day": {
+    "gold": 49,
+    "hit": 48,
+    "pred": 48,
+    "recall": 98,
+    "precision": 100
+   },
+   "weight_g": {
+    "gold": 9,
+    "hit": 9,
+    "pred": 9,
+    "recall": 100,
+    "precision": 100
+   },
+   "feeding": {
+    "gold": 24,
+    "hit": 24,
+    "pred": 24,
+    "recall": 100,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 57,
+    "hit": 57,
+    "pred": 57,
+    "recall": 100,
+    "precision": 100
+   },
+   "birth_weight_g": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_c": {
+    "gold": 7,
+    "hit": 7,
+    "pred": 7,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_f": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "resp_rate": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "month": {
+    "gold": 15,
+    "hit": 15,
+    "pred": 15,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 23,
+    "hit": 23,
+    "pred": 23,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 23,
+    "hit": 23,
+    "pred": 23,
+    "recall": 100,
+    "precision": 100
+   },
+   "albumin": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 12,
+    "hit": 12,
+    "pred": 12,
+    "recall": 100,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "twins": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_caesarean": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "age": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_pph": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_eclampsia": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "labour_hours": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "height_cm": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   }
+  },
+  "by_tag": {
+   "thousands-comma": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "judge-case": {
+    "n": 33,
+    "ok": 32,
+    "pct": 97
+   },
+   "numbers-digits": {
+    "n": 42,
+    "ok": 42,
+    "pct": 100
+   },
+   "watch-only": {
+    "n": 13,
+    "ok": 13,
+    "pct": 100
+   },
+   "negation": {
+    "n": 14,
+    "ok": 14,
+    "pct": 100
+   },
+   "normal-visit": {
+    "n": 18,
+    "ok": 18,
+    "pct": 100
+   },
+   "doubt": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "past-value": {
+    "n": 6,
+    "ok": 6,
+    "pct": 100
+   },
+   "numbers-in-words": {
+    "n": 13,
+    "ok": 12,
+    "pct": 92.3
+   },
+   "new-rule": {
+    "n": 31,
+    "ok": 30,
+    "pct": 96.8
+   },
+   "fahrenheit": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "question-negation": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "local-idiom": {
+    "n": 7,
+    "ok": 7,
+    "pct": 100
+   },
+   "multi-sign": {
+    "n": 5,
+    "ok": 4,
+    "pct": 80
+   },
+   "celsius": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "borderline": {
+    "n": 7,
+    "ok": 7,
+    "pct": 100
+   },
+   "distractor-number": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "wrong-subject": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "subject-ambiguity": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "range": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "fraction-words": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "high-risk": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "name-correction": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "self-correction": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   }
+  },
+  "by_lang": {
+   "hi/roman": {
+    "n": 36,
+    "ok": 35,
+    "pct": 97.2
+   },
+   "en/roman": {
+    "n": 16,
+    "ok": 16,
+    "pct": 100
+   },
+   "hi/devanagari": {
+    "n": 12,
+    "ok": 12,
+    "pct": 100
+   },
+   "mr/devanagari": {
+    "n": 10,
+    "ok": 10,
+    "pct": 100
+   },
+   "mr/roman": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   }
+  },
+  "misses": [
+   {
+    "id": "d3-pnc-001",
+    "said": "Sudha, delivery ko das din hue, BP ek sau saath by ek sau das, sar mein dard, pet mein dard.",
+    "wrong": [
+     "day: want 10 got undefined"
+    ],
+    "flags_want": [
+     "pnc_abdominal_pain",
+     "pnc_headache",
+     "pnc_severe_hypertension"
+    ],
+    "flags_got": [
+     "anc_severe_hypertension",
+     "anc_headache_vision",
+     "anc_abdominal_pain"
+    ]
+   }
+  ]
+ }
+}

@@ -4,7 +4,6 @@ WORKDIR /app
 COPY package.json ./
 COPY server ./server
 COPY public ./public
-COPY eval ./eval
 ENV PORT=8080 DATA_DIR=/data NODE_ENV=production
 RUN mkdir -p /data && chown node:node /data
 USER node

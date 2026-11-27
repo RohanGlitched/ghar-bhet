@@ -10,7 +10,10 @@ Re-computes flags from each item's gold record using the rule table in SPEC.md
 Then prints counts per type, language, script and tag.
 
 Usage: python check_gold.py dev.jsonl heldout.jsonl
+       python check_gold.py --fix dev.jsonl dev2.jsonl   (rewrite flags from the
+       gold records with the current rule table, then check)
 Exit code 0 when no problems.
+Rule set: mohfw-2026.2 (SPEC.md v2).
 """
 import json
 import sys
@@ -22,15 +25,21 @@ ID_PREFIX = {"anc": "anc-", "pnc": "pnc-", "newborn": "nb-"}
 LANGS = {"hi", "mr", "en", "mix"}
 SCRIPTS = {"devanagari", "roman"}
 
-INT, NUM, STR = "int", "num", "str"
+INT, NUM, STR, BOOL = "int", "num", "str", "bool"
 COMMON = {"type": STR, "name": STR, "symptoms": "symptoms"}
+# Rule set mohfw-2026.2 (SPEC.md v2). Fields marked v2 were added on 27 Nov 2026.
 FIELDS = {
     "anc": {"weeks": INT, "month": INT, "bp_sys": INT, "bp_dia": INT, "hb": NUM,
             "weight_kg": NUM, "albumin": "albumin", "fetal_movement": "fetal",
-            "ifa_tablets": INT},
-    "pnc": {"day": INT, "pads": INT, "temp_c": NUM},
+            "ifa_tablets": INT,
+            "age": INT, "height_cm": INT, "labour_hours": INT, "twins": BOOL,       # v2
+            "prev_caesarean": BOOL, "prev_pph": BOOL, "prev_aph": BOOL,           # v2
+            "prev_eclampsia": BOOL},                                               # v2
+    "pnc": {"day": INT, "pads": INT, "temp_c": NUM,
+            "temp_f": NUM, "bp_sys": INT, "bp_dia": INT, "hb": NUM},               # v2
     "newborn": {"day": INT, "weight_g": INT, "temp_c": NUM, "resp_rate": INT,
-                "feeding": "feeding"},
+                "feeding": "feeding",
+                "temp_f": NUM, "birth_weight_g": INT},                             # v2
 }
 SYMPTOMS = {
     "anc": {"bleeding", "leaking_fluid", "convulsions", "severe_headache", "blurred_vision",
@@ -38,33 +47,38 @@ SYMPTOMS = {
             "vomiting", "dizziness", "burning_urine", "foul_discharge"},
     "pnc": {"heavy_bleeding", "fever", "foul_discharge", "convulsions", "blurred_vision",
             "abnormal_speech", "breathless", "abdominal_pain", "burning_urine",
-            "swelling_face_hands", "breast_problem", "dizziness"},
+            "swelling_face_hands", "breast_problem", "dizziness",
+            "severe_headache", "jaundice", "incontinence", "pallor"},              # v2
     "newborn": {"convulsions", "chest_indrawing", "lethargy", "jaundice",
                 "jaundice_palms_soles", "blood_stool", "cord_pus", "skin_pustules",
                 "eye_discharge", "cold_to_touch", "hot_to_touch", "weak_cry", "vomiting",
-                "diarrhoea"},
+                "diarrhoea", "difficulty_breathing"},                               # v2
 }
 ALBUMIN = {"nil", "trace", "1", "2", "3", "4"}
 FETAL = {"normal", "reduced", "absent"}
 FEEDING = {"good", "poor", "none"}
 
+R, W = "refer_now", "watch"
 SEVERITY = {
-    "anc_imminent_eclampsia": "refer_now", "anc_preeclampsia": "refer_now",
-    "anc_hypertension": "refer_now", "anc_headache_vision": "refer_now",
-    "anc_severe_anaemia": "refer_now", "anc_moderate_anaemia": "watch",
-    "anc_mild_anaemia": "watch", "anc_bleeding": "refer_now", "anc_leaking": "refer_now",
-    "anc_convulsions": "refer_now", "anc_fever": "refer_now",
-    "anc_fetal_movement": "refer_now", "anc_swelling": "refer_now",
-    "anc_breathless": "refer_now", "anc_abdominal_pain": "refer_now",
-    "pnc_heavy_bleeding": "refer_now", "pnc_high_fever": "refer_now",
-    "pnc_infection": "refer_now", "pnc_fever": "watch", "pnc_convulsions": "refer_now",
-    "pnc_neuro": "refer_now", "pnc_breathless": "refer_now",
-    "nb_not_feeding": "refer_now", "nb_poor_feeding": "watch", "nb_convulsions": "refer_now",
-    "nb_fast_breathing": "refer_now", "nb_chest_indrawing": "refer_now",
-    "nb_lethargy": "refer_now", "nb_fever": "refer_now", "nb_hypothermia": "refer_now",
-    "nb_jaundice_palms": "refer_now", "nb_jaundice_early": "refer_now",
-    "nb_blood_stool": "refer_now", "nb_very_low_weight": "refer_now",
-    "nb_low_weight": "watch", "nb_cord_infection": "watch", "nb_skin_pustules": "watch",
+    "anc_imminent_eclampsia": R, "anc_severe_hypertension": R, "anc_preeclampsia": R,
+    "anc_hypertension": R, "anc_headache_vision": R, "anc_severe_anaemia": R,
+    "anc_moderate_anaemia": W, "anc_mild_anaemia": W, "anc_bleeding": R, "anc_leaking": R,
+    "anc_convulsions": R, "anc_fever": R, "anc_fetal_movement": R, "anc_swelling": R,
+    "anc_breathless": R, "anc_abdominal_pain": R, "anc_burning_urine": R, "anc_discharge": R,
+    "anc_labour_prolonged": R, "anc_multiple_pregnancy": R, "anc_vomiting": W,
+    "anc_dizziness": W, "anc_high_risk": W,
+    "pnc_heavy_bleeding": R, "pnc_severe_hypertension": R, "pnc_hypertension": R,
+    "pnc_severe_anaemia": R, "pnc_high_fever": R, "pnc_uti": R, "pnc_infection": R,
+    "pnc_fever": R, "pnc_convulsions": R, "pnc_neuro": R, "pnc_headache": R,
+    "pnc_breathless": R, "pnc_abdominal_pain": R, "pnc_swelling": R, "pnc_jaundice": R,
+    "pnc_incontinence": R, "pnc_breast": W,
+    "nb_not_feeding": R, "nb_poor_feeding": W, "nb_convulsions": R, "nb_fast_breathing": R,
+    "nb_difficulty_breathing": R, "nb_chest_indrawing": R, "nb_lethargy": R, "nb_fever": R,
+    "nb_hypothermia": R, "nb_cool": W, "nb_jaundice_palms": R, "nb_jaundice_early": R,
+    "nb_jaundice_late": R, "nb_blood_stool": R, "nb_very_low_weight": R, "nb_low_weight": W,
+    "nb_at_risk_birth_weight": W, "nb_cord_infection": R, "nb_skin_pustules": R,
+    "nb_eye_discharge": R, "nb_sepsis_signs": R, "nb_weak_cry": W, "nb_vomiting": W,
+    "nb_diarrhoea": W,
 }
 
 TAGS = {
@@ -72,26 +86,55 @@ TAGS = {
     "celsius", "negation", "self-correction", "months-not-weeks", "local-idiom",
     "multi-sign", "normal-visit", "watch-only", "filler", "borderline", "code-mix",
     "distractor-number", "subject-ambiguity", "no-number-fever", "no-name",
+    # v2 (dev3)
+    "past-value", "range", "wrong-subject", "question-negation", "high-risk", "judge-case",
+    "doubt", "name-correction", "new-rule", "thousands-comma",
 }
+
+EPS = 1e-9
+
+
+def f_to_c(f):
+    return (f - 32) * 5 / 9
+
+
+def temp_exact(r):
+    """Exact temperature in C: from temp_f when present, else temp_c."""
+    if r.get("temp_f") is not None:
+        return f_to_c(r["temp_f"])
+    return r.get("temp_c")
+
+
+def above_f(r, f):
+    """'above f degrees F': exact with temp_f, else above the rounded C value."""
+    if r.get("temp_f") is not None:
+        return r["temp_f"] > f + EPS
+    if r.get("temp_c") is not None:
+        return r["temp_c"] > round(f_to_c(f), 1) + EPS
+    return False
 
 
 def compute_flags(r):
-    """Rule table from SPEC.md. A symptom marked False never fires."""
+    """Rule table from SPEC.md v2. A symptom marked False never fires."""
     t = r["type"]
     s = r.get("symptoms", {})
     yes = lambda code: s.get(code) is True
     g = r.get
     out = set()
+    temp = temp_exact(r)
+    sys_, dia = g("bp_sys"), g("bp_dia")
+    high_bp = (sys_ is not None and sys_ >= 140) or (dia is not None and dia >= 90)
+    severe_bp = (sys_ is not None and sys_ >= 160) or (dia is not None and dia >= 110)
     if t == "anc":
-        sys_, dia = g("bp_sys"), g("bp_dia")
-        high_bp = (sys_ is not None and sys_ >= 140) or (dia is not None and dia >= 90)
-        alb = g("albumin")
-        alb_n = int(alb) if alb in {"1", "2", "3", "4"} else 0
-        if dia is not None and dia > 110:
+        alb2 = g("albumin") in {"2", "3", "4"}
+        imminent = dia is not None and dia > 110
+        if imminent:
             out.add("anc_imminent_eclampsia")
-        if high_bp and alb_n >= 2:
+        if severe_bp and not imminent:
+            out.add("anc_severe_hypertension")
+        if high_bp and alb2:
             out.add("anc_preeclampsia")
-        if high_bp and not ({"anc_imminent_eclampsia", "anc_preeclampsia"} & out):
+        if high_bp and not severe_bp and not alb2:
             out.add("anc_hypertension")
         if yes("severe_headache") or yes("blurred_vision"):
             out.add("anc_headache_vision")
@@ -107,60 +150,90 @@ def compute_flags(r):
                            ("convulsions", "anc_convulsions"), ("fever", "anc_fever"),
                            ("swelling_face_hands", "anc_swelling"),
                            ("breathless", "anc_breathless"),
-                           ("abdominal_pain", "anc_abdominal_pain")]:
+                           ("abdominal_pain", "anc_abdominal_pain"),
+                           ("burning_urine", "anc_burning_urine"),
+                           ("foul_discharge", "anc_discharge"),
+                           ("vomiting", "anc_vomiting"), ("dizziness", "anc_dizziness")]:
             if yes(code):
                 out.add(flag)
         if g("fetal_movement") in {"reduced", "absent"}:
             out.add("anc_fetal_movement")
+        if g("labour_hours") is not None and g("labour_hours") > 12:
+            out.add("anc_labour_prolonged")
+        if g("twins") is True:
+            out.add("anc_multiple_pregnancy")
+        age, h = g("age"), g("height_cm")
+        if ((age is not None and (age < 18 or age > 35)) or (h is not None and h < 145)
+                or any(g(k) is True for k in ("prev_caesarean", "prev_pph", "prev_aph", "prev_eclampsia"))):
+            out.add("anc_high_risk")
     elif t == "pnc":
-        temp = g("temp_c")
         if (g("pads") is not None and g("pads") >= 5) or yes("heavy_bleeding"):
             out.add("pnc_heavy_bleeding")
-        if temp is not None and temp > 38.9:
+        if severe_bp:
+            out.add("pnc_severe_hypertension")
+        elif high_bp:
+            out.add("pnc_hypertension")
+        if (g("hb") is not None and g("hb") < 7) or yes("dizziness") or yes("pallor"):
+            out.add("pnc_severe_anaemia")
+        high = above_f(r, 102)
+        if high:
             out.add("pnc_high_fever")
-        if yes("foul_discharge") and (yes("fever") or (temp is not None and temp > 37.8)):
+        if yes("burning_urine"):
+            out.add("pnc_uti")
+        if yes("foul_discharge"):
             out.add("pnc_infection")
-        if (yes("fever") or (temp is not None and temp >= 37.5)) and not (
-                {"pnc_high_fever", "pnc_infection"} & out):
+        if ((yes("fever") or (temp is not None and temp >= 37.5 - EPS)) and not high
+                and not yes("burning_urine") and not yes("foul_discharge")):
             out.add("pnc_fever")
-        if yes("convulsions"):
-            out.add("pnc_convulsions")
+        for code, flag in [("convulsions", "pnc_convulsions"), ("severe_headache", "pnc_headache"),
+                           ("breathless", "pnc_breathless"), ("abdominal_pain", "pnc_abdominal_pain"),
+                           ("swelling_face_hands", "pnc_swelling"), ("jaundice", "pnc_jaundice"),
+                           ("incontinence", "pnc_incontinence"), ("breast_problem", "pnc_breast")]:
+            if yes(code):
+                out.add(flag)
         if yes("blurred_vision") or yes("abnormal_speech"):
             out.add("pnc_neuro")
-        if yes("breathless"):
-            out.add("pnc_breathless")
     elif t == "newborn":
-        temp, w, day = g("temp_c"), g("weight_g"), g("day")
-        if g("feeding") == "none":
+        w, bw, day, rr = g("weight_g"), g("birth_weight_g"), g("day"), g("resp_rate")
+        feed = g("feeding")
+        if feed == "none":
             out.add("nb_not_feeding")
-        if g("feeding") == "poor":
+        if feed == "poor":
             out.add("nb_poor_feeding")
-        if yes("convulsions"):
-            out.add("nb_convulsions")
-        if g("resp_rate") is not None and g("resp_rate") > 60:
+        if rr is not None and rr >= 60:
             out.add("nb_fast_breathing")
-        if yes("chest_indrawing"):
-            out.add("nb_chest_indrawing")
-        if yes("lethargy"):
-            out.add("nb_lethargy")
-        if (temp is not None and temp >= 37.5) or yes("hot_to_touch"):
+        if (temp is not None and temp >= 37.5 - EPS) or yes("hot_to_touch"):
             out.add("nb_fever")
-        if (temp is not None and temp < 35.5) or yes("cold_to_touch"):
+        if (temp is not None and temp < 36 - EPS) or yes("cold_to_touch"):
             out.add("nb_hypothermia")
-        if yes("jaundice_palms_soles"):
-            out.add("nb_jaundice_palms")
+        if temp is not None and 36 - EPS <= temp < 36.5 - EPS:
+            out.add("nb_cool")
         if yes("jaundice") and day is not None and day <= 1:
             out.add("nb_jaundice_early")
-        if yes("blood_stool"):
-            out.add("nb_blood_stool")
+        if yes("jaundice") and day is not None and day > 14:
+            out.add("nb_jaundice_late")
         if w is not None and w < 1800:
             out.add("nb_very_low_weight")
         if w is not None and 1800 <= w < 2500:
             out.add("nb_low_weight")
-        if yes("cord_pus"):
-            out.add("nb_cord_infection")
-        if yes("skin_pustules"):
-            out.add("nb_skin_pustules")
+        if bw is not None and bw < 2500:
+            out.add("nb_at_risk_birth_weight")
+        for code, flag in [("convulsions", "nb_convulsions"), ("chest_indrawing", "nb_chest_indrawing"),
+                           ("difficulty_breathing", "nb_difficulty_breathing"),
+                           ("lethargy", "nb_lethargy"), ("jaundice_palms_soles", "nb_jaundice_palms"),
+                           ("blood_stool", "nb_blood_stool"), ("cord_pus", "nb_cord_infection"),
+                           ("skin_pustules", "nb_skin_pustules"), ("eye_discharge", "nb_eye_discharge"),
+                           ("weak_cry", "nb_weak_cry"), ("vomiting", "nb_vomiting"),
+                           ("diarrhoea", "nb_diarrhoea")]:
+            if yes(code):
+                out.add(flag)
+        # HBNC 2014 sepsis checklist: two or more signs
+        sepsis = [yes("lethargy"), feed in ("poor", "none"), yes("weak_cry"), yes("vomiting"),
+                  yes("cold_to_touch") or yes("hot_to_touch")
+                  or (temp is not None and (temp < 36 - EPS or temp > f_to_c(99) + EPS)),
+                  yes("chest_indrawing"), rr is not None and rr > 60, yes("cord_pus")]
+        if sum(1 for x in sepsis if x) >= 2:
+            out.add("nb_sepsis_signs")
     return sorted(out)
 
 
@@ -196,6 +269,8 @@ def check_record(r, problems, where):
             problems.append(f"{where}: {k} must be an integer, got {v!r}")
         elif kind == NUM and not is_num(v):
             problems.append(f"{where}: {k} must be a number, got {v!r}")
+        elif kind == BOOL and not isinstance(v, bool):
+            problems.append(f"{where}: {k} must be true/false, got {v!r}")
         elif kind == "albumin" and v not in ALBUMIN:
             problems.append(f"{where}: albumin {v!r} not in {sorted(ALBUMIN)}")
         elif kind == "fetal" and v not in FETAL:
@@ -215,13 +290,19 @@ def check_record(r, problems, where):
     rng = {"month": (1, 10), "weeks": (4, 42), "bp_sys": (70, 220), "bp_dia": (40, 140),
            "hb": (3, 16), "weight_kg": (30, 120), "ifa_tablets": (1, 400),
            "day": (0, 60), "pads": (0, 30), "temp_c": (32, 43), "weight_g": (500, 6000),
-           "resp_rate": (10, 120)}
+           "resp_rate": (10, 120), "age": (12, 55), "height_cm": (120, 190),
+           "labour_hours": (1, 72), "birth_weight_g": (500, 6000), "temp_f": (86, 110)}
     for k, (lo, hi) in rng.items():
         if k in r and is_num(r[k]) and not (lo <= r[k] <= hi):
             problems.append(f"{where}: {k}={r[k]} outside plausible range {lo}-{hi}")
     for k in ("hb", "temp_c"):
         if k in r and is_num(r[k]) and not one_decimal(r[k]):
             problems.append(f"{where}: {k}={r[k]} must have at most one decimal")
+    if "temp_f" in r and is_num(r["temp_f"]) and not ("temp_c" in r and abs(round(f_to_c(r["temp_f"]), 1) - r["temp_c"]) < 1e-9):
+        problems.append(f"{where}: temp_f={r['temp_f']} needs temp_c={round(f_to_c(r['temp_f']), 1)}")
+    sym = r.get("symptoms") or {}
+    if sym.get("hot_to_touch") is True and sym.get("cold_to_touch") is True:
+        problems.append(f"{where}: hot_to_touch and cold_to_touch cannot both be true")
     if ("bp_sys" in r) != ("bp_dia" in r):
         problems.append(f"{where}: bp_sys and bp_dia should come together")
     if "name" not in r:
@@ -269,7 +350,8 @@ def check_file(path, seen_ids, seen_said):
         if not check_record(it["record"], problems, where):
             continue
         t = it["record"]["type"]
-        prefix = ("h-" if heldout else ("d2-" if "dev2" in Path(path).name else "")) + ID_PREFIX[t]
+        fname = Path(path).name
+        prefix = ("h-" if heldout else "d2-" if "dev2" in fname else "d3-" if "dev3" in fname else "") + ID_PREFIX[t]
         if not (it["id"].startswith(prefix) and it["id"][len(prefix):].isdigit()):
             problems.append(f"{where}: id should look like {prefix}NNN")
         flags = it["flags"]
@@ -323,7 +405,39 @@ def report(path, items):
     print("  flags  :", ", ".join(f"{k} {v}" for k, v in fl.most_common()))
 
 
+def fix_file(path):
+    """Rewrite each item's flags (and the flag-derived tags normal-visit and
+    watch-only) from its gold record with the current rule table. Records,
+    sentences and other tags are never touched. Keeps the file's JSON spacing."""
+    lines = Path(path).read_text(encoding="utf-8").splitlines()
+    spaced = bool(lines) and '": ' in lines[0]
+    seps = (", ", ": ") if spaced else (",", ":")
+    out, changed = [], 0
+    for line in lines:
+        if not line.strip():
+            continue
+        it = json.loads(line)
+        want = compute_flags(it["record"])
+        need = {"normal-visit": not want,
+                "watch-only": bool(want) and all(SEVERITY[f] == "watch" for f in want)}
+        tags = [t for t in it["tags"] if t not in need or need[t]]
+        tags += [t for t, on in need.items() if on and t not in tags]
+        if want != it["flags"] or tags != it["tags"]:
+            changed += 1
+            print(f"  {it['id']}: flags {it['flags']} -> {want}")
+        it["flags"], it["tags"] = want, tags
+        out.append(json.dumps(it, ensure_ascii=False, separators=seps))
+    with open(path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write("\n".join(out) + "\n")
+    print(f"{Path(path).name}: {changed} item(s) updated")
+
+
 def main(argv):
+    if "--fix" in argv:
+        # python check_gold.py --fix dev.jsonl dev2.jsonl heldout.jsonl
+        for p in [a for a in argv[1:] if a != "--fix"]:
+            fix_file(p)
+        argv = [a for a in argv if a != "--fix"]
     paths = argv[1:] or [str(Path(__file__).with_name("dev.jsonl")),
                          str(Path(__file__).with_name("heldout.jsonl"))]
     seen_ids, seen_said = set(), {}

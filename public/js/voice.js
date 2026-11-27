@@ -26,24 +26,54 @@ export function pickVoice(lang) {
 export const hasVoice = (lang) => !!pickVoice(lang) && (lang !== "mr" || !!voices.find((v) => v.lang?.startsWith("mr")));
 
 let speakingToken = 0;
+// Half-duplex: while the phone talks, the open microphone session is paused, so
+// the recogniser never hears the phone's own words. `said` remembers the last
+// line spoken and when it ended, so a late echo can still be thrown away.
+let active = null;              // the dictation session that is open, if any
+let pauseDepth = 0;
+export const said = { text: "", endedAt: 0, speaking: false };
+function holdMic() { pauseDepth++; said.speaking = true; if (pauseDepth === 1 && active) active.pause(); }
+function freeMic() {
+  pauseDepth = Math.max(0, pauseDepth - 1);
+  if (pauseDepth) return;
+  said.speaking = false; said.endedAt = Date.now();
+  if (active) active.resume();
+}
 /** Say a line. Resolves when it has been spoken (or the call ended). */
 export function speak(text, lang = "en", { rate = 0.9 } = {}) {
   const my = ++speakingToken;
+  if (!text) return Promise.resolve();
+  said.text = String(text);
+  holdMic();
   return new Promise((resolve) => {
-    if (!window.speechSynthesis || !text) return setTimeout(resolve, 400 + (text || "").length * 50);
+    let done = false, t = null;
+    const fin = () => { if (done) return; done = true; clearTimeout(t); freeMic(); resolve(); };
+    if (!window.speechSynthesis) { t = setTimeout(fin, 400 + text.length * 50); return; }
     const u = new SpeechSynthesisUtterance(text);
     const v = pickVoice(lang);
     if (v) { u.voice = v; u.lang = v.lang; } else u.lang = LANGS[lang]?.speech || "en-IN";
     u.rate = rate; u.pitch = 1.05;
-    let done = false;
-    const fin = () => { if (done) return; done = true; clearTimeout(t); resolve(); };
     u.onend = fin; u.onerror = fin;
-    const t = setTimeout(fin, 3000 + text.length * 120); // some browsers never fire onend
+    t = setTimeout(fin, 3000 + text.length * 120); // some browsers never fire onend
     speechSynthesis.speak(u);
     if (my !== speakingToken) fin();
   });
 }
+const plainWords = (s) => String(s || "").toLowerCase().replace(/[.,!?;:।"'()\-]/g, " ").split(/\s+/).filter(Boolean);
+/** True when a heard phrase is most likely the phone's own voice coming back. */
+export function isEcho(text, { windowMs = 1000 } = {}) {
+  if (said.speaking) return true;
+  if (Date.now() - said.endedAt < windowMs) return true;
+  if (!said.text || Date.now() - said.endedAt > 10000) return false;
+  const a = plainWords(text), b = new Set(plainWords(said.text));
+  if (!a.length) return false;
+  if (a.join(" ") === [...plainWords(said.text)].join(" ")) return true;
+  if (a.length < 3) return false;
+  return a.filter((w) => b.has(w)).length / a.length >= 0.7;
+}
 export function hush() { speakingToken++; if (window.speechSynthesis) speechSynthesis.cancel(); }
+/** Has the microphone worked at least once on this page? Then the app may open it by itself. */
+export const micState = { granted: false };
 
 /**
  * Listen once. Resolves with { alts: [...transcripts] } or { silent: true } or { blocked: true }.
@@ -123,37 +153,90 @@ export const click = () => tone([1200], 0.035, 0, 0.03);
 
 /**
  * Dictation: keep listening while the ASHA talks, and hand back each finished
- * phrase. Stops after `quietMs` of silence or when stop() is called.
- * Returns { stop, done } where done resolves with the full text.
+ * phrase. The silence clock starts only once she has said something:
+ *  - firstMs: how long to wait for the first words (then it ends, heard = false)
+ *  - quietMs: silence after a phrase that ends the session (null keeps it open
+ *    until stop() or a spoken "bas")
+ *  - pauseMs + onPause: a shorter silence that does not end the session; the
+ *    visit page uses it to ask for the next missing field
+ *  - single: end soon after the first finished phrase (one answer)
+ * While the phone is speaking the recogniser is paused (half-duplex), and a
+ * phrase that is the phone's own echo is dropped.
+ * Returns { stop, pause, resume, done, error, heard, lastHeard, deadline }.
  */
-export function dictate({ lang = "hi", onInterim, onPhrase, onError, quietMs = 2200 } = {}) {
-  let rec, stopped = false, finalText = "", quiet = null, resolveDone;
+export function dictate({ lang = "hi", onInterim, onPhrase, onError, onPause, onEcho, onState, firstMs = 8000, quietMs = 4000, pauseMs = null, single = false } = {}) {
+  let rec, stopped = false, paused = false, running = false, finalText = "", quiet = null, pauseT = null, resolveDone, startedAt = Date.now();
   const done = new Promise((r) => (resolveDone = r));
-  const finish = () => { if (stopped) return; stopped = true; clearTimeout(quiet); try { rec && rec.stop(); } catch {} resolveDone(finalText.trim()); };
-  const arm = () => { clearTimeout(quiet); quiet = setTimeout(finish, quietMs); };
-  if (!SR) { onError && onError("unsupported"); resolveDone(""); return { stop() {}, done }; }
+  const S = { stop: () => finish(), pause, resume, done, error: null, heard: false, lastHeard: 0, deadline: 0, lang };
+  const finish = () => {
+    if (stopped) return; stopped = true; clearTimeout(quiet); clearTimeout(pauseT);
+    if (active === S) active = null;
+    try { rec && rec.abort(); } catch {}
+    onState && onState("ended");
+    resolveDone(finalText.trim());
+  };
+  const arm = (ms) => { clearTimeout(quiet); if (ms == null) { S.deadline = 0; return; } S.deadline = Date.now() + ms; quiet = setTimeout(finish, ms); };
+  const armAfterSpeech = () => {
+    arm(single ? 700 : quietMs);
+    clearTimeout(pauseT);
+    if (pauseMs && onPause) pauseT = setTimeout(() => { if (!stopped && !paused) onPause(); }, pauseMs);
+  };
+  function pause() {
+    if (stopped || paused) return;
+    paused = true; clearTimeout(quiet); clearTimeout(pauseT); S.deadline = 0;
+    try { rec && rec.abort(); } catch {}
+    onState && onState("paused");
+  }
+  function resume() {
+    if (stopped || !paused) return;
+    paused = false;
+    if (!running) { try { rec.start(); running = true; } catch {} }
+    // the silence clock restarts: she gets the full wait again after the phone spoke
+    if (S.heard) armAfterSpeech(); else arm(firstMs);
+    onState && onState("listening");
+  }
+  if (!SR) { S.error = "unsupported"; onError && onError("unsupported"); stopped = true; resolveDone(""); return S; }
   try {
     rec = new SR();
     rec.lang = LANGS[lang]?.speech || "hi-IN";
     rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
+    rec.onaudiostart = () => { micState.granted = true; };
+    rec.onstart = () => { running = true; };
     rec.onresult = (e) => {
+      if (stopped || paused) return;
+      micState.granted = true;
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const r = e.results[i];
-        if (r.isFinal) { const t = r[0].transcript.trim(); if (t) { finalText += (finalText ? " " : "") + t; onPhrase && onPhrase(t, finalText); } }
-        else interim += r[0].transcript;
+        const t = r[0].transcript.trim();
+        if (r.isFinal) {
+          if (!t) continue;
+          if (isEcho(t)) { onEcho && onEcho(t); continue; }
+          S.heard = true; S.lastHeard = Date.now();
+          finalText += (finalText ? " " : "") + t;
+          onPhrase && onPhrase(t, finalText);
+          if (stopped || paused) return;
+        } else if (!isEcho(t)) interim += r[0].transcript;
       }
-      onInterim && onInterim(interim, finalText);
-      arm();
+      if (interim) { S.lastHeard = Date.now(); onInterim && onInterim(interim, finalText); }
+      if (interim || S.heard) armAfterSpeech();
     };
     rec.onerror = (e) => {
-      if (e.error === "no-speech") return;
+      if (e.error === "no-speech" || e.error === "aborted") return;
+      S.error = e.error;
       onError && onError(e.error);
       if (["not-allowed", "service-not-allowed", "audio-capture", "network", "language-not-supported"].includes(e.error)) finish();
     };
-    rec.onend = () => { if (!stopped) { try { rec.start(); } catch { finish(); } } };
-    rec.start();
-    arm();
-  } catch { onError && onError("unsupported"); finish(); }
-  return { stop: finish, done };
+    rec.onend = () => {
+      running = false;
+      if (stopped || paused) return;
+      try { rec.start(); running = true; } catch { finish(); }
+    };
+    rec.start(); running = true;
+    active = S;
+    if (said.speaking) pause(); else arm(firstMs);
+    onState && onState(paused ? "paused" : "listening");
+  } catch { S.error = "unsupported"; onError && onError("unsupported"); finish(); }
+  void startedAt;
+  return S;
 }

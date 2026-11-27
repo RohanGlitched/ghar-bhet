@@ -1,24 +1,42 @@
 .v-wrap { padding-top: 22px; padding-bottom: 40px; }
+.v-intro { max-width: 760px; margin: 0 0 18px; }
+.v-intro h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(30px, 3.4vw, 40px); line-height: 1.1; margin: 0 0 8px; letter-spacing: -.01em; }
+.v-intro p { margin: 0; color: var(--ink-2); font-size: 17px; max-width: 64ch; }
 .v-grid { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 1fr); gap: 28px; align-items: start; justify-content: center; }
 @media (max-width: 980px) { .v-grid { grid-template-columns: minmax(0, 1fr); } .v-side { order: 2; } }
 .v-app { display: grid; gap: 14px; min-width: 0; }
 .v-side { display: grid; gap: 14px; position: sticky; top: 80px; }
 @media (max-width: 980px) { .v-side { position: static; } }
 .v-side h2, .v-examples h2, .v-said-head h2 { font-size: 16px; margin: 0 0 8px; font-weight: 700; }
-.v-pick { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; }
-.small-seg button { font-size: 14px; padding: 8px 11px; }
+.v-pick { display: flex; flex-wrap: wrap; gap: 10px 14px; justify-content: space-between; align-items: flex-end; }
+.pick-group { display: grid; gap: 4px; }
+.pick-label { font-size: 13px; font-weight: 600; color: var(--ink-3); }
+.small-seg button { font-size: 15px; padding: 8px 12px; }
 
-/* the microphone */
-.v-mic { display: flex; align-items: center; gap: 16px; background: var(--ink); color: var(--paper); border-radius: 22px; padding: 14px 16px; }
+/* the microphone: always a dark panel, in daylight and at night */
+.v-mic { display: flex; align-items: center; gap: 16px; background: var(--mic-bg); color: var(--mic-ink); border-radius: 22px; padding: 14px 16px; border: 1px solid var(--line); }
+.mic-col { display: grid; justify-items: center; gap: 6px; flex: none; }
+.mic-label { font-size: 13px; font-weight: 600; color: color-mix(in srgb, var(--mic-ink) 80%, transparent); }
 .mic { width: 78px; height: 78px; border-radius: 50%; border: 0; background: var(--voice); color: var(--voice-ink); cursor: pointer; flex: none; display: grid; place-items: center; position: relative; box-shadow: 0 0 0 0 rgba(242, 183, 5, .55); }
+.mic:focus-visible { outline: 3px solid var(--mic-ink); outline-offset: 4px; box-shadow: none; }
 .mic.on { animation: ring 1.4s infinite; }
 .mic.on::after { content: ""; position: absolute; inset: -8px; border-radius: 50%; border: 3px solid var(--voice); transform: scale(calc(1 + var(--lvl, 0) * .35)); opacity: .9; transition: transform .08s linear; }
 @keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(242, 183, 5, .55); } 70% { box-shadow: 0 0 0 18px rgba(242, 183, 5, 0); } 100% { box-shadow: 0 0 0 0 rgba(242, 183, 5, 0); } }
+@media (prefers-reduced-motion: reduce) { .mic.on { animation: none; outline: 3px solid var(--voice); outline-offset: 5px; } .mic.on::after { display: none; } }
 .v-mic-text { min-width: 0; flex: 1; }
-.v-status { margin: 0 0 8px; font-size: 16px; line-height: 1.35; }
+.v-status { margin: 0 0 8px; font-size: 17px; line-height: 1.35; font-weight: 500; }
+.v-status.on::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--voice); margin-right: 8px; vertical-align: 1px; animation: blink 1.2s infinite; }
+.v-status.wait { color: color-mix(in srgb, var(--mic-ink) 78%, transparent); }
+.v-status.err { background: var(--alert-bg); color: #fff; padding: 8px 10px; border-radius: 10px; font-weight: 600; }
+.v-cmds { margin: 6px 0 0; font-size: 14px; color: color-mix(in srgb, var(--mic-ink) 75%, transparent); line-height: 1.4; }
+.v-cmds b { color: var(--mic-ink); font-weight: 600; }
 .wave { display: flex; gap: 3px; align-items: center; height: 26px; }
-.wave i { flex: 1; max-width: 8px; height: 4px; border-radius: 3px; background: color-mix(in srgb, var(--paper) 35%, transparent); transition: height .1s; }
+.wave i { flex: 1; max-width: 8px; height: 4px; border-radius: 3px; background: color-mix(in srgb, var(--mic-ink) 35%, transparent); transition: height .1s; }
 .wave.on i { background: var(--voice); }
+@media (max-width: 420px) { .v-mic { gap: 12px; padding: 12px; } .mic { width: 68px; height: 68px; } }
+
+.note { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: var(--voice-soft); color: var(--ink); border-radius: 14px; padding: 8px 8px 8px 14px; font-size: 15px; }
+.note span { flex: 1 1 200px; }
 
 .v-said { min-height: 110px; }
 .v-said-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
@@ -26,18 +44,24 @@
 .v-said .said + .said { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
 .v-record { display: grid; gap: 10px; }
 .tile.tap { cursor: pointer; }
-.v-ask { display: flex; gap: 12px; align-items: center; background: var(--voice-soft); border-radius: 16px; padding: 12px 14px; }
-.v-ask b { font-family: var(--serif); font-size: 19px; font-weight: 600; }
-.v-ask .faint { display: block; }
-.v-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.v-ask { display: flex; gap: 10px 12px; align-items: center; flex-wrap: wrap; background: var(--voice-soft); color: var(--ink); border-radius: 16px; padding: 12px 14px; }
+.v-ask.confirm { border: 2px solid var(--voice); }
+.v-ask-q { flex: 1 1 240px; display: grid; gap: 2px; }
+.v-ask-q .faint { display: flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.v-ask b { font-family: var(--serif); font-size: 20px; font-weight: 600; line-height: 1.25; }
+.v-ask .hint { font-size: 14px; color: var(--ink-2); }
+.v-ask-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.v-ask .hear { margin: 0; border-color: var(--line-2); }
+.v-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .v-actions .btn.voice { flex: 1; min-width: 160px; }
-.v-type summary { cursor: pointer; font-weight: 700; font-size: 15px; }
+.v-type summary { cursor: pointer; font-weight: 700; font-size: 15px; min-height: 44px; display: flex; align-items: center; }
 .v-type textarea { width: 100%; margin-top: 10px; font: inherit; font-size: 17px; padding: 12px; border-radius: 12px; border: 1.5px solid var(--line-2); background: var(--paper); color: var(--ink); resize: vertical; }
 .v-type-row { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
 .ex-row { display: grid; gap: 8px; }
-.ex { text-align: left; font: inherit; font-size: 15px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; line-height: 1.35; }
+.ex { text-align: left; font: inherit; font-size: 15px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; line-height: 1.35; min-height: 44px; }
 .ex:hover { border-color: var(--line-2); background: var(--paper-2); }
 .ex small { display: block; color: var(--ink-3); font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.ex-en { display: block; color: var(--ink-3); font-size: 14px; margin-top: 4px; }
 .steps { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 15px; color: var(--ink-2); }
 .steps b { color: var(--ink); }
 .fired { display: grid; gap: 8px; }
@@ -45,9 +69,11 @@
 .fired div.watch { border-color: var(--watch); }
 .fired b { display: block; font-size: 15px; }
 .vil { display: grid; gap: 6px; font-size: 14px; }
-.vil div { display: flex; justify-content: space-between; gap: 8px; }
+.vil div { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.vil a { min-height: 32px; display: inline-flex; align-items: center; }
+.gloss { margin: 0; display: grid; gap: 6px; font-size: 14px; color: var(--ink-2); }
+.gloss dt { font-weight: 700; color: var(--ink); }
+.gloss dd { margin: -4px 0 4px; }
 .saved-box { display: grid; gap: 12px; }
 .saved-links { display: flex; gap: 8px; flex-wrap: wrap; }
-.alert .stamp { position: absolute; right: 14px; top: 12px; color: #fff; border-color: #fff; background: transparent; font-size: 18px; }
-.alert h3 { padding-right: 150px; }
-@media (max-width: 420px) { .alert h3 { padding-right: 0; padding-top: 44px; } .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

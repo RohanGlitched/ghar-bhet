@@ -7,7 +7,7 @@ export const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&am
 export async function api(path, body) {
   const r = await fetch(path, body ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : {});
   const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data.error || "The server didn't answer. Check the connection and try again.");
+  if (!r.ok) throw Object.assign(new Error(data.error || "The server didn't answer. Check the connection and try again."), { status: r.status });
   return data;
 }
 export function ago(t) {
@@ -34,6 +34,13 @@ export function mountChrome(active) {
   const saved = ["light", "dark"].includes(forced) ? forced : store.get("gb-theme");
   if (saved) document.documentElement.setAttribute("data-theme", saved);
   const link = (href, label, cls = "") => `<a href="${href}"${active === href ? ' aria-current="page"' : ""} class="${cls}">${label}</a>`;
+  const main = document.querySelector("main");
+  if (main && !document.querySelector(".skip")) {
+    if (!main.id) main.id = "main";
+    const skip = document.createElement("a");
+    skip.className = "skip"; skip.href = `#${main.id}`; skip.textContent = active === "/visit" ? "Skip to the visit" : "Skip to the content";
+    document.body.prepend(skip);
+  }
   const top = document.getElementById("top");
   if (top) {
     top.className = "top";
@@ -49,7 +56,7 @@ export function mountChrome(active) {
   }
   const bar = document.createElement("nav");
   bar.className = "bottom-bar"; bar.setAttribute("aria-label", "Sections");
-  bar.innerHTML = [["/", "Home", I.home], ["/visit", "Visit", I.visit], ["/anm", "Nurse", I.anm], ["/evidence", "Results", I.ev]]
+  bar.innerHTML = [["/", "Home", I.home], ["/visit", "Speak a visit", I.visit], ["/anm", "Nurse's board", I.anm], ["/evidence", "Test results", I.ev]]
     .map(([h, l, ic]) => `<a href="${h}"${active === h ? ' aria-current="page"' : ""}>${ic}<span>${l}</span></a>`).join("");
   document.body.appendChild(bar);
   const foot = document.getElementById("foot");
@@ -57,8 +64,9 @@ export function mountChrome(active) {
     foot.className = "foot";
     foot.innerHTML = `<div class="wrap foot-grid">
       <div><h4>Ghar Bhet</h4><p style="margin:0 0 10px;max-width:46ch">An ASHA speaks a home visit in Hindi, Marathi or English. The official visit record fills itself, and fixed government rules flag danger signs for mothers and newborns.</p>
-      <p class="faint" style="margin:0">Built for the Scaler × Wispr Flow "India Runs on Voice" hackathon, 2026. The village on the nurse's board is a made-up sample. Not a medical device: the rules support, and never replace, the ANM's and doctor's judgement.</p></div>
-      <div><h4>Use it</h4><ul><li><a href="/visit">Speak a visit</a></li><li><a href="/anm">Nurse's board</a></li><li><a href="/visit?example=1">Try an example</a></li></ul></div>
+      <p class="faint" style="margin:0 0 8px">Ghar Bhet means "home visit" in Hindi and Marathi. An ASHA is a village health worker; the ANM (auxiliary nurse-midwife) is the nurse she reports to.</p>
+      <p class="faint" style="margin:0">Built for the Scaler × Wispr Flow "India Runs on Voice" hackathon, 2026. The village on the nurse's board is a made-up sample. Not a medical device: the rules support, and never replace, the nurse's and doctor's judgement.</p></div>
+      <div><h4>Use it</h4><ul><li><a href="/visit">Speak a visit</a></li><li><a href="/anm">Nurse's board</a></li><li><a href="/visit?example=1">Try an example</a></li><li><a href="/how">Rules and method</a></li></ul></div>
       <div><h4>Proof</h4><ul><li><a href="/evidence">Test results</a></li><li><a href="/how">Rules and method</a></li><li><a href="https://github.com/RohanGlitched/ghar-bhet">Source code</a></li></ul></div>
       <div><h4>Sources</h4><ul><li><a href="https://nurturing-care.org/files/SSBSK_Operational_Guidline_2026.pdf">SSBSK guidelines 2026</a></li><li><a href="https://nhsrcindia.org/sites/default/files/2021-12/Care%20During%20Pregnancy%20and%20Childbirth%20Training%20Manual%20for%20CHO%20at%20AB-HWC.pdf">CHO pregnancy manual</a></li><li><a href="https://pib.gov.in/PressReleasePage.aspx?PRID=2096075">10.29 lakh ASHAs (PIB)</a></li></ul></div>
     </div>`;

@@ -1,35 +1,35 @@
 {
  "set": "dev",
- "run_at": "2026-11-27T07:42:13.232Z",
- "ruleset": "mohfw-2026.1",
+ "run_at": "2026-11-27T08:53:10.219Z",
+ "ruleset": "mohfw-2026.2",
  "typed": {
   "mode": "typed",
   "items": 120,
   "fields": {
    "gold": 577,
-   "predicted": 578,
+   "predicted": 577,
    "correct": 577,
    "recall": 100,
-   "precision": 99.8
+   "precision": 100
   },
   "type_detected": 100,
   "danger": {
-   "visits": 78,
-   "caught": 78,
+   "visits": 89,
+   "caught": 89,
    "caught_pct": 100,
-   "normal_visits": 42,
+   "normal_visits": 31,
    "false_alarms": 0,
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 136,
-   "predicted": 136,
-   "correct": 136,
+   "gold": 172,
+   "predicted": 173,
+   "correct": 172,
    "recall": 100,
-   "precision": 100,
+   "precision": 99.4,
    "refer_now_recall": 100
   },
-  "exact_visits": 99.2,
+  "exact_visits": 100,
   "by_field": {
    "name": {
     "gold": 119,
@@ -118,9 +118,9 @@
    "hb": {
     "gold": 15,
     "hit": 15,
-    "pred": 16,
+    "pred": 15,
     "recall": 100,
-    "precision": 93.8
+    "precision": 100
    },
    "fetal_movement": {
     "gold": 8,
@@ -159,17 +159,17 @@
    },
    "numbers-in-words": {
     "n": 49,
-    "ok": 48,
-    "pct": 98
+    "ok": 49,
+    "pct": 100
    },
    "negation": {
     "n": 42,
-    "ok": 41,
-    "pct": 97.6
+    "ok": 42,
+    "pct": 100
    },
    "watch-only": {
-    "n": 22,
-    "ok": 22,
+    "n": 13,
+    "ok": 13,
     "pct": 100
    },
    "local-idiom": {
@@ -203,9 +203,9 @@
     "pct": 100
    },
    "normal-visit": {
-    "n": 20,
-    "ok": 19,
-    "pct": 95
+    "n": 18,
+    "ok": 18,
+    "pct": 100
    },
    "celsius": {
     "n": 9,
@@ -256,8 +256,8 @@
   "by_lang": {
    "hi/devanagari": {
     "n": 42,
-    "ok": 41,
-    "pct": 97.6
+    "ok": 42,
+    "pct": 100
    },
    "hi/roman": {
     "n": 18,
@@ -292,13 +292,16 @@
   },
   "misses": [
    {
-    "id": "pnc-003",
-    "said": "तीसरा दिन है, बुखार नहीं, खून नॉर्मल जा रहा है, दिन में तीन पैड। दूध ठीक उतर रहा है, स्तन में कोई दिक्कत नहीं। रीता।",
-    "wrong": [
-     "hb: extra 3"
+    "id": "nb-026",
+    "said": "baby ka weight janam pe 2 kilo bataya tha, aaj 1 kilo 750 gram aaya. Komal ka baby, ikkisva din. Doodh theek pee raha.",
+    "wrong": [],
+    "flags_want": [
+     "nb_very_low_weight"
     ],
-    "flags_want": [],
-    "flags_got": []
+    "flags_got": [
+     "nb_very_low_weight",
+     "nb_at_risk_birth_weight"
+    ]
    }
   ]
  },
@@ -307,29 +310,29 @@
   "items": 120,
   "fields": {
    "gold": 577,
-   "predicted": 560,
-   "correct": 556,
-   "recall": 96.4,
-   "precision": 99.3
+   "predicted": 557,
+   "correct": 557,
+   "recall": 96.5,
+   "precision": 100
   },
   "type_detected": 89.2,
   "danger": {
-   "visits": 78,
-   "caught": 75,
-   "caught_pct": 96.2,
-   "normal_visits": 42,
-   "false_alarms": 5,
-   "false_alarm_pct": 11.9
+   "visits": 89,
+   "caught": 87,
+   "caught_pct": 97.8,
+   "normal_visits": 31,
+   "false_alarms": 2,
+   "false_alarm_pct": 6.5
   },
   "flags": {
-   "gold": 136,
-   "predicted": 134,
-   "correct": 124,
-   "recall": 91.2,
-   "precision": 92.5,
-   "refer_now_recall": 91.3
+   "gold": 172,
+   "predicted": 169,
+   "correct": 157,
+   "recall": 91.3,
+   "precision": 92.9,
+   "refer_now_recall": 90.4
   },
-  "exact_visits": 89.2,
+  "exact_visits": 90,
   "by_field": {
    "name": {
     "gold": 119,
@@ -361,10 +364,10 @@
    },
    "symptoms": {
     "gold": 144,
-    "hit": 128,
-    "pred": 131,
-    "recall": 88.9,
-    "precision": 97.7
+    "hit": 129,
+    "pred": 129,
+    "recall": 89.6,
+    "precision": 100
    },
    "resp_rate": {
     "gold": 10,
@@ -418,9 +421,9 @@
    "hb": {
     "gold": 15,
     "hit": 15,
-    "pred": 16,
+    "pred": 15,
     "recall": 100,
-    "precision": 93.8
+    "precision": 100
    },
    "fetal_movement": {
     "gold": 8,
@@ -459,18 +462,18 @@
    },
    "numbers-in-words": {
     "n": 49,
-    "ok": 47,
-    "pct": 95.9
+    "ok": 48,
+    "pct": 98
    },
    "negation": {
     "n": 42,
-    "ok": 37,
-    "pct": 88.1
+    "ok": 38,
+    "pct": 90.5
    },
    "watch-only": {
-    "n": 22,
-    "ok": 20,
-    "pct": 90.9
+    "n": 13,
+    "ok": 12,
+    "pct": 92.3
    },
    "local-idiom": {
     "n": 47,
@@ -503,9 +506,9 @@
     "pct": 89.7
    },
    "normal-visit": {
-    "n": 20,
+    "n": 18,
     "ok": 17,
-    "pct": 85
+    "pct": 94.4
    },
    "celsius": {
     "n": 9,
@@ -556,8 +559,8 @@
   "by_lang": {
    "hi/devanagari": {
     "n": 42,
-    "ok": 38,
-    "pct": 90.5
+    "ok": 39,
+    "pct": 92.9
    },
    "hi/roman": {
     "n": 18,
@@ -592,17 +595,30 @@
   },
   "misses": [
    {
+    "id": "nb-026",
+    "said": "baby ka weight janam pe 2 kilo bataya tha, aaj 1 kilo 750 gram aaya. Komal ka baby, ikkisva din. Doodh theek pee raha.",
+    "wrong": [],
+    "flags_want": [
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "nb_very_low_weight",
+     "nb_at_risk_birth_weight"
+    ]
+   },
+   {
     "id": "nb-049",
     "said": "Day one visit for Rukhsana's baby, home delivery, weight 2.9 kg, eyes are yellow since morning, feeding good.",
     "wrong": [
      "weight_g: want 2900 got undefined",
-     "feeding: want \"good\" got undefined",
-     "symptoms.jaundice: want true got undefined"
+     "feeding: want \"good\" got undefined"
     ],
     "flags_want": [
      "nb_jaundice_early"
     ],
-    "flags_got": []
+    "flags_got": [
+     "pnc_jaundice"
+    ]
    },
    {
     "id": "anc-033",
@@ -630,21 +646,13 @@
     ]
    },
    {
-    "id": "pnc-003",
-    "said": "तीसरा दिन है, बुखार नहीं, खून नॉर्मल जा रहा है, दिन में तीन पैड। दूध ठीक उतर रहा है, स्तन में कोई दिक्कत नहीं। रीता।",
-    "wrong": [
-     "hb: extra 3"
-    ],
-    "flags_want": [],
-    "flags_got": []
-   },
-   {
     "id": "pnc-006",
     "said": "स्तन में गांठ है और दर्द है, बुखार 100 डिग्री। सीमा, दसवाँ दिन।",
     "wrong": [
      "symptoms.breast_problem: want true got undefined"
     ],
     "flags_want": [
+     "pnc_breast",
      "pnc_fever"
     ],
     "flags_got": [
@@ -659,7 +667,8 @@
      "symptoms.swelling_face_hands: want true got undefined"
     ],
     "flags_want": [
-     "pnc_breathless"
+     "pnc_breathless",
+     "pnc_swelling"
     ],
     "flags_got": []
    },
@@ -669,8 +678,7 @@
     "wrong": [
      "day: want 14 got undefined",
      "pads: want 2 got undefined",
-     "symptoms.heavy_bleeding: want false got undefined",
-     "symptoms.bleeding: extra true"
+     "symptoms.heavy_bleeding: want false got undefined"
     ],
     "flags_want": [],
     "flags_got": [
@@ -682,8 +690,7 @@
     "said": "Neelam ko bukhar hai aur neeche se badboo wala discharge aa raha hai, teesra din",
     "wrong": [
      "symptoms.fever: want true got undefined",
-     "symptoms.foul_discharge: want true got undefined",
-     "symptoms.hot_to_touch: extra true"
+     "symptoms.foul_discharge: want true got undefined"
     ],
     "flags_want": [
      "pnc_infection"
@@ -697,10 +704,11 @@
     "said": "आईला ताप नाही, बाळाला थोडा ताप आहे, आईच्या स्तनाला सूज आहे, दूध येतंय. तिसरा दिवस. अर्चना.",
     "wrong": [
      "symptoms.fever: want false got undefined",
-     "symptoms.breast_problem: want true got undefined",
-     "symptoms.hot_to_touch: extra true"
+     "symptoms.breast_problem: want true got undefined"
     ],
-    "flags_want": [],
+    "flags_want": [
+     "pnc_breast"
+    ],
     "flags_got": [
      "nb_fever"
     ]
@@ -750,7 +758,7 @@
      "symptoms.foul_discharge: want true got undefined"
     ],
     "flags_want": [
-     "pnc_fever"
+     "pnc_infection"
     ],
     "flags_got": [
      "nb_fever"

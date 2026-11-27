@@ -1,0 +1,77 @@
+{
+ "source": "eval/heldout.jsonl (first held-out set, already run twice)",
+ "cards": [
+  {
+   "id": "h-nb-001",
+   "lang": "hi",
+   "type": "newborn",
+   "read": "Sushila ka bachcha chhathe din ka hai, vajan ek kilo nau sau, sans basath ek minat men, dudh pi raha hai thik se."
+  },
+  {
+   "id": "h-nb-003",
+   "lang": "hi",
+   "type": "newborn",
+   "read": "Temparechar 96 digri aya, bachcha thik se dudh pi raha, vajan paune tin kilo. hemlata ka bachcha, tisra din."
+  },
+  {
+   "id": "h-nb-008",
+   "lang": "hi",
+   "type": "newborn",
+   "read": "Is ghar men bachche ki tatti men khun hai aur bar bar ulti kar raha hai. satrah din ka hai."
+  },
+  {
+   "id": "h-nb-015",
+   "lang": "mr",
+   "type": "newborn",
+   "read": "Vrishalichan bal tisrya divsachan, vajan did kilo, dudh pit nahi, ang thand lagtany."
+  },
+  {
+   "id": "h-nb-017",
+   "lang": "mr",
+   "type": "newborn",
+   "read": "Shubhangila tap ahe, pan balachan tapman navyannav digri ahe, balachan ang garam vatat nahi, vajan don kilo satshe."
+  },
+  {
+   "id": "h-nb-023",
+   "lang": "en",
+   "type": "newborn",
+   "read": "Divya's baby, day four, weight two kilo one hundred, respiratory rate fifty-eight, no chest indrawing, feeding good."
+  },
+  {
+   "id": "h-anc-001",
+   "lang": "hi",
+   "type": "anc",
+   "read": "Bipi ek sau sath bata ek sau das, elbumin ek plas. sugandha, nauvan mahina chal raha hai."
+  },
+  {
+   "id": "h-anc-004",
+   "lang": "hi",
+   "type": "anc",
+   "read": "Bipi ek sau artis bata atthasi, himoglobin gyarah, bachcha hil raha hai thik, koi takliph nahin. maya, chhatha mahina."
+  },
+  {
+   "id": "h-anc-012",
+   "lang": "mr",
+   "type": "anc",
+   "read": "Thoda raktasrav hotoy, ani potat khup dukhtany. megha, 29 athvade."
+  },
+  {
+   "id": "h-anc-018",
+   "lang": "hi",
+   "type": "anc",
+   "read": "Hb sarhe nau hai, BP 118/78, weight 49 kg, fetal movement normal. purnima, 30 weeks."
+  },
+  {
+   "id": "h-pnc-001",
+   "lang": "hi",
+   "type": "pnc",
+   "read": "Dilivri ko char din hue, bukhar 101 hai, niche se badbu nahin a rahi. ramapyari."
+  },
+  {
+   "id": "h-pnc-007",
+   "lang": "mr",
+   "type": "pnc",
+   "read": "Balantpananantar pachva divas, tap ekshe tin, thandi vajte. ranjna."
+  }
+ ]
+}

@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ghar Bhet: an ASHA speaks the visit, the record fills itself</title>
-<meta name="description" content="A voice-first tool for India's 10.29 lakh ASHA health workers. She speaks a home visit in Hindi, Marathi or English; the official visit record fills itself and fixed government rules flag danger signs for mothers and newborns. Measured on 60 unseen spoken visits.">
+<title>Ghar Bhet: a village health worker speaks the visit, the record fills itself</title>
+<meta name="description" content="A voice-first tool for India's 10.29 lakh ASHAs (village health workers). She speaks a home visit in Hindi, Marathi or English; the official visit record fills itself and fixed government rules flag danger signs for mothers and newborns. Measured on 60 unseen visit transcripts written the way ASHAs speak.">
 <meta name="theme-color" content="#f4f1e8">
-<meta property="og:title" content="Ghar Bhet: an ASHA speaks the visit, the record fills itself">
-<meta property="og:description" content="Speak a home visit in Hindi, Marathi or English. The record fills itself, and fixed MoHFW rules flag danger signs. 37 of 38 danger visits caught on unseen speech, first run.">
+<meta property="og:title" content="Ghar Bhet: a village health worker speaks the visit, the record fills itself">
+<meta property="og:description" content="Speak a home visit in Hindi, Marathi or English. The record fills itself, and fixed government rules flag danger signs. 37 of 38 danger visits caught on unseen transcripts, first run.">
 <meta property="og:image" content="/og.png"><meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -22,12 +22,12 @@
   <div class="hero wrap">
     <div class="hero-copy">
       <h1>An ASHA speaks the visit. The record fills itself.</h1>
-      <p class="lead">India's 10.29 lakh ASHA health workers write every home visit by hand, often twice. With Ghar Bhet she just says it, in Hindi, Marathi or English. The official visit record fills itself, and fixed government rules flag the danger signs that kill mothers and newborns, out loud, before she leaves the house.</p>
+      <p class="lead">India's 10.29 lakh ASHAs (accredited social health activists, the village health workers) write every home visit by hand, often twice. With Ghar Bhet ("home visit" in Hindi and Marathi) she just says it, in Hindi, Marathi or English. The official visit record fills itself, and fixed government rules flag the danger signs that need a same-day referral, out loud, before she leaves the house.</p>
       <div class="cta"><a class="btn" href="/visit">Speak a visit</a><a class="btn ghost" href="/visit?example=1">Try an example, no microphone</a></div>
       <ul class="facts" aria-label="Key facts">
-        <li><b id="f1">96.6%</b><span>of record fields read correctly from 60 unseen spoken visits (first run)</span></li>
-        <li><b id="f2">37 of 38</b><span>danger visits flagged on that first run; all 38 after fixing the one gap it found</span></li>
-        <li><b>0 keys</b><span>runs with <code>docker compose up</code>; no AI service, no account</span></li>
+        <li><b id="f1">96.6%</b><span>of record fields read correctly from 60 unseen visit transcripts (first run)</span></li>
+        <li><b id="f2">37 of 38</b><span>danger visits flagged on that first run (rule set 2026.1); none missed after the fixes</span></li>
+        <li><b>No API keys</b><span>runs with <code>docker compose up</code>; no paid AI service, no account</span></li>
       </ul>
     </div>
     <figure class="hero-demo" aria-label="A newborn visit being read">
@@ -49,10 +49,10 @@
       </div>
       <ul class="points">
         <li><b>10.29 lakh ASHAs</b> serve India's villages (PIB, January 2025). About 70,000 work in Maharashtra.</li>
-        <li><b>Around 1.5 crore newborns a year</b> get ASHA home visits under the newborn programme (SSBSK guidelines, 2026).</li>
-        <li><b>Records are kept twice.</b> ASHAs in Maharashtra describe entering the same visit on paper and again in apps, late into the night (reported by New Lines Magazine).</li>
-        <li><b>Typing is the barrier.</b> In a 2024 study, ASHAs found typing Hindi hard and used voice dictation and voice notes instead (ASHABot, arXiv 2409.10913).</li>
-        <li><b>Danger signs are easy to miss on paper.</b> A baby under 1800 g, breathing over 60 a minute, or a mother with BP over 140/90 needs a referral the same day.</li>
+        <li><b>Over 10 crore newborn visits a year</b> to record: 2.54 crore births (2022) and at least 4 home visits per baby under India's 2026 newborn guidelines (SSBSK), 9 for a baby at risk. Pregnancy visits come on top.</li>
+        <li><b>Records are kept twice.</b> ASHAs in Maharashtra describe entering the same visit on paper and again in apps, late into the night (New Lines Magazine). In Pune district, two-thirds felt tired and rushed (Kawade et al., 2021).</li>
+        <li><b>Danger signs get missed.</b> Watched on 45 home newborn visits, ASHAs checked for lethargy in only 33% and jaundice in 24%; they found it hard to ask, examine and write at the same time (Das et al., Indian Pediatrics, 2014).</li>
+        <li><b>Typing is a barrier.</b> In a 2024 pilot, ASHAs found typing Hindi hard and used voice dictation and voice notes instead (ASHABot, arXiv 2409.10913).</li>
       </ul>
     </div>
   </section>
@@ -60,10 +60,10 @@
   <section class="sec" id="voice">
     <div class="wrap">
       <h2 class="h2">Why voice makes it better</h2>
-      <p class="lead">The organisers asked: "Is the problem real and frequent, and does voice make it better?" For an ASHA, voice isn't a feature on top. It is how she already reports to the ANM.</p>
+      <p class="lead">The organisers asked: "Is the problem real and frequent, and does voice make it better?" For an ASHA, voice isn't a feature on top. It is how she already reports to the nurse (the ANM, auxiliary nurse-midwife).</p>
       <div class="three">
-        <div class="card"><h3>Her hands are busy</h3><p>She is holding a baby, a thermometer or a weighing sling. Speaking needs no hands and no screen.</p></div>
-        <div class="card"><h3>She speaks, she doesn't type</h3><p>She speaks Hindi or Marathi with numbers as words: "dedh sau", "saadhe aath", "ek kilo saat sau gram". Ghar Bhet reads all of these.</p></div>
+        <div class="card"><h3>Her hands stay on the baby</h3><p>She is holding a baby, a thermometer or a weighing sling. Speaking keeps her eyes and hands on the baby while the record fills.</p></div>
+        <div class="card"><h3>She speaks, she doesn't type</h3><p>She says numbers as words: "dedh sau" (150), "saadhe aath" (8.5), "ek kilo saat sau gram" (1700 g). Ghar Bhet reads all of these.</p></div>
         <div class="card"><h3>Danger is said out loud</h3><p>When a rule fires, the phone says it in her language: "Refer today." She hears it in the home, not later at her desk.</p></div>
       </div>
     </div>
@@ -74,11 +74,11 @@
       <h2 class="h2">How one visit works</h2>
       <p class="lead">One narrow flow, end to end, done by speaking: a home visit becomes a checked record and, if needed, a referral the nurse sees at once.</p>
       <ol class="flow">
-        <li><h3>She speaks the visit</h3><p>"Sunita ka baby, saat din ka, wajan ek kilo saat sau gram, doodh kam pee raha, pasli chal rahi hai."</p></li>
-        <li><h3>The record fills itself</h3><p>Day 7, 1700 g, feeding less, chest indrawing. Every value is marked in the words it came from.</p></li>
-        <li><h3>Fixed rules check it</h3><p>Weight under 1800 g and chest indrawing are danger signs under the 2026 newborn guidelines. REFER TODAY.</p></li>
-        <li><h3>It asks what's missing</h3><p>"What is the baby's temperature?" She answers by voice, or corrects herself: "nahi nahi, 37.8".</p></li>
-        <li><h3>The nurse sees it live</h3><p>One tap saves it. The ANM's board shows the open referral and a printable slip.</p></li>
+        <li><h3>She speaks the visit</h3><p>"Sunita ka baby, saat din ka, wajan ek kilo saat sau gram, doodh kam pee raha, pasli chal rahi hai." (Sunita's baby, 7 days old, 1.7 kg, feeding less, chest pulling in.)</p></li>
+        <li><h3>The record fills itself</h3><p>Baby 7 days old, 1700 g, feeding poorly, chest indrawing. Every value is marked in the words it came from.</p></li>
+        <li><h3>Fixed rules check it</h3><p>Weight under 1800 g (Health Ministry newborn manual, 2021) and chest indrawing (2026 newborn guidelines) are danger signs. REFER TODAY.</p></li>
+        <li><h3>It asks what's missing</h3><p>"What is the baby's temperature?" She answers by voice, says "nahi" to a yes/no question, or corrects herself: "nahi nahi, 37.8".</p></li>
+        <li><h3>The nurse sees it live</h3><p>She says "save karo". The nurse's board shows the open referral and a printable slip, and the nurse can ask the board out loud who was referred.</p></li>
       </ol>
     </div>
   </section>
@@ -87,31 +87,33 @@
     <div class="wrap grid2">
       <div>
         <h2 class="h2">Danger signs come from fixed, cited rules</h2>
-        <p class="lead">A model never decides who is in danger. Each flag comes from a rule in the government manuals and names the clause it comes from, so an ANM can check every decision.</p>
-        <a class="btn ghost" href="/how">See all 37 rules and their sources</a>
+        <p class="lead">A model never decides who is in danger. Each flag comes from a rule in the government guidelines and names the document it comes from, so the nurse can check every decision. Anything she says that no rule covers is still shown to the nurse.</p>
+        <a class="btn ghost" href="/how">See every rule, its threshold and its source</a>
       </div>
       <div class="rule-list">
-        <div><b>Newborn weight under 1800 g</b><span>Refer to the newborn unit today · CHO newborn manual, MoHFW 2021</span></div>
-        <div><b>Breathing over 60 a minute, or chest indrawing</b><span>Refer today · SSBSK guidelines 2026, table 3.3</span></div>
-        <div><b>Temperature 37.5 °C or more, or under 35.5 °C</b><span>Refer today · SSBSK guidelines 2026</span></div>
-        <div><b>BP 140/90 or more with albumin 2+</b><span>Possible pre-eclampsia, refer today · CHO pregnancy manual, MoHFW 2021</span></div>
-        <div><b>Hb under 7 g/dl</b><span>Severe anaemia, refer · CHO pregnancy manual, MoHFW 2021</span></div>
-        <div><b>5 or more pads a day after delivery</b><span>Heavy bleeding, refer now · SSBSK mother PNC form</span></div>
+        <div><b>Newborn weight under 1800 g</b><span>Refer today to the newborn unit · Health Ministry newborn manual (CHO), 2021</span></div>
+        <div><b>Breathing over 60 a minute, or chest indrawing</b><span>Refer today · SSBSK newborn guidelines 2026, table 3.3</span></div>
+        <div><b>Temperature 37.5 °C or more, or under 36 °C</b><span>Refer today · SSBSK newborn guidelines 2026, table 3.3</span></div>
+        <div><b>BP 140/90 or more with albumin 2+</b><span>Possible pre-eclampsia, refer today · Health Ministry pregnancy manual (CHO), 2021</span></div>
+        <div><b>Hb (haemoglobin) under 7 g/dl</b><span>Severe anaemia, refer today · Health Ministry pregnancy manual (CHO), 2021</span></div>
+        <div><b>5 or more pads a day after delivery</b><span>Heavy bleeding: go now, call 108 · SSBSK mother's visit form</span></div>
       </div>
     </div>
   </section>
 
   <section class="sec" id="measured">
     <div class="wrap">
-      <h2 class="h2">Measured on speech it had never seen, misses included</h2>
-      <p class="lead">We wrote the rules and the record format first. Then a separate writer, who never saw the code, wrote spoken visits and the right answers. We tuned on 200 of them and kept 60 sealed until the end.</p>
+      <h2 class="h2">Measured on 60 visit transcripts it had never seen, misses included</h2>
+      <p class="lead">We wrote the rules and the record format first. The test visits and their right answers were then written from that spec alone, by a separate AI writing pass that never saw the code, the way ASHAs speak (written, not recorded). We tuned on 200 of them and kept 60 sealed until the end.</p>
       <div class="measure" id="measure">
         <div><b>96.6%</b><span>of fields right, held-out first run (281 of 291)</span></div>
         <div><b>98.6%</b><span>of filled fields were correct (precision)</span></div>
         <div><b>37 of 38</b><span>danger visits flagged; 1 missed on the first run</span></div>
         <div><b>1 of 22</b><span>normal visits wrongly flagged on the first run</span></div>
       </div>
-      <p class="muted" style="max-width:70ch">The first run missed one danger visit, a Marathi way of saying "the baby moves only when touched", and raised one false alarm, from a self-correction ("five pads… no, four"). We fixed both and re-ran: 99.3% of fields and 38 of 38 danger visits. Those fixes were made after reading the held-out misses, so the first run is the honest number. <a href="/evidence">Every result and every miss</a>.</p>
+      <p class="muted" style="max-width:70ch">The first run missed one danger visit, a Marathi way of saying "the baby moves only when touched", and raised one false alarm, from a self-correction ("five pads… no, four"). We fixed both and re-ran: 99.3% of fields and 38 of 38 danger visits. Since then the rule table grew from 37 to 64 rules (after-birth BP, high-risk pregnancy, more newborn signs), and the same 60 give 99.3% of fields, 45 of 45 danger visits and 0 of 15 false alarms. All of that came after reading the held-out misses, so the first run is the honest number. <a href="/evidence">Every result and every miss</a>.</p>
+      <p class="muted" style="max-width:70ch"><b>Checked against the guidelines, not our own rules.</b> 30 short cases were labelled "should refer" or not straight from the guideline text, before the rules were run. The first run, with the old 37-rule table, caught only 11 of 24 that should refer. That gap is why the table now has 64 rules; it now catches 25 of 25, and 14 of 14 urgent cases get an urgent flag. Those cases are now tuned on, so the 11 of 24 is the honest number.</p>
+      <!--REALSPEECH-->
     </div>
   </section>
 
@@ -119,24 +121,25 @@
     <div class="wrap grid2">
       <div>
         <h2 class="h2">The nurse sees every referral as it happens</h2>
-        <p class="lead">The ANM's board shows open referrals from today's visits, who is due a home visit today on the 2026 schedule (days 3, 7, 14 and 42, or nine visits for a baby at risk), and the whole village register.</p>
+        <p class="lead">The nurse's board shows open referrals, who is due a home visit today on the 2026 schedule (days 3, 7, 14 and 42, or nine visits for a low-weight baby), and the whole village register. She can ask it out loud: "Aaj kaun kaun refer hua?" (Who was referred today?)</p>
         <a class="btn" href="/anm">Open the nurse's board</a>
       </div>
-      <div class="card"><p class="faint" style="margin:0 0 6px">Referral slip, printable</p><p style="font-family:var(--serif);font-size:22px;margin:0 0 8px">Sunita's baby · day 7</p><p style="margin:0">Weight 1700 g, under 1800 g. Chest indrawing. <b>Refer to the newborn unit today.</b></p><p class="faint" style="margin:8px 0 0">SSBSK guidelines 2026, table 3.3 · CHO newborn manual 2021</p></div>
+      <div class="card"><p class="faint" style="margin:0 0 6px">Referral slip, printable</p><p style="font-family:var(--serif);font-size:22px;margin:0 0 8px">Sunita's baby · day 7</p><p style="margin:0">Weight 1700 g, under 1800 g. Chest indrawing. <b>Refer to the newborn unit today.</b></p><p class="faint" style="margin:8px 0 0">SSBSK newborn guidelines 2026, table 3.3 · Health Ministry newborn manual 2021</p></div>
     </div>
   </section>
 
   <section class="sec" id="depends">
     <div class="wrap">
       <h2 class="h2">What it depends on, and what happens if that stops</h2>
-      <p class="lead">The reader and the rules are our own code: about 1,060 lines of plain JavaScript, with no dependencies. There is no AI service to pay for or lose.</p>
+      <p class="lead">The only outside service is the browser's free speech recognition (in Chrome, Google's online speech service). Reading the visit and the danger rules are our own plain JavaScript, with no AI service and no npm packages.</p>
       <div class="dep">
         <div class="dep-row dh"><span>Part</span><span>Uses today</span><span>If it gets costly or stops</span></div>
-        <div class="dep-row"><span>Hearing her voice</span><span>The browser's own speech recognition (Chrome and Edge, Hindi, Marathi, English)</span><span>Typing always works. Any speech engine that returns text can be swapped in.</span></div>
+        <div class="dep-row"><span>Hearing her voice</span><span>The browser's speech recognition: Google's online service in Chrome, Microsoft's in Edge (Hindi, Marathi, English). Needs a connection; we store no audio.</span><span>Typing always works. Any dictation tool that types text works too, such as Wispr Flow. India's own speech services (Bhashini) or open models (AI4Bharat IndicConformer) can be swapped in.</span></div>
         <div class="dep-row"><span>Reading the visit</span><span>Our rule-based reader, in this repository</span><span>Nothing to stop: no AI API, no key, no fee per visit</span></div>
-        <div class="dep-row"><span>Danger rules</span><span>A fixed table from MoHFW manuals and SSBSK 2026</span><span>Versioned in code; an update is a reviewed change, not a model retrain</span></div>
+        <div class="dep-row"><span>Danger rules</span><span>A fixed table from Health Ministry manuals and the SSBSK 2026 guidelines</span><span>Versioned in code; an update is a reviewed change, not a model retrain</span></div>
         <div class="dep-row"><span>Speaking alerts</span><span>The phone's own voices</span><span>The alert is always on screen in text too</span></div>
-        <div class="dep-row"><span>The register</span><span>One JSON file on a small server</span><span>Runs on any server or a PHC laptop with <code>docker compose up</code></span></div>
+        <div class="dep-row"><span>No signal</span><span>Typing works offline</span><span>A visit saved without signal waits on the phone and is sent when signal returns</span></div>
+        <div class="dep-row"><span>The register</span><span>A small server (Google Cloud Run's free tier, register in Cloud Storage)</span><span>Runs on any server or a PHC laptop with <code>docker compose up</code></span></div>
       </div>
     </div>
   </section>
@@ -145,10 +148,10 @@
     <div class="wrap grid2">
       <div><h2 class="h2">What it is not, yet</h2><p class="lead">Honest limits, so nobody has to guess.</p></div>
       <ul class="points">
-        <li><b>Not a medical device.</b> The rules support the ANM's and doctor's judgement; they never replace it.</li>
-        <li><b>Not yet tested with ASHAs.</b> The test sentences were written in the style ASHAs speak, not recorded from ASHAs. The next step is a pilot with ASHAs in one Pune block.</li>
-        <li><b>Speech-to-text depends on the browser.</b> Chrome and Edge listen in Hindi, Marathi and English; other browsers can type.</li>
-        <li><b>The village on the board is a sample.</b> The people are made up; visits you speak are added live.</li>
+        <li><b>Not a medical device.</b> The rules support the nurse's and doctor's judgement; they never replace it. A PHC medical officer reviews the rule table before any pilot.</li>
+        <li><b>Not yet tested with ASHAs in the field.</b> The main test sentences were written in the style ASHAs speak, not recorded from ASHAs. The next step is a pilot with ASHAs in one Pune block.</li>
+        <li><b>Speech-to-text depends on the browser.</b> Chrome and Edge listen in Hindi, Marathi and English and need a connection; other browsers can type.</li>
+        <li><b>The village on the board is a sample.</b> The people are made up; visits you speak are added live. The demo board is open so anyone can try it; a pilot adds a nurse login.</li>
       </ul>
     </div>
   </section>

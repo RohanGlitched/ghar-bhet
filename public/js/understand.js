@@ -22,9 +22,10 @@ export function normalise(s) {
 export function tokenize(raw) {
   const s = normalise(raw);
   const out = [];
-  const re = /[0-9]+(?:\.[0-9]+)?|[a-zA-Z]+|[ऀ-ॣ०-ॿ]+|\/|\+|°|[.,;!?।॥|]/g;
+  // "2,400 grams" is 2400: a comma before exactly three digits groups thousands
+  const re = /[0-9]{1,3}(?:,[0-9]{3})+(?![0-9])|[0-9]+(?:\.[0-9]+)?|[a-zA-Z]+|[ऀ-ॣ०-ॿ]+|\/|\+|°|[.,;!?।॥|]/g;
   let m;
-  while ((m = re.exec(s))) out.push({ t: m[0], lo: m[0].toLowerCase(), start: m.index, end: m.index + m[0].length });
+  while ((m = re.exec(s))) out.push({ t: m[0], lo: (/^[0-9]/.test(m[0]) ? m[0].replace(/,/g, "") : m[0]).toLowerCase(), start: m.index, end: m.index + m[0].length });
   return out;
 }
 const BREAK = new Set([".", ",", ";", "!", "?", "।", "॥", "|"]);
@@ -57,11 +58,15 @@ const ROMAN = {
   pachas: 50, pachaas: 50, pannas: 50, saath: 60, sath: 60, sattar: 70, assi: 80, aissi: 80, nabbe: 90, navvad: 90,
   ikkis: 21, ekvis: 21, bais: 22, baais: 22, bavis: 22, teis: 23, tevis: 23, chaubis: 24, chovis: 24, chhabbis: 26, savvis: 26, sattais: 27, sattavis: 27, atthais: 28, aththavis: 28, untis: 29,
   ikattis: 31, ektis: 31, chhattis: 36, adtis: 38, chalees: 40, battis: 32, tetis: 33, chautis: 34, pentis: 35, saintis: 37, adtis2: 38, untalis: 39, shambhar: 100, ekshe: 100, didshe: 150,
+  // Roman spellings speech engines write for 11-19 and the temperature tens (35-40)
+  baarah: 12, baara: 12, gyaarah: 11, teraah: 13, chaudha: 14, pandra: 15, pandhrah: 15, solaah: 16, satraah: 17, athaarah: 18, unees: 19, unnees: 19,
+  paintees: 35, pantis: 35, chhattees: 36, chattis: 36, chhatis: 36, saintees: 37, sentis: 37, sainthees: 37, adtees: 38, artees: 38, artis: 38, adhtis: 38, athtis: 38,
+  untaalis: 39, untalees: 39, unchalis: 39, unchaalis: 39, chaalees: 40, pachpan: 55, navve: 90, satyanve: 97, athanve: 98, ninyanve: 99, nirnyanve: 99,
 };
 const KS = (list) => new Set(list.map(K));
 const HUNDRED = KS(["सौ", "sau", "hundred", "शंभर", "shambhar", "शेकडा"]);
 const THOUSAND = KS(["हज़ार", "हजार", "hazar", "hajar", "hazaar", "thousand"]);
-const POINT = KS(["point", "पॉइंट", "पॉईंट", "पोइंट", "दशमलव", "पाइंट", "पॉंइट"]);
+const POINT = KS(["point", "pt", "पॉइंट", "पॉईंट", "पोइंट", "दशमलव", "पाइंट", "पॉंइट", "पूर्णांक", "purnank", "poornank"]);
 const HALFWORD = { "डेढ़": 1.5, "डेढ": 1.5, "dedh": 1.5, "dhedh": 1.5, "ढाई": 2.5, "dhai": 2.5, "दीड": 1.5, "did": 1.5, "deed": 1.5, "अडीच": 2.5, "adich": 2.5 };
 const MOD = { "सवा": 0.25, "sava": 0.25, "sawa": 0.25, "सव्वा": 0.25, "savva": 0.25, "साढ़े": 0.5, "साढे": 0.5, "sadhe": 0.5, "saadhe": 0.5, "साडे": 0.5, "sade": 0.5, "पौने": -0.25, "paune": -0.25, "पावणे": -0.25, "pavne": -0.25 };
 
@@ -146,15 +151,31 @@ export function readNumber(tok, i) {
   return { value, i0: start, i1: i };
 }
 
-/** Every number in the utterance, in order. */
-export function allNumbers(tok) {
+// "chaar se paanch pad", "4 ya 5", "4 to 5", "चार ते पाच", "4-5": one number with two ends
+const RANGE = KS(["se", "से", "ya", "या", "to", "or", "ते", "किंवा", "kinva"]);
+/**
+ * Every number in the utterance, in order. A range becomes one number whose
+ * value is the higher end, with { range: true, lo, hi } so a field can take the
+ * more dangerous end (higher pads or temperature, lower weight or Hb).
+ */
+export function allNumbers(tok, raw) {
   const out = [];
   for (let i = 0; i < tok.length;) {
     const n = readNumber(tok, i);
     if (n) { out.push(n); i = Math.max(n.i1, i + 1); } else i++;
   }
+  for (let k = 0; k < out.length - 1; k++) {
+    const a = out[k], b = out[k + 1];
+    const between = tok.slice(a.i1, b.i0);
+    const hyphen = between.length === 0 && raw != null && /^\s*[-–]\s*$/.test(raw.slice(tok[a.i1 - 1].end, tok[b.i0].start));
+    const word = between.length === 1 && RANGE.has(between[0].lo);
+    if ((hyphen || word) && a.value > 0 && b.value > a.value && b.value <= a.value * 2 + 1) {
+      out.splice(k, 2, { value: b.value, lo: a.value, hi: b.value, range: true, i0: a.i0, i1: b.i1 });
+    }
+  }
   return out;
 }
+const lowEnd = (n) => (n && n.range ? { ...n, value: n.lo } : n);
 
 /* ------------------------------------------------------------------ */
 /* Word lists. Each entry is a list of token sequences.                */
@@ -168,7 +189,7 @@ const CORRECTION = KS(["sorry", "गलत", "galat", "माफ", "chuk", "च�
 const SYMPTOMS = {
   anc: {
     bleeding: P(["खून गया", "खून गई", "खून नहीं गया", "khoon gaya", "रक्त गेले", "रक्त गेलं", "bleeding", "bleed", "खून जा", "खून आ", "खून गिर", "ब्लीडिंग", "रक्तस्राव", "रक्त जा", "रक्त येत", "khoon ja", "khoon aa", "khoon gir", "spotting", "स्पॉटिंग", "रक्तस्त्राव"]),
-    leaking_fluid: P(["पानी जा", "पानी निकल", "पानी आ रहा", "थैली फट", "पाणी जा", "पाणी येत", "पिशवी फुट", "paani ja", "pani ja", "paani nikal", "pani nikal", "water leaking", "leaking", "waters broke", "water broke", "bag burst", "thaili fat"]),
+    leaking_fluid: P(["पानी जा", "पानी निकल", "पानी आ रहा", "थैली फट", "पानी की थैली", "पाणी जा", "पाणी येत", "पाणी गेल", "पाण्याची पिशवी", "पिशवी फुट", "paani ja", "pani ja", "paani gel", "pani gel", "paani nikal", "pani nikal", "water leaking", "leaking", "waters broke", "water broke", "water bag", "bag burst", "thaili fat", "thaili phat", "thaili phut", "paani ki thaili", "pani ki thaili"]),
     convulsions: P(["झटके", "झटका", "दौरा", "दौरे", "मिर्गी", "आकडी", "फिट", "jhatke", "jhatka", "daura", "daure", "fits", "fit", "convulsion", "convulsions", "seizure", "aakdi"]),
     severe_headache: P(["सिरदर्द", "सिर दर्द", "सर दर्द", "सिर में दर्द", "सर में दर्द", "डोकेदुखी", "डोकं दुख", "डोके दुख", "sirdard", "sir dard", "sar dard", "sar mein dard", "headache", "head ache", "dokedukhi"]),
     blurred_vision: P(["धुंधला", "धुँधला", "धूसर", "धूसर दिस", "dhundhla", "dhundla", "blurred", "blurring", "blurry", "vision", "dikhai nahi", "धुरकट", "अंधुक"]),
@@ -179,29 +200,38 @@ const SYMPTOMS = {
     abdominal_pain: P(["पोटदुखी", "पेट में तेज़ दर्द", "पेट में तेज दर्द", "पेट में बहुत दर्द", "पेट दर्द", "पोटात दुख", "पोटदुखी", "पोटात खूप दुख", "pet mein dard", "pet me dard", "pet dard", "abdominal pain", "stomach pain", "tummy pain", "pain in abdomen", "pottat dukh"]),
     vomiting: P(["उल्टी", "उलटी", "ulti", "vomiting", "vomit", "omit", "उलट्या"]),
     dizziness: P(["चक्कर", "आँखों के आगे अंधेरा", "आंखों के आगे अंधेरा", "आँखों के सामने अंधेरा", "आंखों के सामने अंधेरा", "कमज़ोरी", "कमजोरी", "अशक्तपणा", "डोळ्यांसमोर अंधारी", "chakkar", "kamzori", "kamjori", "dizzy", "dizziness", "giddiness", "weakness"]),
-    burning_urine: P(["पेशाब में जलन", "पेशाब करते समय जलन", "लघवीला जळजळ", "लघवी करताना जळ", "peshab mein jalan", "burning urine", "burning urination", "burning while urinating"]),
+    burning_urine: P(["laghvila jaljal", "laghvi la jaljal", "laghvi kartana jal", "peshab me jalan", "peshab karte jalan", "jalan peshab", "पेशाब में जलन", "पेशाब करते समय जलन", "लघवीला जळजळ", "लघवी करताना जळ", "peshab mein jalan", "burning urine", "burning urination", "burning while urinating"]),
     foul_discharge: P(["वास येणारा", "वास येणारा स्राव", "vas yenara", "vaas yenara", "foul smell", "बदबू", "बदबूदार", "दुर्गंध", "वास येत", "badboo", "foul", "smelly discharge", "bad smell"]),
   },
   pnc: {},
   newborn: {
     convulsions: P(["झटके", "झटका", "दौरा", "दौरे", "आकडी", "फिट", "jhatke", "jhatka", "daura", "fits", "fit", "convulsion", "convulsions", "seizure", "aakdi"]),
-    chest_indrawing: P(["chhati aat", "chati aat", "chhati andar", "छाती आत", "पसली चल", "पसलियां चल", "पसली धंस", "छाती अंदर", "छाती आत", "छाती आत ओढ", "pasli chal", "pasliyan chal", "pasli dhans", "chest indrawing", "chest in-drawing", "chest going in", "chest goes in", "chest pulling in", "chhati andar"]),
+    chest_indrawing: P(["chest andar", "chest ander", "chhati aat", "chati aat", "chhati andar", "chhaati andar", "chhati dhans", "pasli andar", "छाती आत", "पसली चल", "पसलियां चल", "पसली धंस", "छाती अंदर", "छाती आत", "छाती आत ओढ", "pasli chal", "pasliyan chal", "pasli dhans", "chest indrawing", "chest in-drawing", "chest going in", "chest goes in", "chest pulling in", "chhati andar"]),
     lethargy: P(["सुस्त", "ढीला", "हिल नहीं रहा", "हिलता नहीं", "हलचल नहीं", "छूने पर ही", "शिथिल", "हालचाल करत नाही", "हलत नाही", "सुस्तावले", "sust", "dheela", "dhila", "lethargic", "limp", "floppy", "not moving", "moves only when", "only when touched", "hil nahi raha", "hilta nahi"]),
-    jaundice_palms_soles: P(["हथेली पीली", "हथेलियां पीली", "तलवे पीले", "तलवे भी पीले", "पैर के तलवे", "तळवे पिवळे", "तळहात पिवळे", "hatheli peeli", "hatheliyan peeli", "talve peele", "palms yellow", "yellow palms", "soles yellow", "yellow soles", "palms and soles", "talve pivle"]),
+    jaundice_palms_soles: P(["हात पाय पिवळे", "हातपाय पिवळे", "हात पिवळे", "पाय पिवळे", "तळपाय पिवळे", "हाताचे तळवे", "पायाचे तळवे", "हाथ पैर पीले", "हाथ-पैर पीले", "hath pay pivle", "haat paay pivle", "hat pay pivle", "haath pair peele", "hath pair peele", "talpay pivle", "हथेली पीली", "हथेलियां पीली", "तलवे पीले", "तलवे भी पीले", "पैर के तलवे", "तळवे पिवळे", "तळहात पिवळे", "hatheli peeli", "hatheliyan peeli", "talve peele", "palms yellow", "yellow palms", "soles yellow", "yellow soles", "palms and soles", "talve pivle"]),
     jaundice: P(["पीलिया", "पीला", "पीली", "पीले", "कावीळ", "पिवळ", "peeliya", "piliya", "peela", "peeli", "jaundice", "yellow", "kavil", "pivla"]),
     blood_stool: P(["शौचात रक्त", "शीमध्ये रक्त", "शी मध्ये रक्त", "संडासमध्ये रक्त", "पॉटी में खून", "potty mein khoon", "मल में खून", "टट्टी में खून", "पॉटी में खून", "शौच में खून", "संडास में रक्त", "शी मध्ये रक्त", "mal mein khoon", "tatti mein khoon", "potty mein khoon", "blood in stool", "blood in potty", "bloody stool"]),
-    cord_pus: P(["नाभि से मवाद", "नाभि में मवाद", "नाभि से पानी", "नाभि लाल", "नाल से", "नाल में", "नाळेतून पू", "नाळ लाल", "नाळेला पू", "नाळेतून", "nabhi se mawad", "nabhi mein mawad", "naal se", "naal mein", "cord pus", "pus from cord", "cord red", "cord bleeding", "umbilical"]),
+    cord_pus: P(["naabhi lal", "nabhi lal", "naabhi laal", "nabhi laal", "naabhi se pus", "nabhi se pus", "naabhi mein pus", "naabhi se mawad", "naal lal", "naal laal", "नाभि से पस", "नाभी लाल", "नाभी से मवाद", "नाभि से मवाद", "नाभि में मवाद", "नाभि से पानी", "नाभि लाल", "नाल से", "नाल में", "नाळेतून पू", "नाळ लाल", "नाळेला पू", "नाळेतून", "nabhi se mawad", "nabhi mein mawad", "naal se", "naal mein", "cord pus", "pus from cord", "cord red", "cord bleeding", "umbilical"]),
     skin_pustules: P(["फुंसी", "फुंसियां", "दाने", "पुटकुळ्या", "फोड", "funsi", "phunsi", "pustules", "boils", "pus spots", "skin spots"]),
-    eye_discharge: P(["aankh se paani", "ankh se pani", "aankh se pani", "आंख से पानी", "डोळ्यांतून पाणी", "डोळ्यातून", "आँख से कीचड़", "आंख से कीचड़", "आँख से पानी", "आंख से मवाद", "डोळ्यातून पाणी", "डोळ्यातून पू", "aankh se keechad", "eye discharge", "sticky eyes", "pus from eyes", "eyes swollen"]),
+    eye_discharge: P(["dolyatun pu", "dolyatun pani", "dolyat pu", "dolyatun ghaan", "aankh se pus", "aankh mein keechad", "aankh se paani", "ankh se pani", "aankh se pani", "आंख से पानी", "डोळ्यांतून पाणी", "डोळ्यातून", "आँख से कीचड़", "आंख से कीचड़", "आँख से पानी", "आंख से मवाद", "डोळ्यातून पाणी", "डोळ्यातून पू", "aankh se keechad", "eye discharge", "sticky eyes", "pus from eyes", "eyes swollen"]),
     cold_to_touch: P(["ang thand", "thand", "cold", "ठंड", "थंड", "बदन ठंडा", "शरीर ठंडा", "ठंडा है", "ठंडा लग", "अंग थंड", "थंड लाग", "badan thanda", "thanda", "cold to touch", "feels cold", "body cold"]),
     hot_to_touch: P(["गरम", "garam", "hot", "बदन गरम", "शरीर गरम", "बुखार", "अंग गरम", "ताप", "badan garam", "bukhar", "fever", "hot to touch", "feels hot", "taap", "garam"]),
     weak_cry: P(["cry weak", "cry is weak", "rona weak", "रडणे कमी", "कमी रडत", "रडत नाही", "रोना कमज़ोर", "रोना कमजोर", "कम रो", "धीरे रो", "रडणे कमी", "कमी रडत", "rona kamzor", "weak cry", "cry is weak", "cries weakly"]),
     vomiting: P(["उल्टी", "उलटी", "ulti", "vomiting", "vomit", "उलट्या"]),
     diarrhoea: P(["दस्त", "जुलाब", "पतली टट्टी", "जुलाब होत", "dast", "loose motion", "loose motions", "diarrhoea", "diarrhea"]),
+    // SSBSK Table 3.3 "difficulty in breathing" (fast breathing and chest indrawing have their own codes)
+    difficulty_breathing: P(["saans lene mein takleef", "saans lene me takleef", "saans lene mein dikkat", "saans lene me dikkat", "sans lene mein takleef", "sans lene me takleef", "saans lene mein pareshani", "saans mein takleef", "saans ki takleef", "साँस लेने में तकलीफ", "सांस लेने में तकलीफ", "साँस लेने में दिक्कत", "सांस लेने में दिक्कत", "साँस लेने में परेशानी", "साँस में तकलीफ", "सांस में तकलीफ", "साँस की तकलीफ", "श्वास घ्यायला त्रास", "श्वास घेताना त्रास", "श्वास घेण्यास त्रास", "श्वासाचा त्रास", "shwas ghyayla tras", "shvas ghyayla tras", "shwas ghetana tras", "difficulty breathing", "difficulty in breathing", "trouble breathing", "breathing difficulty", "breathing problem", "struggling to breathe", "hard to breathe"]),
   },
 };
 SYMPTOMS.pnc = {
-  heavy_bleeding: P(["बहुत खून", "ज़्यादा खून", "ज्यादा खून", "खूब खून", "खूप रक्तस्राव", "जास्त रक्तस्राव", "खूप रक्त", "bahut khoon", "zyada khoon", "jyada khoon", "heavy bleeding", "excessive bleeding", "lot of bleeding", "too much bleeding", "bleeding a lot"]),
+  // both word orders: "bahut khoon ja raha", "khoon zyada ja raha", "रक्त जास्त जातंय"
+  heavy_bleeding: P(["बहुत खून", "ज़्यादा खून", "ज्यादा खून", "खूब खून", "खूप रक्तस्राव", "जास्त रक्तस्राव", "खूप रक्त", "जास्त रक्त", "bahut khoon", "zyada khoon", "jyada khoon", "khoob khoon", "khub khoon",
+    "खून ज़्यादा", "खून ज्यादा", "खून बहुत", "खून खूब", "रक्त जास्त", "रक्त खूप", "रक्तस्राव जास्त", "रक्तस्त्राव जास्त", "रक्तस्राव खूप", "khoon zyada", "khoon jyada", "khoon bahut", "khoon khoob", "khoon khub", "rakt jaast", "rakt khup", "raktasrav jaast",
+    "heavy bleeding", "excessive bleeding", "lot of bleeding", "too much bleeding", "bleeding a lot", "bleeding heavily", "bleeding is heavy"]),
+  severe_headache: SYMPTOMS.anc.severe_headache,
+  jaundice: P(["पीलिया", "कावीळ", "आँखें पीली", "आंखें पीली", "आँख पीली", "डोळे पिवळे", "त्वचा पिवळी", "peeliya", "piliya", "pilia", "jaundice", "kavil", "kaavil", "aankhein peeli", "ankhen peeli", "aankh peeli", "dole pivle", "yellow eyes", "eyes yellow", "eyes are yellow", "skin yellow", "skin is yellow"]),
+  incontinence: P(["पेशाब अपने आप", "पेशाब अपने-आप", "पेशाब निकल जा", "मल अपने आप", "लघवी आपोआप", "शौच आपोआप", "peshab apne aap", "peshab apne-aap", "laghvi aapoaap", "laghvi apoaap", "laghvi aapoap", "urine leaks", "leaking urine", "urine leaking", "incontinence", "wets herself", "passes urine without", "cannot hold urine", "can't hold urine", "cannot hold her urine", "cannot control urine"]),
+  pallor: P(["फीका", "pheeka", "fika", "सफ़ेद पड़", "सफेद पड़", "फीकी", "पांढरी पड", "फिकट", "safed pad", "pheeki", "fiki", "pandhari pad", "fikat", "pale", "paleness", "pallor", "looks pale"]),
   fever: SYMPTOMS.anc.fever,
   foul_discharge: SYMPTOMS.anc.foul_discharge,
   convulsions: SYMPTOMS.anc.convulsions,
@@ -211,14 +241,14 @@ SYMPTOMS.pnc = {
   abdominal_pain: SYMPTOMS.anc.abdominal_pain,
   burning_urine: SYMPTOMS.anc.burning_urine,
   swelling_face_hands: SYMPTOMS.anc.swelling_face_hands,
-  breast_problem: P(["स्तन", "स्तनाला सूज", "स्तनाला", "स्तनात", "breast problem", "breast", "स्तन में दर्द", "स्तन में गांठ", "दूध नहीं उतर", "छाती में दर्द", "स्तनात दुख", "स्तनात गाठ", "stan mein dard", "breast pain", "breast lump", "breast swelling", "cracked nipple", "nipple cracked", "engorged"]),
+  breast_problem: P(["स्तन", "स्तनाला सूज", "स्तनाला", "स्तनात", "breast problem", "breast", "स्तन में दर्द", "स्तन में सूजन", "स्तनात सूज", "स्तन में गांठ", "दूध नहीं उतर", "छाती में दर्द", "स्तनात दुख", "स्तनात गाठ", "stan mein dard", "stan dard", "stan sujan", "stan soojan", "stan mein sujan", "stan me sujan", "stan mein gaanth", "breast pain", "breast lump", "breast swelling", "cracked nipple", "nipple cracked", "engorged"]),
   dizziness: SYMPTOMS.anc.dizziness,
 };
 
 // Phrases whose meaning is fixed: [code, phrases, value]
 const ABSENT = {
   newborn: [
-    ["cord_pus", P(["नाभि सूखी", "नाभि साफ़", "नाभि साफ", "नाळ सुकली", "नाळ कोरडी", "नाळ स्वच्छ", "naal sookh", "naal sukh", "naal sukl", "naal sukal", "naal sukali", "naal suklee", "nabhi sookhi", "cord clean", "cord is clean", "cord dry", "cord is dry", "कोई मवाद नहीं", "मवाद नहीं", "पू नाही", "pus nahi", "no pus"]), false],
+    ["cord_pus", P(["naabhi sookhi", "naabhi sukhi", "naabhi saaf", "nabhi saaf", "नाभि सूखी", "नाभि साफ़", "नाभि साफ", "नाळ सुकली", "नाळ कोरडी", "नाळ स्वच्छ", "naal sookh", "naal sukh", "naal sukl", "naal sukal", "naal sukali", "naal suklee", "nabhi sookhi", "cord clean", "cord is clean", "cord dry", "cord is dry", "कोई मवाद नहीं", "मवाद नहीं", "पू नाही", "pus nahi", "no pus"]), false],
     ["weak_cry", P(["रोती ज़ोर", "रोती जोर", "रोता ज़ोर", "रोता जोर", "रोते ज़ोर", "ज़ोर से रोती", "ज़ोर से रोता", "जोरात रडतं", "जोरात रडते", "ज़ोर से रो", "जोर से रो", "रोता भी ज़ोर", "रोता भी जोर", "रोती भी ज़ोर", "जोरात रडत", "जोरात रडतं", "zor se ro", "jor se ro", "cries loudly", "crying loudly", "strong cry", "cries well", "crying well", "good cry"]), false],
     ["lethargy", P(["हातपाय हलवत", "हात पाय हलवत", "हाथ पैर चला", "हाथ-पैर चला", "haath pair chala", "active", "moving well", "moves well", "खूप हालचाल", "हालचाल चांगली"]), false],
     ["eye_discharge", P(["डोळे स्वच्छ", "आँखें साफ़", "आँखें साफ", "आंखें साफ", "eyes clean", "eyes are clean"]), false],
@@ -228,12 +258,15 @@ const ABSENT = {
     ["heavy_bleeding", P(["खून नॉर्मल", "नॉर्मल खून", "bleeding normal", "bleeding is normal", "bleeding kam", "bleeding is less", "रक्तस्राव कमी", "रक्तस्राव नॉर्मल", "थोडा रक्तस्राव", "रक्तस्त्राव कमी", "khoon normal", "bleeding theek"]), false],
     ["breast_problem", P(["स्तन ठीक", "स्तन नॉर्मल", "breasts are fine", "breasts fine", "breast is fine", "breasts normal", "breast fine", "स्तनात काही त्रास नाही", "स्तन में कोई दिक्कत नहीं"]), false],
     ["abnormal_speech", P(["बोलणं नीट नाही", "बोलणे नीट नाही", "ठीक से बोल नहीं", "ठीक से नहीं बोल", "theek se bol nahi", "not talking properly", "not speaking properly"]), true],
+    // the negation word is part of the sign: "she cannot hold her urine"
+    ["incontinence", P(["पेशाब रुकता नहीं", "पेशाब रुक नहीं", "पेशाब पर कंट्रोल नहीं", "लघवी थांबत नाही", "लघवी आवरत नाही", "लघवीवर ताबा नाही", "peshab rukta nahi", "peshab ruk nahi", "laghvi thambat nahi", "laghvi aavrat nahi", "can not hold urine", "cannot hold her urine", "no control over urine"]), true],
   ],
 };
 
 const ANCHOR = {
   bp: P(["bp", "बीपी", "बी पी", "blood pressure", "ब्लड प्रेशर", "ब्लडप्रेशर", "रक्तदाब", "pressure", "प्रेशर"]),
-  hb: P(["खून", "khoon", "hb", "एचबी", "hemoglobin", "haemoglobin", "हीमोग्लोबिन", "हिमोग्लोबिन", "हिमोग्लोबीन", "हीमोग्लोबीन", "hemoglobin", "हिमोग्लोबीन", "खून की मात्रा"]),
+  // bare "khoon" (blood) is not Hb: "khoon aa raha" is bleeding
+  hb: P(["hb", "एचबी", "hemoglobin", "haemoglobin", "हीमोग्लोबिन", "हिमोग्लोबिन", "हिमोग्लोबीन", "हीमोग्लोबीन", "खून की मात्रा", "खून की कमी", "खून की जांच", "खून की जाँच", "रक्ताचे प्रमाण", "रक्त तपासणी", "khoon ki matra", "khoon ki kami", "khoon ki jaanch", "khoon ki janch", "blood level", "blood test"]),
   weight: P(["wajan", "wazan", "vajan", "vazan", "वजन", "वज़न", "weight", "weighs", "वजन"]),
   temp: P(["tapman", "taapmaan", "tapmaan", "temprature", "टेम्परेचर", "टेंपरेचर", "टेम्प्रेचर", "तपमान", "temp", "temperature", "तापमान", "तापमान", "बुखार", "bukhar", "ताप", "taap", "degree", "डिग्री", "fever", "थर्मामीटर", "thermometer"]),
   resp: P(["shwas", "shvas", "swas", "श्वासोच्छवास", "saans", "sans", "सांस", "साँस", "श्वास", "श्वासोच्छ्वास", "breath", "breaths", "breathing", "respiratory", "rr", "breathing rate"]),
@@ -245,7 +278,7 @@ const UNIT_KG = KS(["kilo", "kg", "kgs", "किलो", "kilogram", "किल�
 const UNIT_G = KS(["gram", "grams", "g", "gm", "gms", "ग्राम", "ग्रॅम", "gram."]);
 const UNIT_F = KS(["f", "fahrenheit", "फ़ारेनहाइट", "फारेनहाइट", "फॅरेनहाइट"]);
 const UNIT_C = KS(["c", "celsius", "सेल्सियस", "सेल्सिअस", "centigrade"]);
-const SEP_BP = KS(["by", "/", "बटा", "बाय", "over", "पर", "on", "ऑन", "बटे", "upon"]);
+const SEP_BP = KS(["by", "/", "बटा", "बाय", "over", "पर", "on", "ऑन", "बटे", "upon", "bata", "batta", "baata", "bataa", "bate", "slash", "बट्टा", "ओवर", "स्लॅश", "स्लैश"]);
 const WEEKS = KS(["hafte", "hafta", "hafton", "हफ्ते", "हफ़्ते", "हफ्ता", "हफ़्ता", "सप्ताह", "आठवडे", "आठवड्यांची", "आठवड्यांचा", "आठवडे.", "weeks", "week", "wks", "आठवड्याची", "आठवड्यांची"]);
 const MONTH = KS(["mahina", "mahine", "mahinay", "महीना", "महीने", "महिना", "महिने", "month", "months", "महिन्याची", "महिन्यांची", "महिन्याचा", "मास"]);
 const DAY = KS(["din", "दिन", "दिवस", "दिवसांचे", "दिवसाचे", "दिवसांचा", "दिवसांची", "दिवशी", "day", "days", "दिनों", "दिवसांनी"]);
@@ -255,12 +288,12 @@ const MINUTE = KS(["minute", "min", "मिनट", "मिनिट", "मि�
 
 // Ordinals: "teesra din", "सातवें दिन", "सातवा महिना"
 const ORD = {
-  "pehla": 1, "pahla": 1, "पहला": 1, "पहले": 1, "पहिला": 1, "पहिल्या": 1, "first": 1, "dusra": 2, "doosra": 2, "दूसरा": 2, "दूसरे": 2, "दुसरा": 2, "दुसऱ्या": 2, "second": 2,
+  "pehla": 1, "pahla": 1, "pehle": 1, "pahle": 1, "pehli": 1, "पहला": 1, "पहले": 1, "पहिला": 1, "पहिल्या": 1, "first": 1, "dusra": 2, "doosra": 2, "दूसरा": 2, "दूसरे": 2, "दुसरा": 2, "दुसऱ्या": 2, "second": 2,
   "teesra": 3, "tisra": 3, "तीसरा": 3, "तीसरे": 3, "तिसरा": 3, "तिसऱ्या": 3, "third": 3, "chautha": 4, "चौथा": 4, "चौथे": 4, "चौथ्या": 4, "fourth": 4,
   "paanchva": 5, "पांचवां": 5, "पाँचवाँ": 5, "पाँचवें": 5, "पांचवें": 5, "पाचवा": 5, "पाचव्या": 5, "fifth": 5, "chhatha": 6, "छठा": 6, "छठे": 6, "सहावा": 6, "सहाव्या": 6, "sixth": 6,
   "saatva": 7, "satva": 7, "सातवां": 7, "सातवाँ": 7, "सातवें": 7, "सातवा": 7, "सातव्या": 7, "seventh": 7, "aathva": 8, "आठवां": 8, "आठवाँ": 8, "आठवें": 8, "आठवा": 8, "आठव्या": 8, "eighth": 8,
   "pahila": 1, "pahilya": 1, "dusrya": 2, "tisrya": 3, "chauthya": 4, "chautha": 4, "pachva": 5, "pachvya": 5, "sahava": 6, "sahavya": 6, "satvya": 7, "athva": 8, "athvya": 8, "nava": 9, "navvya": 9, "navva": 9, "dahava": 10, "dahavya": 10, "dasva": 10, "chhatha": 6,
-  "nauva": 9, "नौवां": 9, "नौवाँ": 9, "नौवें": 9, "नववा": 9, "नवव्या": 9, "ninth": 9, "दसवां": 10, "दहावा": 10, "tenth": 10,
+  "nauva": 9, "naveva": 9, "navava": 9, "nauvan": 9, "nauvaan": 9, "नववां": 9, "नौवां": 9, "नौवाँ": 9, "नौवें": 9, "नववा": 9, "नवव्या": 9, "ninth": 9, "दसवां": 10, "दहावा": 10, "tenth": 10,
 };
 
 const ORD_SUFFIX = ["\u0935\u093e\u0902", "\u0935\u0947\u0902", "\u0935\u0940\u0902", "\u0935\u093e", "\u0935\u0947", "\u0935\u0940", "\u0935\u094d\u092f\u093e", "va", "vaan", "van", "vein", "ve", "vi", "th", "st", "nd", "rd"];
@@ -279,7 +312,7 @@ function ordinalOf(lo) {
 
 // Match a phrase at token i. A negation ("खून नहीं जा रहा") and up to two filler
 // words ("सिर में बहुत तेज़ दर्द", "rona bhi kamzor") may sit inside it.
-const FILLER = KS(["hi", "ही", "toh", "तो", "bas", "बस", "aaj", "आज", "bhi", "भी", "pan", "पण", "bahut", "बहुत", "खूप", "khup", "thoda", "थोड़ा", "थोडा", "हल्की", "हल्का", "halki", "halka", "zyada", "ज़्यादा", "ज्यादा", "very", "really", "too", "so", "तेज़", "तेज", "tez", "jor", "जोरात", "is", "are", "a", "the", "से", "se", "में", "me", "mein", "पे", "pe", "पर", "ki", "की", "का", "ka", "थोड़ी", "kaafi", "काफी", "जरा", "zara"]);
+const FILLER = KS(["hi", "ही", "toh", "तो", "bas", "बस", "aaj", "आज", "bhi", "भी", "pan", "पण", "bahut", "बहुत", "खूप", "khup", "thoda", "थोड़ा", "थोडा", "हल्की", "हल्का", "halki", "halka", "zyada", "ज़्यादा", "ज्यादा", "very", "really", "too", "so", "तेज़", "तेज", "tez", "jor", "जोरात", "is", "are", "a", "the", "से", "se", "में", "me", "mein", "पे", "pe", "पर", "ki", "की", "का", "ka", "थोड़ी", "kaafi", "काफी", "जरा", "zara", "koi", "कोई", "kuch", "कुछ", "any", "kahi", "काही"]);
 const eq = (a, b, single) => (single && b.length <= 3 ? a === b : a.startsWith(b));
 function matchAt(tok, i, seq) {
   let j = i, neg = false, skipped = 0;
@@ -319,8 +352,16 @@ function negated(tok, hit) {
     const tail = tok.slice(a2, b2 + 1).map((x) => x.lo);
     if (tail.length <= 5 && tail.some((w) => NEG.has(w))) return true;
   }
+  // "jhatke aate hain kya? nahi": a question answered with a bare no
+  const asked = tok[b + 1]?.t === "?" || (QWORD.has(tok[b]?.lo) && BREAK.has(tok[b + 1]?.t ?? ""));
+  if (asked) {
+    let k = b + 2;
+    while (tok[k] && FILLER.has(tok[k].lo)) k++;
+    if (tok[k] && NEG.has(tok[k].lo) && (!tok[k + 1] || BREAK.has(tok[k + 1].t) || NEG.has(tok[k + 1].lo) || ["hai", "है", "आहे", "aaye", "aate", "aaya"].includes(tok[k + 1].lo))) return true;
+  }
   return false;
 }
+const QWORD = KS(["kya", "क्या", "ka", "का", "kay", "काय", "na", "ना"]);
 const span = (tok, i0, i1) => ({ start: tok[i0].start, end: tok[i1 - 1].end });
 
 /** The nearest number after an anchor (within `ahead` tokens), else just before it. */
@@ -360,11 +401,12 @@ export function detectType(text, hint) {
 
 const V = { "अ": "a", "आ": "a", "इ": "i", "ई": "i", "उ": "u", "ऊ": "u", "ए": "e", "ऐ": "ai", "ओ": "o", "औ": "au", "ऋ": "ri", "ऑ": "o", "ऍ": "e" };
 const M = { "ा": "a", "ि": "i", "ी": "i", "ु": "u", "ू": "u", "े": "e", "ै": "ai", "ो": "o", "ौ": "au", "ृ": "ri", "ॉ": "o", "ॅ": "e" };
-const C = { "क": "k", "ख": "kh", "ग": "g", "घ": "gh", "ङ": "n", "च": "ch", "छ": "chh", "ज": "j", "झ": "jh", "ञ": "n", "ट": "t", "ठ": "th", "ड": "d", "ढ": "dh", "ण": "n", "त": "t", "थ": "th", "द": "d", "ध": "dh", "न": "n", "प": "p", "फ": "ph", "ब": "b", "भ": "bh", "म": "m", "य": "y", "र": "r", "ल": "l", "ळ": "l", "व": "v", "श": "sh", "ष": "sh", "स": "s", "ह": "h" };
+const C = { "क": "k", "ख": "kh", "ग": "g", "घ": "gh", "ङ": "n", "च": "ch", "छ": "chh", "ज": "j", "झ": "jh", "ञ": "n", "ट": "t", "ठ": "th", "ड": "d", "ढ": "dh", "ण": "n", "त": "t", "थ": "th", "द": "d", "ध": "dh", "न": "n", "प": "p", "फ": "ph", "ब": "b", "भ": "bh", "म": "m", "य": "y", "र": "r", "ल": "l", "ळ": "l", "ऱ": "r", "ऴ": "l", "व": "v", "श": "sh", "ष": "sh", "स": "s", "ह": "h" };
 const NUKTA = { "क": "q", "ख": "kh", "ग": "g", "ज": "z", "ड": "r", "ढ": "rh", "फ": "f" };
 /** Devanagari to plain Roman letters, so any reader can follow (sunita, pasli chal rahi hai). */
 export function romanize(s) {
-  const chars = [...String(s || "")];
+  // precomposed nukta letters, Devanagari digits and joiners first (normalise keeps offsets aside)
+  const chars = [...normalise(s)];
   const out = [];
   let word = []; // syllables of the current word: { c, v, inh }
   const flush = () => {
@@ -394,7 +436,8 @@ export function romanize(s) {
     if (V[ch]) { word.push({ c: "", v: V[ch], inh: false }); continue; }
     if (ch === "ं" || ch === "ँ") { if (word.length) { const w = word[word.length - 1]; w.n = (w.n || "") + "n"; w.inh = false; } continue; }
     if (ch === "ः") { if (word.length) word[word.length - 1].n = "h"; continue; }
-    if (ch === "़" || ch === "्") continue;
+    if (ch === "़" || ch === "्" || ch === "ऽ" || ch === "॑" || ch === "॒") continue;
+    if (ch === "ॐ") { if (word.length) flush(); out.push("om"); continue; }
     if (word.length) flush();
     out.push(ch === "।" ? "." : ch);
   }
@@ -402,10 +445,10 @@ export function romanize(s) {
   return out.join("");
 }
 
-const NOT_NAMES = KS(["doodh", "dudh", "wajan", "vajan", "wazan", "pasli", "saans", "sans", "shwas", "bukhar", "taap", "tapman", "temperature", "naal", "nabhi", "aaj", "kal", "abhi", "bacha", "baccha", "bachha", "bilkul", "thoda", "bahut", "khoon", "sar", "sir", "pet", "pair", "chehra", "albumin", "hemoglobin", "breathing", "weight", "cord", "eyes", "aankh", "umm", "um", "uh", "hmm", "haan", "han", "achha", "accha", "okay", "ok", "arre", "अं", "हम्म", "है", "हैं", "था", "थी", "थे", "हुए", "हुई", "हुआ", "आहे", "होते", "झाले", "आली", "आला", "hai", "hain", "tha", "thi", "hue", "hua", "ahe", "aahe", "ला", "ने", "को", "से", "में", "पर", "plus", "प्लस", "plas", "बाद", "baad", "uska", "uski", "unka", "उसका", "उसकी", "इनका", "तिला", "त्याला", "heavy", "water", "seventh", "sixth", "eighth", "ninth", "fifth", "hemoglobin", "baaki", "बाकी", "sab", "सब", "सब नॉर्मल", "normal", "नॉर्मल", "बच्चा", "बच्चे", "बच्ची", "बच्चों", "बेटा", "बेटी", "बेटे", "बाळ", "बाळा", "बाळाचं", "बाळाचे", "बाळाची", "बाळाचा", "बाळाला", "बेबी", "मुलगा", "मुलगी", "आँखों", "आंखों", "पानी", "वजन", "वज़न", "तापमान", "टेम्परेचर", "माँ", "मां", "आई", "सास", "पति", "नवरा", "नाभि", "नाळ", "नाल", "बदन", "शरीर", "दूध", "पेट", "सिर", "पैर", "पैरों", "हाथ", "चेहरे", "हीमोग्लोबिन", "बीपी", "साँस", "सांस", "श्वास", "पॉटी", "मल", "शौच", "उल्टी", "दीदी", "ताई", "हो", "हाँ", "हां", "अरे", "अच्छा", "डिलीवरी", "प्रसूती", "भाभी", "बहू", "सून", "बहन", "दवाई", "गोली", "मैडम", "baby", "bachcha", "bachche", "bacche", "beta", "beti", "bal", "bala", "balacha", "balachi", "mother", "mummy", "maa", "aai", "bebi", "ho", "arre", "are", "okay", "so", "delivery", "pregnancy", "pregnant", "temperature", "weight", "fever", "bleeding", "yesterday", "tomorrow", "morning", "evening", "breathing", "feeding", "child", "kid", "girl", "boy", "beta", "beti", "bhabhi", "aunty", "anc", "pnc", "visit", "checkup", "check", "please", "note", "write", "record", "first", "second", "third", "day", "week", "month", "blood", "urine", "albumin", "iron", "hemoglobin", "haemoglobin", "swelling", "headache", "pain", "jaundice", "cord", "skin", "eyes", "she's", "it's", "there", "they", "we", "i", "my", "our", "your", "his", "doctor", "anm", "asha", "nurse", "village", "baby", "bachcha", "bachha", "aaj", "today", "didi", "ji", "haan", "han", "ha", "accha", "achha", "matlab", "the", "she", "her", "mother", "mummy", "maa", "bp", "hb", "and", "aur", "visit", "pregnant", "patient", "woman", "lady", "bai", "tai", "ka", "ki", "ke", "ko", "is", "has", "ok", "okay", "sir", "madam", "hello", "namaste", "now", "baby's", "new", "this", "here", "so", "yes", "no", "दीदी", "आज", "हाँ", "हां", "अच्छा", "मतलब", "जी", "ताई", "बाई", "ये", "यह", "इनका", "इसका", "हे", "ही", "आता", "मग", "तर", "बाळ", "बच्चा", "बच्चे", "माँ", "मां", "आई", "नमस्ते", "नमस्कार", "मैडम", "ठीक", "तो", "ओके", "हा", "नंतर", "पेशंट", "गर्भवती", "गरोदर", "महिला"]);
+const NOT_NAMES = KS(["in", "law", "of", "on", "at", "to", "for", "with", "आहेत", "आहे", "आहेस", "नाहीत", "होऊन", "झाले", "झाली", "झाला", "होते", "होती", "होता", "आता", "आणि", "पण", "तर", "मग", "काय", "ahet", "aahet", "aahe", "ahe", "hoon", "houn", "zale", "jhale", "hote", "hoti", "hota", "ata", "aata", "ani", "aani", "kay", "takleef", "taklif", "dikkat", "pareshani", "tras", "judwa", "jule", "twins", "operation", "umar", "umra", "age", "saal", "varsh", "ghante", "taas", "kal", "kaal", "pichli", "pehle", "janam", "baar", "lekin", "magar", "saas", "sasur", "pati", "devar", "jethani", "nanad", "padosan", "sasu", "navra", "सासू", "सासरे", "देवर", "ननद", "जेठानी", "पड़ोसन", "घंटे", "तास", "उम्र", "वय", "साल", "वर्ष", "जुड़वा", "जुळी", "ऑपरेशन", "पिछली", "मागच्या", "जन्म", "तकलीफ", "त्रास", "दिक्कत", "paani", "pani", "thaili", "chest", "stan", "stanpan", "naabhi", "laghvi", "peshab", "taapmaan", "tapmaan", "thanda", "garam", "doodh", "dudh", "wajan", "vajan", "wazan", "pasli", "saans", "sans", "shwas", "bukhar", "taap", "tapman", "temperature", "naal", "nabhi", "aaj", "kal", "abhi", "bacha", "baccha", "bachha", "bilkul", "thoda", "bahut", "khoon", "sar", "sir", "pet", "pair", "chehra", "albumin", "hemoglobin", "breathing", "weight", "cord", "eyes", "aankh", "umm", "um", "uh", "hmm", "haan", "han", "achha", "accha", "okay", "ok", "arre", "अं", "हम्म", "है", "हैं", "था", "थी", "थे", "हुए", "हुई", "हुआ", "आहे", "होते", "झाले", "आली", "आला", "hai", "hain", "tha", "thi", "hue", "hua", "ahe", "aahe", "ला", "ने", "को", "से", "में", "पर", "plus", "प्लस", "plas", "बाद", "baad", "uska", "uski", "unka", "उसका", "उसकी", "इनका", "तिला", "त्याला", "heavy", "water", "seventh", "sixth", "eighth", "ninth", "fifth", "hemoglobin", "baaki", "बाकी", "sab", "सब", "सब नॉर्मल", "normal", "नॉर्मल", "बच्चा", "बच्चे", "बच्ची", "बच्चों", "बेटा", "बेटी", "बेटे", "बाळ", "बाळा", "बाळाचं", "बाळाचे", "बाळाची", "बाळाचा", "बाळाला", "बेबी", "मुलगा", "मुलगी", "आँखों", "आंखों", "पानी", "वजन", "वज़न", "तापमान", "टेम्परेचर", "माँ", "मां", "आई", "सास", "पति", "नवरा", "नाभि", "नाळ", "नाल", "बदन", "शरीर", "दूध", "पेट", "सिर", "पैर", "पैरों", "हाथ", "चेहरे", "हीमोग्लोबिन", "बीपी", "साँस", "सांस", "श्वास", "पॉटी", "मल", "शौच", "उल्टी", "दीदी", "ताई", "हो", "हाँ", "हां", "अरे", "अच्छा", "डिलीवरी", "प्रसूती", "भाभी", "बहू", "सून", "बहन", "दवाई", "गोली", "मैडम", "baby", "bachcha", "bachche", "bacche", "beta", "beti", "bal", "bala", "balacha", "balachi", "mother", "mummy", "maa", "aai", "bebi", "ho", "arre", "are", "okay", "so", "delivery", "pregnancy", "pregnant", "temperature", "weight", "fever", "bleeding", "yesterday", "tomorrow", "morning", "evening", "breathing", "feeding", "child", "kid", "girl", "boy", "beta", "beti", "bhabhi", "aunty", "anc", "pnc", "visit", "checkup", "check", "please", "note", "write", "record", "first", "second", "third", "day", "week", "month", "blood", "urine", "albumin", "iron", "hemoglobin", "haemoglobin", "swelling", "headache", "pain", "jaundice", "cord", "skin", "eyes", "she's", "it's", "there", "they", "we", "i", "my", "our", "your", "his", "doctor", "anm", "asha", "nurse", "village", "baby", "bachcha", "bachha", "aaj", "today", "didi", "ji", "haan", "han", "ha", "accha", "achha", "matlab", "the", "she", "her", "mother", "mummy", "maa", "bp", "hb", "and", "aur", "visit", "pregnant", "patient", "woman", "lady", "bai", "tai", "ka", "ki", "ke", "ko", "is", "has", "ok", "okay", "sir", "madam", "hello", "namaste", "now", "baby's", "new", "this", "here", "so", "yes", "no", "दीदी", "आज", "हाँ", "हां", "अच्छा", "मतलब", "जी", "ताई", "बाई", "ये", "यह", "इनका", "इसका", "हे", "ही", "आता", "मग", "तर", "बाळ", "बच्चा", "बच्चे", "माँ", "मां", "आई", "नमस्ते", "नमस्कार", "मैडम", "ठीक", "तो", "ओके", "हा", "नंतर", "पेशंट", "गर्भवती", "गरोदर", "महिला"]);
 const POSS = KS(["wala", "wali", "vala", "vali", "वाला", "वाली", "वाले", "ka", "ki", "ke", "ko", "chi", "che", "cha", "chya", "chi", "का", "की", "के", "को", "ची", "चे", "चा", "च्या", "चं", "s", "ji", "जी", "tai", "ताई", "bai", "बाई", "बेन", "devi", "देवी", "ला", "ला.", "ना", "ने", "ne"]);
 const BABY_WORDS = KS(["लड़का", "लड़की", "लडका", "लडकी", "ladka", "ladki", "larka", "larki", "baccha", "baby", "bachcha", "bachha", "bacha", "bachche", "bacche", "बच्चा", "बच्चे", "बच्ची", "बेटा", "बेटी", "बेटे", "बाळ", "बाळाचं", "बेबी", "beta", "beti", "bal", "balacha", "मुलगा", "मुलगी", "son", "daughter", "newborn"]);
-const NAME_CUE = KS(["naam", "नाम", "नाव", "name", "named", "called", "mrs", "smt", "श्रीमती", "mother"]);
+const NAME_CUE = KS(["naam", "nam", "नाम", "नाव", "naav", "naw", "name", "named", "called", "mrs", "smt", "श्रीमती", "mother"]);
 function nameCase(w) { const r = /[ऀ-ॿ]/.test(w) ? romanize(w) : w; return r ? r[0].toUpperCase() + r.slice(1).toLowerCase() : null; }
 
 function isLexicon(lo) {
@@ -438,11 +481,21 @@ function findName(tok) {
       if (proper) cands.push({ i, score: babyNext ? 6 : 3 });
     }
     // Roman Marathi "Rekhache baal", "Sarikachya"
+    // "Meena nahi, Reena hai", "नाम मीना नहीं रीना है": the corrected name is a strong signal
+    {
+      let j = i + 1;
+      if (NEG.has(tok[j]?.lo) && !["no", "not"].includes(tok[j].lo)) {
+        j++;
+        while (tok[j] && ([",", "।", "."].includes(tok[j].t) || NEG.has(tok[j].lo) || ["naam", "नाम", "नाव", "name"].includes(tok[j].lo))) j++;
+        const named = NAME_CUE.has(tok[i - 1]?.lo) || NAME_CUE.has(tok[i - 2]?.lo);
+        if (tok[j] && okName(w) && okName(tok[j].t) && /^[A-Zऀ-ॿ]/.test(tok[j].t) && (named || (/^[A-Z][a-z]/.test(w) && /^[A-Z][a-z]/.test(tok[j].t))) && readNumber(tok, j) == null) cands.push({ i: j, score: named ? 6.5 : 5 });
+      }
+    }
     const rmp = w.match(/^([A-Z][a-z]{2,}?)(che|chi|cha|chya|chan|chaa)$/);
-    if (rmp && okName(rmp[1])) cands.push({ i, score: BABY_WORDS.has(tok[i + 1]?.lo) || /^(baal|bal|baby)/.test(tok[i + 1]?.lo || "") ? 6 : 3, stem: rmp[1] });
+    if (rmp && okName(rmp[1]) && okName(w)) cands.push({ i, score: BABY_WORDS.has(tok[i + 1]?.lo) || /^(baal|bal|baby)/.test(tok[i + 1]?.lo || "") ? 6 : 3, stem: rmp[1] });
     // Marathi "सुरेखाचं बाळ", "प्रतिभाचं"
     const m = w.match(MR_POSS);
-    if (m && okName(m[1]) && okName(w)) cands.push({ i, score: BABY_WORDS.has(tok[i + 1]?.lo) ? 6 : 3, stem: m[1] });
+    if (m && okName(m[1]) && okName(w) && !/(ायला|यला|ण्याला|ताना)$/.test(w)) cands.push({ i, score: BABY_WORDS.has(tok[i + 1]?.lo) ? 6 : 3, stem: m[1] });
     // "पूनम, 34 हफ्ते" / "Archana, 30 hafte" / "सुनीता सातवें महीने"
     const nxt = tok[i + 1]?.t === "," ? i + 2 : i + 1;
     if (okName(w) && /^[A-Z\u0900-\u097f]/.test(w) && tok[nxt] && (readNumber(tok, nxt) || ORD[tok[nxt].lo] != null || ordinalOf(tok[nxt].lo) != null)) {
@@ -477,10 +530,25 @@ function findName(tok) {
 const round1 = (x) => Math.round(x * 10) / 10;
 const LAST = (arr) => arr[arr.length - 1];
 
+// Past and present: "pichli baar 120 by 80 tha, aaj 140 by 90" keeps 140/90
+const PAST = KS(["pichli", "pichhli", "pichle", "pichhle", "पिछली", "पिछले", "pehle", "pahle", "पहले", "kal", "कल", "kaal", "काल", "janam", "janm", "जन्म", "जन्माच्या", "जन्माला", "birth", "born", "tha", "thi", "था", "थी", "थे", "was", "were", "earlier", "previous", "last", "मागच्या", "मागील", "मागे", "आधी", "aadhi", "होता", "होती", "hota", "hoti"]);
+const NOW = KS(["aaj", "आज", "ab", "अब", "abhi", "अभी", "now", "today", "currently", "आता", "ata", "aata", "atta", "आत्ता"]);
+const BIRTH = KS(["janam", "janm", "जन्म", "जन्माच्या", "जन्माला", "birth", "born", "पैदा", "paida", "जन्मतः"]);
+const SINCE = KS(["se", "से", "पासून", "pasun", "since", "from"]);
+
+// Fields each visit type may carry (SPEC.md v2). Anything else is dropped.
+export const FIELDS = {
+  anc: ["name", "weeks", "month", "bp_sys", "bp_dia", "hb", "weight_kg", "albumin", "fetal_movement", "ifa_tablets", "age", "height_cm", "labour_hours", "twins", "prev_caesarean", "prev_pph", "prev_aph", "prev_eclampsia"],
+  pnc: ["name", "day", "pads", "temp_c", "temp_f", "bp_sys", "bp_dia", "hb"],
+  newborn: ["name", "day", "weight_g", "birth_weight_g", "temp_c", "temp_f", "resp_rate", "feeding"],
+};
+
 /**
  * Read a visit from one utterance.
- * Returns { type, record, evidence } where evidence maps each field (and each
- * symptom as "symptoms.code") to { start, end } in the original text.
+ * Returns { type, record, evidence, tokens, nameScore, doubts } where evidence maps
+ * each field (and each symptom as "symptoms.code") to { start, end } in the original
+ * text, and doubts lists values heard but not filled because they look wrong:
+ * [{ field, heard, say_en, say_hi, say_mr }]. The app should ask these back aloud.
  */
 export function understand(text, hint) {
   const raw = String(text || "");
@@ -488,112 +556,184 @@ export function understand(text, hint) {
   const tok = tokenize(raw);
   // When the ASHA has picked the visit, trust her; otherwise guess from the words.
   const type = hint || detectType(raw) || "newborn";
-  const nums = allNumbers(tok);
+  const nums = allNumbers(tok, raw);
   const rec = { type };
   let nameScore = 0;
   const ev = {};
+  const doubts = [];
   const set = (k, v, sp) => { rec[k] = v; ev[k] = sp; };
+  const doubt = (field, heard, say) => { if (!doubts.some((d) => d.field === field)) doubts.push({ field, heard: heard == null ? null : String(heard), ...say }); };
+
+  // A number is "past" when its clause has a past marker and no now marker
+  const pastAt = (i) => {
+    const [a, b] = clauseOf(tok, i);
+    let past = false, now = false;
+    for (let k = a; k <= b; k++) {
+      const lo = tok[k].lo;
+      if (NOW.has(lo)) now = true;
+      else if (PAST.has(lo)) {
+        if ((lo === "kal" || lo === "कल" || lo === "kaal" || lo === "काल") && SINCE.has(tok[k + 1]?.lo)) continue; // "kal se" = since yesterday, still going on
+        if ((lo === "pehle" || lo === "pahle" || lo === "पहले") && (DAY.has(tok[k + 1]?.lo) || /^(din|दिन|day|दिवस)/.test(tok[k + 1]?.lo || ""))) continue; // "pehle din" = first day
+        past = true;
+      }
+    }
+    return past && !now;
+  };
+  const birthAt = (i) => { const [a, b] = clauseOf(tok, i); for (let k = a; k <= b; k++) if (BIRTH.has(tok[k].lo)) return true; return false; };
+  // last candidate said for now; if all are past, the last one
+  const preferNow = (cands) => { const live = cands.filter((c) => !pastAt(c.i0)); return LAST(live.length ? live : cands) || null; };
+  // "…, aaj 99" / "ab 2600 hai": a number right after a now-marker restates the field named just before
+  const restated = (anchors, ok) => nums.filter((n) => NOW.has(tok[n.i0 - 1]?.lo) && ok(n) && anchors.some((an) => an.i1 <= n.i0 && n.i0 - an.i1 <= 12 && !tok.slice(an.i1, n.i0).some((x) => x.t === "।" || x.t === "." || x.t === "?")));
 
   const name = findName(tok);
   if (name) { set("name", name.value, name.at); nameScore = name.score; }
 
-  // Blood pressure: "BP 150 by 100", "बीपी एक सौ पचास बटा सौ", or a bare "150/100"
+  // Blood pressure: "BP 150 by 100", "150 bata 100", "बीपी एक सौ पचास बटा सौ", a bare "150/100",
+  // "upar 150 neeche 100" or "150 upar 100 neeche"
   if (type === "anc" || type === "pnc") {
+    const anchors = findAll(tok, ANCHOR.bp);
+    const okSys = (n) => n.value >= 70 && n.value <= 260, okDia = (n) => n.value >= 40 && n.value <= 170;
     const pairs = [];
     for (let k = 0; k < nums.length - 1; k++) {
       const a = nums[k], b = nums[k + 1];
+      if (a.range || b.range) continue;
       const between = tok.slice(a.i1, b.i0).map((x) => x.lo);
-      if (between.length <= 2 && between.some((w) => SEP_BP.has(w)) && a.value >= 70 && a.value <= 260 && b.value >= 40 && b.value <= 170) pairs.push({ a, b });
+      const sep = between.length <= 2 && between.some((w) => SEP_BP.has(w));
+      // "BP 140 90": no separator, right after the BP word
+      const bare = between.length === 0 && a.value > b.value && anchors.some((an) => an.i1 <= a.i0 && a.i0 - an.i1 <= 2);
+      if ((sep || bare) && okSys(a) && okDia(b)) pairs.push({ a, b, i0: a.i0 });
     }
-    const anchors = findAll(tok, ANCHOR.bp);
-    let pick = null;
-    if (anchors.length) {
-      // later mentions correct earlier ones ("140 by 90, nahi nahi, 150 by 100")
-      pick = LAST(pairs) || null;
-      // "upar 150 neeche 100" / "ऊपर वाला 150 नीचे वाला 100"
-      if (!pick) {
-        const up = tok.findIndex((x) => ["upar", "ऊपर", "उपर", "वरचा", "systolic"].includes(x.lo));
-        const dn = tok.findIndex((x) => ["neeche", "niche", "नीचे", "निचे", "खालचा", "diastolic"].includes(x.lo));
-        if (up >= 0 && dn > up) {
-          const s = nums.find((n) => n.i0 > up && n.i0 < dn), d = nums.find((n) => n.i0 > dn);
-          if (s && d) pick = { a: s, b: d };
-        }
-      }
+    const up = tok.findIndex((x) => ["upar", "ऊपर", "उपर", "oopar", "वरचा", "वरचं", "varcha", "systolic", "upper"].includes(x.lo));
+    const dn = tok.findIndex((x) => ["neeche", "niche", "नीचे", "निचे", "खालचा", "खालचं", "khalcha", "diastolic", "lower"].includes(x.lo));
+    const numAfter = (m) => nums.find((n) => n.i0 > m && n.i0 - m <= 3);
+    const numBefore = (m) => [...nums].reverse().find((n) => n.i1 <= m && m - n.i1 <= 1);
+    let ud = null;
+    if (up >= 0 && dn >= 0) for (const f of [numBefore, numAfter]) {
+      const s = f(up), d = f(dn);
+      if (s && d && s !== d && okSys(s) && okDia(d) && s.value > d.value) { ud = { a: s, b: d, i0: Math.min(s.i0, d.i0) }; break; }
     }
-    if (!pick && pairs.length) pick = LAST(pairs);
+    // later mentions correct earlier ones ("140 by 90, nahi nahi, 150 by 100"); past ones lose
+    const pick = preferNow(ud ? [...pairs, ud].sort((x, y) => x.i0 - y.i0) : pairs);
     if (pick) { set("bp_sys", Math.round(pick.a.value), span(tok, pick.a.i0, pick.a.i1)); set("bp_dia", Math.round(pick.b.value), span(tok, pick.b.i0, pick.b.i1)); }
+    else if (anchors.length) {
+      const [a, b] = clauseOf(tok, anchors[0].i0);
+      const fine = tok.slice(a, b + 1).some((x) => /^(normal|नॉर्मल|नार्मल|theek|thik|ठीक|sahi|सही|fine|ok|okay|चांगला|चांगलं|barobar|बरोबर|goli|गोली|गोळी|tablet)/.test(x.lo));
+      if (!fine) doubt("bp", null, { say_en: "I heard BP but not the numbers. Say it again.", say_hi: "बीपी सुना, पर नंबर नहीं। फिर से बताइए।", say_mr: "बीपी ऐकलं, पण आकडे नाही. पुन्हा सांगा." });
+    }
   }
 
-  // Haemoglobin
+  // Haemoglobin (pregnancy and after delivery). A range takes its lower end.
   if (type === "anc" || type === "pnc") {
-    let hb = null;
     const UNITISH = (lo) => lo != null && (WEEKS.has(lo) || MONTH.has(lo) || DAY.has(lo) || UNIT_KG.has(lo) || UNIT_G.has(lo) || TABLET.has(lo) || ["by", "/", "बटा", "बाय"].includes(lo) || /^(हफ|आठवड|haft|week|महीन|महिन|mahin|गोळ|गोल|tablet|kilo|किलो)/.test(lo));
+    const cands = [];
     for (const an of findAll(tok, ANCHOR.hb)) {
-      const after = nums.filter((n) => n.i0 >= an.i1 && n.i0 - an.i1 <= 12 && n.value >= 3 && n.value <= 18 && !UNITISH(tok[n.i1]?.lo) && !tok.slice(an.i1, n.i0).some((x) => x.t === "\u0964" || (x.t === "." && n.i0 - an.i1 > 6)));
+      const after = nums.filter((n) => n.i0 >= an.i1 && n.i0 - an.i1 <= 12 && n.value >= 3 && n.value <= 18 && !UNITISH(tok[n.i1]?.lo) && !tok.slice(an.i1, n.i0).some((x) => x.t === "।" || (x.t === "." && n.i0 - an.i1 > 6)));
       const n = after.length ? LAST(after) : numberNear(tok, nums, an, { ahead: 5, behind: 3 });
-      if (n && n.value >= 3 && n.value <= 18) hb = n;
+      if (n && n.value >= 3 && n.value <= 18) cands.push(lowEnd(n));
+      else {
+        // "Hb 65": the speech engine dropped the point
+        const g = nums.find((x) => x.i0 >= an.i1 && x.i0 - an.i1 <= 2 && Number.isInteger(x.value) && x.value >= 30 && x.value <= 180);
+        if (g) doubt("hb", g.value, { say_en: `Did you say Hb ${g.value / 10}?`, say_hi: `क्या हीमोग्लोबिन ${g.value / 10} है?`, say_mr: `हिमोग्लोबिन ${g.value / 10} आहे का?` });
+      }
     }
+    // Bare "khoon"/"खून" counts only with a reading-like number: "khoon saadhe das", "खून ग्यारह पॉइंट दो",
+    // "khoon 9 gram". "khoon aa raha hai, teen pad" is bleeding, never Hb.
+    for (let i = 0; i < tok.length; i++) {
+      if (!/^(khoon|khun|खून|रक्त)$/.test(tok[i].lo)) continue;
+      const [a, b] = clauseOf(tok, i);
+      if (tok.slice(a, b + 1).some((x) => /^(jaa?|jata|jati|jate|aa|aaya|aayi|aata|aati|aate|gir|gira|giri|gaya|gayi|bah|beh|bahna|जा|जाता|जाती|जाते|आ|आया|आई|आता|आती|आते|गिर|गिरा|गिरी|गया|गई|बह|जात|जातंय|जातो|येत|येतंय|येतो|गेल|गेलं|गेले|zyada|ज़्यादा|ज्यादा|bahut|बहुत|jaast|जास्त|khoob|खूब)$/.test(x.lo))) continue; // a bleeding verb
+      const n = nums.find((x) => x.i0 > i && x.i0 - i <= 8 && !tok.slice(i, x.i0).some((y) => y.t === "।"));
+      if (!n || n.value < 3 || n.value > 18) continue;
+      const unit = tok[n.i1]?.lo;
+      if (n.value % 1 !== 0 || UNIT_G.has(unit) || ["dl", "gm%", "gram%"].includes(unit)) cands.push(lowEnd(n));
+    }
+    cands.sort((a, b) => a.i0 - b.i0);
+    const hb = preferNow(cands);
     if (hb) set("hb", round1(hb.value), span(tok, hb.i0, hb.i1));
   }
 
-  // Weight: newborn in grams, mother in kilos. "1 किलो 700 ग्राम", "1.6 kilo", "1700 gram", "डेढ़ किलो"
+  // Weight: newborn in grams, mother in kilos. "1 किलो 700 ग्राम", "1.6 kilo", "1700 gram", "2,400 grams", "डेढ़ किलो"
   {
-    let best = null;
     const anchors = findAll(tok, ANCHOR.weight);
-    const tryAt = (n) => {
+    const tryAt = (n0) => {
+      const n = lowEnd(n0);
       let j = n.i1, grams = null;
       const unit = tok[j]?.lo;
       if (UNIT_KG.has(unit)) {
         grams = n.value * 1000; j++;
         const m = readNumber(tok, j);
-        if (m && m.value < 1000 && (UNIT_G.has(tok[m.i1]?.lo) || !tok[m.i1] || BREAK.has(tok[m.i1].t) || ["है", "hai", "आहे", "ahe", "aaya", "आया", "आलं"].includes(tok[m.i1].lo))) { grams += m.value; j = m.i1 + (UNIT_G.has(tok[m.i1]?.lo) ? 1 : 0); }
+        if (m && m.value < 1000 && (UNIT_G.has(tok[m.i1]?.lo) || !tok[m.i1] || BREAK.has(tok[m.i1].t) || ["है", "hai", "आहे", "ahe", "aaya", "आया", "आलं", "होतं", "होता", "होती", "होते", "tha", "था", "थी", "hota", "hoti", "hotan"].includes(tok[m.i1].lo))) { grams += m.value; j = m.i1 + (UNIT_G.has(tok[m.i1]?.lo) ? 1 : 0); }
       } else if (UNIT_G.has(unit)) { grams = n.value; j++; }
       else grams = n.value < 10 ? n.value * 1000 : n.value >= 400 ? n.value : null;
       return grams != null ? { grams, i0: n.i0, i1: j } : null;
     };
-    for (const an of anchors) {
-      const n = numberNear(tok, nums, an, { ahead: 5, behind: 4 });
-      if (n) { const w = tryAt(n); if (w) best = w; }
-    }
+    const plausible = (w) => (type === "anc" ? w.grams >= 25000 && w.grams <= 150000 : w.grams >= 100 && w.grams <= 9000);
+    const cands = [];
+    const add = (w) => { if (w && plausible(w) && !cands.some((c) => w.i0 < c.i1 && c.i0 < w.i1)) cands.push(w); }; // "2 kilo 300 gram" is one weight
+    for (const an of anchors) { const n = numberNear(tok, nums, an, { ahead: 5, behind: 4 }); if (n) add(tryAt(n)); }
     // any later "N kilo ..." replaces it (corrections, "janam pe 2 kilo tha, aaj 1 kilo 750")
-    for (const n of nums) { const u = tok[n.i1]?.lo; if ((UNIT_KG.has(u) || (UNIT_G.has(u) && n.value >= 400)) && (!best || n.i0 >= best.i1)) { const w = tryAt(n); if (w) best = w; } }
-    if (best) {
-      if (type === "newborn" && best.grams >= 400 && best.grams <= 6000) set("weight_g", Math.round(best.grams), span(tok, best.i0, best.i1));
-      if (type === "anc" && best.grams >= 25000 && best.grams <= 150000) set("weight_kg", round1(best.grams / 1000), span(tok, best.i0, best.i1));
+    for (const n of nums) { const u = tok[n.i1]?.lo; if (UNIT_KG.has(u) || (UNIT_G.has(u) && n.value >= 100)) add(tryAt(n)); }
+    for (const n of restated(anchors, (x) => x.value >= 400 || x.value < 10)) add(tryAt(n));
+    cands.sort((a, b) => a.i0 - b.i0);
+    if (type === "newborn") {
+      // "janam ke samay vajan 1700 tha, ab 2600 hai": birth weight and weight now
+      const atBirth = cands.filter((c) => birthAt(c.i0) && pastAt(c.i0));
+      const now = cands.filter((c) => !atBirth.includes(c));
+      const best = now.length ? preferNow(now) : null;
+      const bw = LAST(atBirth);
+      const fits = (w) => w.grams >= 800 && w.grams <= 6000;
+      if (best) {
+        if (fits(best)) set("weight_g", Math.round(best.grams), span(tok, best.i0, best.i1));
+        else doubt("weight_g", Math.round(best.grams), { say_en: `Did you say ${Math.round(best.grams)} grams?`, say_hi: `क्या वज़न ${Math.round(best.grams)} ग्राम है?`, say_mr: `वजन ${Math.round(best.grams)} ग्रॅम आहे का?` });
+      }
+      if (bw && fits(bw)) set("birth_weight_g", Math.round(bw.grams), span(tok, bw.i0, bw.i1));
+      else if (bw && !best) doubt("weight_g", Math.round(bw.grams), { say_en: `Did you say ${Math.round(bw.grams)} grams?`, say_hi: `क्या वज़न ${Math.round(bw.grams)} ग्राम है?`, say_mr: `वजन ${Math.round(bw.grams)} ग्रॅम आहे का?` });
     }
+    if (type === "anc") { const best = preferNow(cands); if (best) set("weight_kg", round1(best.grams / 1000), span(tok, best.i0, best.i1)); }
   }
 
-  // Temperature: °F if the value is above 45 or a Fahrenheit word follows
+  // Temperature: °F if the value is above 45 or a Fahrenheit word follows. temp_f keeps the
+  // Fahrenheit value as said, so 102 °F compares as 102 °F in the rules.
   if (type === "newborn" || type === "pnc") {
-    let t = null;
-    for (const an of findAll(tok, ANCHOR.temp)) { const n = numberNear(tok, nums, an, { ahead: 4, behind: 3 }); if (n && ((n.value >= 30 && n.value <= 45) || (n.value >= 86 && n.value <= 110))) t = n; }
-    if (!t) t = nums.find((n) => (UNIT_F.has(tok[n.i1]?.lo) || UNIT_C.has(tok[n.i1]?.lo) || tok[n.i1]?.t === "°")) || null;
+    const okT = (n) => (n.value >= 30 && n.value <= 45) || (n.value >= 86 && n.value <= 110);
+    const anchors = findAll(tok, ANCHOR.temp);
+    const cands = [];
+    for (const an of anchors) { const n = numberNear(tok, nums, an, { ahead: 4, behind: 3 }); if (n && okT(n) && !cands.includes(n)) cands.push(n); }
+    for (const n of restated(anchors, okT)) if (!cands.includes(n)) cands.push(n);
+    if (!cands.length) { const n = nums.find((x) => (UNIT_F.has(tok[x.i1]?.lo) || UNIT_C.has(tok[x.i1]?.lo) || tok[x.i1]?.t === "°")); if (n) cands.push(n); }
+    cands.sort((a, b) => a.i0 - b.i0);
+    const t = preferNow(cands);
     if (t) {
       let i1 = t.i1; let unitF = t.value > 45;
       for (let k = t.i1; k < Math.min(t.i1 + 3, tok.length); k++) { if (UNIT_F.has(tok[k].lo)) { unitF = true; i1 = k + 1; } if (UNIT_C.has(tok[k].lo)) { unitF = false; i1 = k + 1; } if (tok[k].t === "°" || ["degree", "डिग्री", "डिग्री."].includes(tok[k].lo)) i1 = k + 1; }
       const c = unitF ? (t.value - 32) * 5 / 9 : t.value;
-      if (c >= 30 && c <= 43) set("temp_c", round1(c), span(tok, t.i0, i1));
+      if (c >= 30 && c <= 43) { set("temp_c", round1(c), span(tok, t.i0, i1)); if (unitF) set("temp_f", round1(t.value), span(tok, t.i0, i1)); }
     }
   }
 
   // Breaths per minute
   if (type === "newborn") {
-    let r = null;
+    const cands = [];
     for (const an of findAll(tok, ANCHOR.resp)) {
-      const inSentence = nums.filter((n) => n.i0 >= an.i1 && n.i0 - an.i1 <= 14 && !tok.slice(an.i1, n.i0).some((x) => x.t === "\u0964" || x.t === "." || x.t === "?"));
-      const claimed = (n) => [ANCHOR.temp, ANCHOR.weight, ANCHOR.hb, ANCHOR.bp].some((list) => findAll(tok, list).some((h) => n.i0 >= h.i1 && n.i0 - h.i1 <= 2)) || UNIT_KG.has(tok[n.i1]?.lo) || UNIT_G.has(tok[n.i1]?.lo) || tok[n.i1]?.t === "\u00b0" || ["degree", "डिग्री"].includes(tok[n.i1]?.lo);
+      const inSentence = nums.filter((n) => n.i0 >= an.i1 && n.i0 - an.i1 <= 14 && !tok.slice(an.i1, n.i0).some((x) => x.t === "।" || x.t === "." || x.t === "?"));
+      const claimed = (n) => [ANCHOR.temp, ANCHOR.weight, ANCHOR.hb, ANCHOR.bp].some((list) => findAll(tok, list).some((h) => n.i0 >= h.i1 && n.i0 - h.i1 <= 2)) || UNIT_KG.has(tok[n.i1]?.lo) || UNIT_G.has(tok[n.i1]?.lo) || tok[n.i1]?.t === "°" || ["degree", "डिग्री"].includes(tok[n.i1]?.lo);
       const ok = inSentence.filter((n) => n.value >= 15 && n.value <= 120 && !claimed(n));
+      let r = null;
       if (ok.length) r = LAST(ok); else { const n = numberNear(tok, nums, an, { ahead: 6, behind: 4 }); if (n && n.value >= 15 && n.value <= 120) r = n; }
+      if (r && !cands.includes(r)) cands.push(r);
     }
-    if (!r) { const n = nums.find((x) => MINUTE.has(tok[x.i1]?.lo) || (["per", "प्रति", "पर"].includes(tok[x.i1]?.lo) && MINUTE.has(tok[x.i1 + 1]?.lo))); if (n && n.value >= 15 && n.value <= 120 && findAll(tok, ANCHOR.resp).length) r = n; }
+    if (!cands.length) { const n = nums.find((x) => MINUTE.has(tok[x.i1]?.lo) || (["per", "प्रति", "पर"].includes(tok[x.i1]?.lo) && MINUTE.has(tok[x.i1 + 1]?.lo))); if (n && n.value >= 15 && n.value <= 120 && findAll(tok, ANCHOR.resp).length) cands.push(n); }
+    cands.sort((a, b) => a.i0 - b.i0);
+    const r = preferNow(cands);
     if (r) set("resp_rate", Math.round(r.value), span(tok, r.i0, r.i1));
   }
 
-  // Day of life / days since delivery: "7 din ka", "सात दिन का", "तीसरा दिन", "day 7"
+  // Day of life / days since delivery: "7 din ka", "सात दिन का", "तीसरा दिन", "day 7".
+  // "do din se dast" is how long, not which day.
   if (type === "newborn" || type === "pnc") {
     let d = null;
-    const isDay = (lo) => lo != null && (DAY.has(lo) || /^(\u0926\u093f\u0935\u0938|\u0926\u093f\u0928)/.test(lo) || /^(din|divas|diwas|days?)$/.test(lo));
-    for (const n of nums) if (isDay(tok[n.i1]?.lo) && n.value <= 60 && !(tok[n.i1]?.lo === "days" && ["after", "ago", "since", "from", "पहले", "बाद"].includes(tok[n.i1 + 1]?.lo))) d = { v: n.value, i0: n.i0, i1: n.i1 + 1 };
+    const isDay = (lo) => lo != null && (DAY.has(lo) || /^(दिवस|दिन)/.test(lo) || /^(din|dinon|divas\w*|diwas\w*|divs\w*|days?)$/.test(lo));
+    for (const n of nums) if (isDay(tok[n.i1]?.lo) && n.value <= 60 && !SINCE.has(tok[n.i1 + 1]?.lo) && !/(पासून|पासून)$/.test(tok[n.i1]?.lo || "") && !(tok[n.i1]?.lo === "days" && ["after", "ago", "since", "from", "पहले", "बाद"].includes(tok[n.i1 + 1]?.lo) && !(type === "pnc" && tok.slice(Math.max(0, n.i0 - 3), n.i0).some((x) => /^(delivery|deliveri|डिलीवरी|डिलिवरी|प्रसूत|prasav|birth)/.test(x.lo))))) d = { v: n.value, i0: n.i0, i1: n.i1 + 1 };
     for (let i = 0; i < tok.length; i++) {
       const o = ordinalOf(tok[i].lo);
       if (o && isDay(tok[i + 1]?.lo)) d = d || { v: o, i0: i, i1: i + 2 };
@@ -623,7 +763,12 @@ export function understand(text, hint) {
     for (const an of findAll(tok, ANCHOR.albumin)) {
       const win = tok.slice(an.i1, an.i1 + 5);
       const n = numberNear(tok, nums, an, { ahead: 4, behind: 2 });
-      if (n && n.value >= 1 && n.value <= 4 && (PLUS.has(tok[n.i1]?.lo) || n.i0 > an.i0)) set("albumin", String(Math.round(n.value)), span(tok, an.i0, Math.max(n.i1 + (PLUS.has(tok[n.i1]?.lo) ? 1 : 0), an.i1)));
+      // "albumin plus plus" = 2+
+      let k = an.i1, plusRun = 0;
+      while (tok[k] && ["is", "hai", "है", "आहे", ":"].includes(tok[k].lo)) k++;
+      while (PLUS.has(tok[k]?.lo)) { plusRun++; k++; }
+      if (plusRun) set("albumin", String(Math.min(plusRun, 4)), span(tok, an.i0, k));
+      else if (n && n.value >= 1 && n.value <= 4 && (PLUS.has(tok[n.i1]?.lo) || n.i0 > an.i0)) set("albumin", String(Math.round(n.value)), span(tok, an.i0, Math.max(n.i1 + (PLUS.has(tok[n.i1]?.lo) ? 1 : 0), an.i1)));
       else if (win.some((x) => ["trace", "ट्रेस"].includes(x.lo))) set("albumin", "trace", span(tok, an.i0, an.i1));
       else if (win.some((x) => NEG.has(x.lo) || ["nil", "negative", "नेगेटिव", "निगेटिव"].includes(x.lo))) set("albumin", "nil", span(tok, an.i0, an.i1));
     }
@@ -634,6 +779,63 @@ export function understand(text, hint) {
     for (const n of nums) {
       const near = tok.slice(Math.max(0, n.i0 - 3), n.i1 + 4).map((x) => x.lo);
       if (near.some((w) => TABLET.has(w) || /^(गोळ|गोल|tablet|goli)/.test(w)) && near.some((w) => /^(iron|ifa|आयरन|आइरन|लोह|folic|फोलिक|आयर्न)/.test(w)) && n.value >= 1 && n.value <= 400) set("ifa_tablets", Math.round(n.value), span(tok, n.i0, n.i1));
+    }
+  }
+
+  // Pregnancy risk items from the MCP card and PMSMA: age, height, twins, labour hours,
+  // previous caesarean, previous PPH / APH / eclampsia
+  if (type === "anc") {
+    const clauseNeg = (i) => { const [a, b] = clauseOf(tok, i); return tok.slice(a, b + 1).some((x) => NEG.has(x.lo)); };
+    // age: "umar 17 saal", "age 38", "17 saal ki", "उम्र 36 साल", "वय 19 वर्षे", "36 years old"
+    const AGE_CUE = KS(["umar", "umr", "umra", "umer", "उम्र", "उमर", "age", "aged", "वय", "vay", "vaya"]);
+    const YEARS = KS(["saal", "sal", "saal.", "साल", "varsh", "varsha", "varshe", "वर्ष", "वर्षे", "वर्षांची", "वर्षाची", "years", "year", "yrs", "baras", "बरस"]);
+    for (const n of nums) {
+      if (n.value < 12 || n.value > 55) continue;
+      const before = tok.slice(Math.max(0, n.i0 - 3), n.i0).map((x) => x.lo);
+      const unit = tok[n.i1]?.lo, unit2 = tok[n.i1 + 1]?.lo;
+      const yrs = unit != null && (YEARS.has(unit) || /^(वर्ष|varsh)/.test(unit));
+      const cue = before.some((w) => AGE_CUE.has(w));
+      const old = yrs && (["ki", "की", "ka", "का", "old", "ची", "चा", "ke", "के"].includes(unit2) || /^(वर्षांच|वर्षाच)/.test(unit));
+      if ((cue && (yrs || !tok[n.i1] || BREAK.has(tok[n.i1].t) || ["hai", "है", "आहे", "ahe"].includes(unit))) || old) set("age", Math.round(n.value), span(tok, n.i0, n.i1 + (yrs ? 1 : 0)));
+    }
+    // height: "lambai 140 cm", "height 142 centimetre", "उंची 140 सेमी"
+    const H_CUE = KS(["height", "lambai", "lambaai", "लंबाई", "ऊंचाई", "ऊँचाई", "उंचाई", "उंची", "unchai", "unchi", "kad", "कद"]);
+    const CM = KS(["cm", "cms", "centimetre", "centimeter", "centimetres", "centimeters", "सेमी", "सेंटीमीटर", "सेंमी"]);
+    for (const n of nums) {
+      if (n.value < 110 || n.value > 200) continue;
+      const cue = tok.slice(Math.max(0, n.i0 - 3), n.i0).some((x) => H_CUE.has(x.lo));
+      if (cue || CM.has(tok[n.i1]?.lo)) set("height_cm", Math.round(n.value), span(tok, n.i0, n.i1 + (CM.has(tok[n.i1]?.lo) ? 1 : 0)));
+    }
+    // labour pain hours: "dard 14 ghante se", "चौदह घंटे हो गए" with a pain word nearby, "labour pain for 14 hours"
+    const HOURS = /^(ghante|ghanta|ghanton|ghantey|घंटे|घंटा|घंटों|hours?|hrs?|taas|tas|तास)/;
+    const PAIN = /^(dard|दर्द|pain|pains|labour|labor|कळा|kala|kalaa|kalaa|peeda|pida|पीड़ा|पीडा|vedna|वेदना|दुख|dukh|prasav|प्रसव)/;
+    for (const n of nums) {
+      if (n.value < 1 || n.value > 72 || !HOURS.test(tok[n.i1]?.lo || "")) continue;
+      const win = tok.slice(Math.max(0, n.i0 - 12), n.i1 + 8);
+      if (win.some((x) => PAIN.test(x.lo))) set("labour_hours", Math.round(n.value), span(tok, n.i0, n.i1 + 1));
+    }
+    // twins: "judwa bachche", "जुळी", "twins"
+    const TWIN = /^(judwa|judwaa|judva|jodva|जुड़वा|जुड़वाँ|जुडवा|जुळी|जुळे|julee|juli|jule|twins?)$/;
+    for (let i = 0; i < tok.length; i++) if (TWIN.test(tok[i].lo)) set("twins", !clauseNeg(i), span(tok, i, i + 1));
+    // previous caesarean: "pichli delivery operation se hui thi", "पहले सिजेरियन हुआ था", "previous LSCS"
+    const CS = /^(operation|operashan|ऑपरेशन|आपरेशन|ऑप्रेशन|सिजेरियन|सीजेरियन|सिझेरियन|सिजेरीयन|caesarean|cesarean|caesarian|cesarian|sizerian|sijerian|lscs|c-section|csection|सीझर|seezar)/;
+    for (let i = 0; i < tok.length; i++) if (CS.test(tok[i].lo)) set("prev_caesarean", !clauseNeg(i), span(tok, i, i + 1));
+    // previous complications, said in a clause about a past pregnancy or delivery
+    const PREV = /^(pichli|pichhli|pichle|pichhle|पिछली|पिछले|pehli|pahli|पहली|previous|last|मागच्या|मागील|पहिल्या|पहिली|pahili|आधीच्या|aadhichya)$/;
+    const PREG = /^(delivery|deliveri|डिलीवरी|डिलिवरी|प्रसूत|बाळंत|baalant|balant|pregnancy|प्रेगनेंसी|प्रेग्नेंसी|garbh|गर्भ|गरोदर|garodar|bachch|बच्च|baby|बाळ|jachgi|जचगी|prasav|प्रसव|baar|बार|वेळी|time)/;
+    const AFTER_BIRTH = /^(delivery|deliveri|डिलीवरी|डिलिवरी|प्रसूत|बाळंत|baalant|balant|jachgi|जचगी|prasav|प्रसव|baad|बाद|नंतर|after)/;
+    for (let i = 0; i < tok.length; i++) {
+      if (!PREV.test(tok[i].lo) || !tok.slice(i + 1, i + 4).some((x) => PREG.test(x.lo))) continue;
+      const [a, b] = clauseOf(tok, i);
+      const w = tok.slice(a, b + 1);
+      const neg = w.some((x) => NEG.has(x.lo));
+      if (w.some((x) => /^(khoon|खून|रक्त|rakt|bleeding|bleed|ब्लीडिंग|रक्तस्)/.test(x.lo))) set(w.some((x) => AFTER_BIRTH.test(x.lo)) ? "prev_pph" : "prev_aph", !neg, span(tok, a, b + 1));
+      if (w.some((x) => /^(jhatke|jhatka|झटके|झटका|दौरा|दौरे|आकडी|fits?|convuls|eclampsia|एक्लेम्पसिया|aakdi|daura)/.test(x.lo))) set("prev_eclampsia", !neg, span(tok, a, b + 1));
+    }
+    for (let i = 0; i < tok.length; i++) {
+      const lo = tok[i].lo;
+      if (lo === "pph") set("prev_pph", !clauseNeg(i), span(tok, i, i + 1));
+      if (lo === "aph") set("prev_aph", !clauseNeg(i), span(tok, i, i + 1));
     }
   }
 
@@ -663,7 +865,7 @@ export function understand(text, hint) {
   const GOOD = KS(["vyavasthit", "badhiya", "बढ़िया", "पूरा", "poora", "pura", "खूब", "khoob", "भरपूर", "अच्छा", "अच्छे", "अच्छी", "ठीक", "नीट", "छान", "चांगलं", "चांगला", "चांगली", "व्यवस्थित", "बरोबर", "changla", "chhan", "neet", "theek", "thik", "achha", "accha", "achhe", "acha", "okay", "ok", "fine", "good", "well", "properly", "normal", "normally", "नॉर्मल", "sahi"]);
   const STOP = KS(["बंद", "band", "stopped", "stop", "no", "none"]);
   if (type === "newborn") {
-    const FEED = KS(["दूध", "doodh", "dudh", "doodh.", "feeding", "feed", "feeds", "breastfeeding", "breastfeed", "स्तनपान", "suck", "sucking", "पीता", "पी", "पितं", "पीत", "पित", "pitay", "pita", "pee", "pi"]);
+    const FEED = KS(["दूध", "doodh", "dudh", "doodh.", "feeding", "feed", "feeds", "breastfeeding", "breastfeed", "स्तनपान", "stanpan", "stanpaan", "stanpana", "स्तनपानं", "suck", "sucking", "पीता", "पी", "पितं", "पीत", "पित", "pitay", "pita", "pee", "pi"]);
     let pick = null;
     for (let i = 0; i < tok.length; i++) {
       if (!FEED.has(tok[i].lo)) continue;
@@ -700,7 +902,28 @@ export function understand(text, hint) {
   const taken = []; // spans already used by a longer, more specific phrase
   const MOTHER = KS(["खुद", "khud", "स्वतः", "स्वतःला", "herself", "माँ", "मां", "आई", "आईला", "आईच्या", "mother", "maa", "mummy", "मम्मी"]);
   const BABYW = KS(["बाळ", "बाळाला", "बाळाचं", "बाळाचे", "बाळाची", "बच्चा", "बच्चे", "बच्ची", "baby", "bachcha", "bachche", "bal", "balala"]);
+  // Someone else's complaint: "saas ko sir dard hai", "her mother-in-law has a headache"
+  const OTHER = /^(saas|sas|sasu|sasur|pati|navra|navryala|devar|jeth|jethani|nanad|padosan|सास|सासू|सासूला|सासूबाई|सासूबाईंना|ससुर|सासरे|सासऱ्यांना|पति|नवरा|नवऱ्याला|देवर|जेठ|जेठानी|ननद|पड़ोसन|पडोसन|शेजारी|शेजारणीला|husband|neighbour|neighbor)$/;
+  const EXPER = KS(["ko", "को", "ka", "ki", "ke", "का", "की", "के", "la", "ला", "ना", "has", "had", "is", "chi", "ची", "चा", "चे", "ka.", "ji", "जी"]);
+  const otherSubject = (hit) => {
+    const { a, b } = clauseWords(hit.i0);
+    for (let k = a; k <= b; k++) {
+      const lo = tok[k].lo;
+      const isOther = OTHER.test(lo) || (lo === "law" && tok[k - 1]?.lo === "in");
+      if (!isOther) continue;
+      const next = tok[k + 1]?.lo;
+      if (["ne", "ने", "said", "says", "told", "bataya", "बताया", "सांगितलं", "म्हणाली"].includes(next)) continue;
+      if (EXPER.has(next) || /(ला|ना|ला\.)$/.test(lo) || k === b) return true;
+    }
+    return false;
+  };
+  // A past pregnancy's complications are history, not today's danger sign
+  const PREV_W = /^(pichli|pichhli|pichle|pichhle|पिछली|पिछले|pehli|pahli|पहली|previous|last|मागच्या|मागील|पहिल्या|पहिली|आधीच्या)$/;
+  const PREG_W = /^(delivery|डिलीवरी|डिलिवरी|प्रसूत|बाळंत|pregnancy|प्रेगनेंसी|गर्भ|गरोदर|bachch|बच्च|baby|बाळ|jachgi|जचगी|prasav|प्रसव|baar|बार|वेळी|time)/;
+  const historyAt = (i) => { const { a, b } = clauseWords(i); for (let k = a; k <= b; k++) if (PREV_W.test(tok[k].lo) && tok.slice(k + 1, k + 4).some((x) => PREG_W.test(x.lo))) return true; return false; };
   const wrongSubject = (hit) => {
+    if (otherSubject(hit)) return true;
+    if (type === "anc" && historyAt(hit.i0)) return true;
     const { w } = clauseWords(hit.i0);
     if (type === "pnc") return w.some((x) => BABYW.has(x)) && !w.some((x) => MOTHER.has(x));
     if (type === "newborn") return w.some((x) => MOTHER.has(x)) && !w.some((x) => BABYW.has(x));
@@ -714,11 +937,18 @@ export function understand(text, hint) {
     taken.push(hit);
   };
   // phrases that themselves mean "absent" or "present", whatever the negation words
-  for (const [code, list, value] of (ABSENT[type] || [])) for (const hit of findAll(tok, list)) record(code, hit, value);
+  for (const [code, list, value] of (ABSENT[type] || [])) for (const hit of findAll(tok, list)) {
+    if (code === "breast_problem" && /^(स्तनपान|stanpan)/.test(tok[hit.i0].lo)) continue; // "स्तनपान ठीक" is feeding
+    record(code, hit, value);
+  }
   const codes = Object.keys(table).sort((a, b) => specificity(b) - specificity(a));
   for (const code of codes) {
     for (const hit of findAll(tok, table[code])) {
       if (code === "lethargy" && ev.feeding && overlaps(ev.feeding, span(tok, hit.i0, hit.i1))) continue;
+      // "taapmaan 35 degree" is a reading, not "hot to touch"
+      if ((code === "hot_to_touch" || code === "fever") && /^(taapm|tapm|tapam|taapam|तापमान|तपमान)/.test(tok[hit.i0].lo)) continue;
+      // "स्तनपान", "breastfeeding" is the baby feeding, not a breast problem
+      if (code === "breast_problem" && (/^(स्तनपान|breastfeed|stanpan)/.test(tok[hit.i0].lo) || (tok[hit.i0].lo === "breast" && /^(milk|feed)/.test(tok[hit.i0 + 1]?.lo || "")))) continue;
       // "पिवळे फोड" are pustules, not jaundice
       if (code === "jaundice" && tok.slice(hit.i1, hit.i1 + 2).some((x) => /^(फोड|दाने|फुंस|pustule|boil|spot|पुटकुळ)/.test(x.lo))) continue;
       record(code, hit, !negated(tok, hit));
@@ -729,6 +959,8 @@ export function understand(text, hint) {
     for (const hit of findAll(tok, P(["दर्द", "dard", "pain", "दुखत"]))) {
       const { w } = clauseWords(hit.i0);
       if (w.some((x) => /^(सिर|सर|sir|sar|head|डोक|स्तन|breast|पीठ|kamar|कमर|back|leg|पैर|पाय)/.test(x))) continue;
+      // labour pains with their hours are recorded as labour_hours, not as stomach pain
+      if (rec.labour_hours != null && ev.labour_hours && Math.abs(tok[hit.i0].start - ev.labour_hours.start) < 80) continue;
       record("abdominal_pain", hit, !negated(tok, hit));
     }
   }
@@ -807,8 +1039,18 @@ export function understand(text, hint) {
       if (sym[code] === true && sp && bare && Math.abs(sp.start - ev.temp_c.start) < 40) { delete sym[code]; delete sev["symptoms." + code]; }
     }
   }
+  // Never both hot and cold: a reading decides, else the last one said
+  if (sym.hot_to_touch === true && sym.cold_to_touch === true) {
+    const t = rec.temp_c;
+    const drop = t != null && t < 36.5 ? "hot_to_touch" : t != null && t >= 37.5 ? "cold_to_touch" : sev["symptoms.hot_to_touch"].start < sev["symptoms.cold_to_touch"].start ? "hot_to_touch" : "cold_to_touch";
+    delete sym[drop]; delete sev["symptoms." + drop];
+  }
   if (Object.keys(sym).length) { rec.symptoms = sym; Object.assign(ev, sev); }
-  return { type, record: rec, evidence: ev, tokens: tok.length, nameScore };
+  // Jaundice needs the day of life to decide (day 1 or after day 14 refer)
+  if (type === "newborn" && sym.jaundice === true && sym.jaundice_palms_soles !== true && rec.day == null) doubt("day", null, { say_en: "Which day of life is the baby?", say_hi: "बच्चा कितने दिन का है?", say_mr: "बाळ किती दिवसांचं आहे?" });
+  // A record never carries another visit type's fields
+  for (const k of Object.keys(rec)) if (k !== "type" && k !== "symptoms" && !FIELDS[type].includes(k)) { delete rec[k]; delete ev[k]; }
+  return { type, record: rec, evidence: ev, tokens: tok.length, nameScore, doubts };
 }
 
 function specificity(code) {
@@ -822,5 +1064,5 @@ export function merge(prev, next) {
   if (!prev) return next;
   const record = { ...prev.record, ...next.record, type: next.record.type || prev.record.type };
   if (prev.record.symptoms || next.record.symptoms) record.symptoms = { ...(prev.record.symptoms || {}), ...(next.record.symptoms || {}) };
-  return { type: record.type, record, evidence: { ...prev.evidence, ...next.evidence } };
+  return { type: record.type, record, evidence: { ...prev.evidence, ...next.evidence }, doubts: next.doubts || [] };
 }

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Test results · Ghar Bhet</title>
-<meta name="description" content="How accurately Ghar Bhet fills a visit record from spoken Hindi, Marathi and English, and how many danger visits it flags, measured on held-out sentences written by someone who never saw the code. Every miss listed.">
+<meta name="description" content="How accurately Ghar Bhet fills a visit record from spoken Hindi, Marathi and English, and how many danger visits it flags, measured on held-out visit transcripts written from the spec by a separate AI writing pass that never saw the code. Every miss listed.">
 <meta name="theme-color" content="#f4f1e8">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta property="og:image" content="/og.png">
@@ -32,24 +32,31 @@
   .miss.danger { border-left-color: var(--refer); }
   .miss p { margin: 0 0 4px; }
   .miss .said { font-size: 17px; }
-  .miss code { font-family: var(--mono); font-size: 13px; color: var(--ink-2); }
+  .miss code { font-family: var(--mono); font-size: 12px; color: var(--ink-3); margin-left: 4px; }
 </style>
 </head>
 <body>
 <header id="top"></header>
 <main class="wrap e-wrap">
   <h1>How accurately it reads a spoken visit</h1>
-  <p class="lead">Every number on this page comes from <code>node eval/run.js</code> on files in the repository. The test sentences and their right answers were written by a separate writer who never saw the reader's code, from the record format and the government rules alone.</p>
+  <p class="lead">We tested the reader on 60 visit transcripts it had never seen. On that first run it filled 281 of 291 fields correctly and caught 37 of 38 danger visits. The transcripts and their right answers were written from the record format and the government rules alone, by a separate AI writing pass that never saw the reader's code; they are written the way ASHAs speak, not recorded.</p>
+  <p class="faint">Reproduce it: every number here comes from <code>node eval/run.js</code> on files in the <a href="https://github.com/RohanGlitched/ghar-bhet/tree/main/eval">repository's eval folder</a>.</p>
 
   <div class="runs" id="runs"><p class="faint">Loading results…</p></div>
 
+  <h2 class="s">Real speech</h2>
+  <div class="runs" id="speech"></div>
+
+  <h2 class="s">Checked against the guidelines</h2>
+  <div class="runs" id="vig"></div>
+
   <h2 class="s">How the test works</h2>
   <ol class="muted" style="max-width:72ch">
-    <li><b>The contract first.</b> We wrote the record format and the 37 danger rules (<a href="/how">see them</a>) before any test sentence existed.</li>
-    <li><b>An independent writer</b> wrote spoken visits the way ASHAs talk: Hindi and Marathi in Devanagari and Roman script, Indian English, mixed language, numbers as words and fractions ("डेढ़ सौ", "पावणे दोन", "one forty by ninety"), Fahrenheit, negations, self-corrections, months instead of weeks, local idioms, and visits with no danger at all. A checker re-computed every right answer from the rules.</li>
+    <li><b>The contract first.</b> We wrote the record format and the danger rules (<a href="/how">see them</a>) before any test sentence existed.</li>
+    <li><b>A separate AI writing pass</b>, given only the spec and never the code, wrote visits the way ASHAs talk: Hindi and Marathi in Devanagari and Roman script, Indian English, mixed language, numbers as words and fractions ("dedh sau" = 150, Marathi "paavne don" = 1¾, "one forty by ninety"), Fahrenheit, negations, self-corrections, months instead of weeks, local idioms, and visits with no danger at all. A checker re-computed every right answer from the rules.</li>
     <li><b>Tuning sets.</b> We improved the reader on 200 of these sentences (120 + 80). Those scores are near 100% because we tuned on them, so we don't quote them as accuracy.</li>
     <li><b>Held-out set.</b> 60 sentences stayed sealed until the reader was finished. The <b>first run</b> is the honest measure. We then fixed the gaps that run exposed and ran it again; that second number is shown separately because the fixes were made after reading its misses.</li>
-    <li><b>A second sealed set</b> of 60 sentences, written after those fixes, is run once before submission.</li>
+    <li><b>A second sealed set</b> of 60 sentences, written after those fixes, is kept unopened and run once, before submission. Its result appears at the top of this page when it has run.</li>
   </ol>
 
   <h2 class="s">First held-out run, by field</h2>
@@ -59,13 +66,13 @@
   <div class="tblwrap" id="langs"></div>
 
   <h2 class="s">Every miss on the first held-out run</h2>
-  <p class="muted">Shown in Roman letters. Red is a missed danger visit or a false alarm; amber is a field read wrong.</p>
+  <p class="muted">Shown in Roman letters. Red is a missed danger visit or a false alarm; amber is a field read wrong. The rule and field names are in small grey text.</p>
   <div id="misses"></div>
 
   <h2 class="s">What this test can't show</h2>
   <ul class="muted" style="max-width:72ch">
     <li>The sentences were written in ASHAs' style, not recorded from ASHAs. Real speech adds speech-to-text errors before our reader sees the words; a pilot must measure the two together.</li>
-    <li>It measures typed transcripts of speech. The browser's speech recognition was tested by hand, not at scale.</li>
+    <li>It measures written transcripts of speech. Real speech through Wispr Flow and the browser is measured separately on a small set (above, when run), not at scale.</li>
     <li>The writer and the reader share one spec. If the spec misses how some ASHAs speak, both miss it together.</li>
   </ul>
 </main>
@@ -73,9 +80,10 @@
 <script type="module">
 import { mountChrome, esc } from "/js/ui.js";
 import { romanize } from "/js/understand.js";
+import { RULE_TABLE } from "/js/rules.js";
 mountChrome("/evidence");
 const get = (f) => fetch(`/data/${f}`).then((r) => r.ok ? r.json() : null).catch(() => null);
-const [r1, r2, h2] = await Promise.all([get("eval-heldout-run1.json"), get("eval-heldout-run2.json"), get("eval-heldout2.json")]);
+const [r1, r2, h2, now, vig, rsW, rsB] = await Promise.all(["eval-heldout-run1.json", "eval-heldout-run2.json", "eval-heldout2.json", "eval-heldout.json", "eval-vignettes.json", "eval-realspeech-wispr.json", "eval-realspeech-browser.json"].map(get));
 const card = (title, sub, r, cls = "") => r ? `<div class="run ${cls}"><h2>${title}</h2><p class="faint" style="margin:0">${sub}</p><div class="nums">
   <div><b>${r.typed.fields.recall}%</b><span>of fields read right (${r.typed.fields.correct} of ${r.typed.fields.gold})</span></div>
   <div><b>${r.typed.fields.precision}%</b><span>of filled fields correct</span></div>
@@ -83,17 +91,41 @@ const card = (title, sub, r, cls = "") => r ? `<div class="run ${cls}"><h2>${tit
   <div><b>${r.typed.danger.false_alarms} of ${r.typed.danger.normal_visits}</b><span>normal visits wrongly flagged</span></div></div>
   <p class="faint" style="margin:10px 0 0">${r.typed.items} visits · flags ${r.typed.flags.recall}% recall, ${r.typed.flags.precision}% precision · whole visit exactly right ${r.typed.exact_visits}% · with the visit type guessed instead of picked: ${r.auto.fields.recall}% of fields, ${r.auto.danger.caught} of ${r.auto.danger.visits} danger visits</p></div>` : "";
 document.getElementById("runs").innerHTML =
-  card("Held-out, first run", "60 sealed sentences, never seen before this run. The honest number.", r1, "headline") +
-  card("Held-out, after fixes", "Same 60 sentences, after fixing the gaps the first run found.", r2) +
+  card("Held-out, first run", "60 sealed sentences, never seen before this run (rule set 2026.1). The honest number.", r1, "headline") +
+  card("Held-out, after fixes", "Same 60 sentences, after fixing the gaps the first run found (rule set 2026.1).", r2) +
+  (now ? card("Held-out today", `Same 60 sentences with today's rule set (${esc(now.ruleset)}). Tuned after reading them, so not independent.`, now) : "") +
   (h2 ? card("Second sealed set", "60 new sentences written after the fixes, run once.", h2, "headline") : "");
+const rs = (eng, r) => r ? `<div class="run"><h2>Real speech: ${eng}</h2><p class="faint" style="margin:0">${r.heard} visits read aloud by a person, scored on the words the speech engine wrote. Same visits as written text for comparison.</p><div class="nums">
+  <div><b>${r.spoken.fields.recall}%</b><span>of fields right from speech (written: ${r.written.fields.recall}%)</span></div>
+  <div><b>${r.spoken.danger.caught} of ${r.spoken.danger.visits}</b><span>danger visits flagged from speech (written: ${r.written.danger.caught} of ${r.written.danger.visits})</span></div>
+  <div><b>${r.spoken.danger.false_alarms} of ${r.spoken.danger.normal_visits}</b><span>normal visits wrongly flagged from speech</span></div>
+  <div><b>${r.spoken.fields.precision}%</b><span>of filled fields correct from speech</span></div></div></div>` : "";
+document.getElementById("speech").innerHTML = (rs("Wispr Flow", rsW) + rs("browser microphone", rsB)) || `<p class="muted">Not run yet. A person reads 12 of the held-out visits aloud on the <a href="/dictation.html">real speech test page</a>, once through Wispr Flow and once through the browser's microphone; the results appear here.</p>`;
+document.getElementById("vig").innerHTML = vig ? `<div class="run"><h2>Against the guideline text</h2><p class="faint" style="margin:0">${vig.items} short cases, each labelled "should refer" or not, and urgent or not, from the guideline wording before the rules were run.</p><div class="nums">
+  <div><b>11 of 24</b><span>should-refer cases caught on the first run, with the old 37-rule table</span></div>
+  <div><b>${vig.refer.tp} of ${vig.refer.positives}</b><span>caught today (${esc(vig.ruleset)}); tuned on since, so not independent</span></div>
+  <div><b>${vig.refer.tn} of ${vig.refer.negatives}</b><span>cases that should not refer, left alone</span></div>
+  <div><b>${vig.urgent.caught} of ${vig.urgent.gold}</b><span>urgent cases got an urgent flag today</span></div></div>
+  <p class="faint" style="margin:10px 0 0">The first run showed the old table had no rules for high BP after birth, high-risk pregnancy or several newborn signs. Three labels were later corrected from the source text, not from the rules. Details in eval/README.md.</p></div>` : "";
 const f = r1.typed.by_field;
 const NAMES = { name: "Name", day: "Day", weight_g: "Newborn weight", feeding: "Feeding", symptoms: "Signs (present or absent)", resp_rate: "Breaths a minute", temp_c: "Temperature", month: "Month of pregnancy", bp_sys: "BP (upper)", bp_dia: "BP (lower)", weeks: "Weeks of pregnancy", albumin: "Urine albumin", hb: "Hb", fetal_movement: "Baby's movement", ifa_tablets: "Iron tablets", weight_kg: "Mother's weight", pads: "Pads a day" };
 document.getElementById("fields").innerHTML = `<table class="t"><thead><tr><th>Field</th><th>In the answers</th><th>Read right</th><th>Recall</th><th>Precision</th></tr></thead><tbody>${Object.entries(f).sort((a, b) => b[1].gold - a[1].gold).map(([k, v]) => `<tr><td>${esc(NAMES[k] || k)}</td><td class="n">${v.gold}</td><td class="n">${v.hit}</td><td class="n">${v.recall ?? "—"}%</td><td class="n">${v.precision ?? "—"}%</td></tr>`).join("")}</tbody></table>`;
 const L = { "hi/devanagari": "Hindi, Devanagari", "hi/roman": "Hindi, Roman script", "mr/devanagari": "Marathi, Devanagari", "mr/roman": "Marathi, Roman script", "en/roman": "English", "mix/devanagari": "Mixed, Devanagari", "mix/roman": "Mixed, Roman script" };
 document.getElementById("langs").innerHTML = `<table class="t"><thead><tr><th>Language</th><th>Visits</th><th>Whole visit exactly right</th></tr></thead><tbody>${Object.entries(r1.typed.by_lang).map(([k, v]) => `<tr><td>${esc(L[k] || k)}</td><td class="n">${v.n}</td><td class="n">${v.ok} (${v.pct}%)</td></tr>`).join("")}</tbody></table><p class="faint">Small groups: the Roman-script Marathi group has 3 visits, so its percentage moves a lot with one miss.</p>`;
+const RULE_TITLE = Object.fromEntries(RULE_TABLE.map((r) => [r.code, r.title]));
+const flagName = (c) => `${esc(RULE_TITLE[c] || c.replace(/_/g, " "))} <code>${esc(c)}</code>`;
+const val = (x) => x === "undefined" ? "empty" : x === "true" ? "“yes”" : x === "false" ? "“no”" : x;
+function plain(w) {
+  const m = String(w).match(/^([\w.]+): want (.*?) got (.*)$/);
+  if (!m) return `<code>${esc(w)}</code>`;
+  const [, f, want, got] = m;
+  const label = f.startsWith("symptoms.") ? f.slice(9).replace(/_/g, " ") : (NAMES[f] || f);
+  return `${esc(label[0].toUpperCase() + label.slice(1))}: should be ${esc(val(want))}, read ${esc(val(got))} <code>${esc(f)}</code>`;
+}
 document.getElementById("misses").innerHTML = r1.typed.misses.map((m) => {
   const danger = m.flags_want.join() !== [...m.flags_got].sort().join() && (m.flags_want.some((c) => !m.flags_got.includes(c)) || m.flags_got.some((c) => !m.flags_want.includes(c)));
-  return `<div class="miss ${danger ? "danger" : ""}"><p class="said">${esc(romanize(m.said))}</p>${m.wrong.map((w) => `<p><code>${esc(w)}</code></p>`).join("")}${danger ? `<p><code>flags expected ${esc(m.flags_want.join(", ") || "none")}; got ${esc(m.flags_got.join(", ") || "none")}</code></p>` : ""}<p class="faint">${esc(m.id)}</p></div>`;
+  const missed = m.flags_want.filter((c) => !m.flags_got.includes(c)), extra = m.flags_got.filter((c) => !m.flags_want.includes(c));
+  return `<div class="miss ${danger ? "danger" : ""}"><p class="said">${esc(romanize(m.said))}</p>${m.wrong.map((w) => `<p>${plain(w)}</p>`).join("")}${missed.length ? `<p><b>Missed danger sign:</b> ${missed.map(flagName).join(", ")}</p>` : ""}${extra.length ? `<p><b>False alarm:</b> ${extra.map(flagName).join(", ")}</p>` : ""}<p class="faint">${esc(m.id)}</p></div>`;
 }).join("");
 </script>
 </body>

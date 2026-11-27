@@ -1,8 +1,9 @@
 <p align="center"><img src="docs/cover.png" alt="Ghar Bhet: an ASHA speaks the visit, and the record fills itself" width="100%"></p>
 
 <p align="center">
-<img alt="tests" src="https://img.shields.io/badge/tests-17%20passing-1d7347">
-<img alt="keys" src="https://img.shields.io/badge/keys%20needed-none-16191d">
+<img alt="tests" src="https://img.shields.io/badge/tests-62%20passing-1d7347">
+<img alt="voice scenarios" src="https://img.shields.io/badge/browser%20voice%20scenarios-39%20passing-1d7347">
+<img alt="keys" src="https://img.shields.io/badge/API%20keys-none-16191d">
 <img alt="dependencies" src="https://img.shields.io/badge/npm%20dependencies-0-16191d">
 <img alt="languages" src="https://img.shields.io/badge/speaks-Hindi%20%C2%B7%20Marathi%20%C2%B7%20English-f2b705">
 <img alt="license" src="https://img.shields.io/badge/license-MIT-6f6a5d">
@@ -10,96 +11,111 @@
 
 # Ghar Bhet
 
-**An ASHA health worker speaks a home visit in Hindi, Marathi or English. The official visit record fills itself, and fixed government rules flag the danger signs that kill mothers and newborns, out loud, before she leaves the house.**
+**An ASHA (village health worker) speaks a home visit in Hindi, Marathi or English. The official visit record fills itself, and fixed government rules flag the danger signs that need a same-day referral, out loud, before she leaves the house.** *Ghar bhet* means "home visit" in Hindi and Marathi.
 
-- **What it does:** turns one spoken sentence into a checked visit record (newborn, pregnancy, or mother after birth), with the words behind every value, and raises a same-day referral when a danger sign is present.
-- **Who it's for:** India's **10.29 lakh ASHAs** (PIB, Jan 2025) and the ANMs (nurses) they report to.
-- **Measured accuracy, on 60 spoken visits it had never seen (first run):** **96.6%** of record fields read correctly (281 of 291), **98.6%** precision, **37 of 38** danger visits flagged, **1 of 22** normal visits wrongly flagged. After fixing the two gaps that run exposed: 99.3% of fields, 38 of 38 danger visits, 0 false alarms. [Every result and every miss](https://ghar-bhet-194851097912.us-central1.run.app/evidence).
-- **Run it in one command:** `docker compose up`, then open http://localhost:8080. No keys, no accounts, no AI service.
-- **Live demo:** https://ghar-bhet-194851097912.us-central1.run.app (no login). Try an example without a microphone: https://ghar-bhet-194851097912.us-central1.run.app/visit?example=1
+- **What it does:** turns a spoken visit (newborn, pregnancy, or mother after birth) into a checked record, with the words behind every value, and raises a referral the nurse sees at once when a danger sign is present.
+- **Who it's for:** India's **10.29 lakh ASHAs** (PIB, Jan 2025) and the nurses (ANMs, auxiliary nurse-midwives) they report to.
+- **Measured accuracy, first run on 60 visit transcripts it had never seen** (written the way ASHAs speak, not recorded): **96.6%** of record fields read correctly (281 of 291), **98.6%** precision, **37 of 38** danger visits flagged, **1 of 22** normal visits wrongly flagged. [Every result and every miss](https://ghar-bhet-194851097912.us-central1.run.app/evidence).
+- **Run it in one command:** `docker compose up`, then open http://localhost:8080. No API keys, no accounts, no AI model of our own.
+- **Live demo:** https://ghar-bhet-194851097912.us-central1.run.app (no login). Without a microphone: https://ghar-bhet-194851097912.us-central1.run.app/visit?example=1
 
-**Theme:** Healthcare access · **Built for:** Scaler × Wispr Flow "India Runs on Voice", Round 2 · **Builder:** Rohan Borade (solo), Maharashtra
+**Theme:** Healthcare access · **State:** Maharashtra · **Built for:** Scaler × Wispr Flow "India Runs on Voice", Round 2 · **Builder:** Rohan Borade (solo)
 
 ## Try it in one minute
 
-1. Open the [visit page](https://ghar-bhet-194851097912.us-central1.run.app/visit). Pick **Newborn** and **Hindi**.
-2. Tap the mic (Chrome or Edge) and say: *"Sunita ka baby, saat din ka hai. Wajan ek kilo saat sau gram. Doodh kam pee raha hai, aur pasli chal rahi hai."* No microphone? Tap the first example.
-3. Watch the tiles fill: day 7, 1700 g, feeding less, chest indrawing. The phone says the danger aloud and stamps **REFER TODAY**.
-4. It asks for what's missing ("What is the baby's temperature?"). Answer, or tap **Save visit**.
-5. Open the [nurse's board](https://ghar-bhet-194851097912.us-central1.run.app/anm): the referral is there, with a printable slip.
+1. Open the [visit page](https://ghar-bhet-194851097912.us-central1.run.app/visit) in Chrome or Edge. Pick **Newborn** and **Hindi**.
+2. Tap the mic once and say: *"Sunita ka baby, saat din ka hai. Wajan ek kilo saat sau gram. Doodh kam pee raha hai, aur pasli chal rahi hai."* (Sunita's baby is 7 days old, weighs 1.7 kg, is feeding less, and her chest pulls in.) No microphone? Tap the first example.
+3. The tiles fill: 7 days, 1700 g, feeding poorly, chest indrawing. The phone says the danger aloud in Hindi and stamps **REFER TODAY**.
+4. It asks what's missing ("What is the baby's temperature?") and listens for your answer. Say a number, "nahi" to a yes/no question, or "chhodo" to skip.
+5. Say **"save karo"**. It reads the visit back in Hindi; say **"haan"**.
+6. Open the [nurse's board](https://ghar-bhet-194851097912.us-central1.run.app/anm): the referral is there with a printable slip. Tap its mic and ask *"Aaj kaun kaun refer hua?"* (Who was referred today?); it answers out loud.
 
 ## How it meets the Round 2 brief
 
-The brief asks for "something people in India do today by typing, tapping or filling forms", made to work by voice. An ASHA fills a visit form by hand for every home visit, and often types it again into an app. Ghar Bhet makes that form work by voice.
-
-The organisers' "How to approach it" has four parts. Here is each one, in their words, and how Ghar Bhet answers it.
+The brief asks for "something people in India do today by typing, tapping or filling forms", made to work by voice. An ASHA fills a visit form by hand for every home visit, and often types it again into an app. Ghar Bhet makes that form work by voice. The organisers' "How to approach it" has four parts; here is each one, in their words.
 
 ### 1. Judge the idea: "Is the problem real and frequent, and does voice make it better?"
 
-- **Real and frequent.** Every ASHA records home visits for every pregnancy and newborn in her village; around 1.5 crore newborns a year get ASHA home visits (SSBSK guidelines 2026). ASHAs keep a village health register, a diary and due lists, and are increasingly asked to re-enter the same visits in apps.
-- **Voice makes it better.** Her hands are busy with a baby, a thermometer or a weighing sling. In a 2024 study ASHAs found typing Hindi hard and used voice dictation instead (ASHABot, arXiv 2409.10913). Speaking is how she already reports to the ANM, and a danger sign said out loud is heard in the home, not later at her desk.
+- **Real.** Watched on 45 home newborn visits, ASHAs checked for lethargy in 33% and jaundice in 24%, and "had difficulty sequentially asking questions and examining newborns while simultaneously recording information" (Das et al., *Indian Pediatrics* 2014;51:142). In Pune district, two-thirds of ASHAs felt tired and rushed, and low literacy affected record keeping (Kawade et al., *Human Resources for Health* 2021). ASHAs in Maharashtra describe writing every visit twice, on paper and in apps, late into the night (New Lines Magazine).
+- **Frequent.** India registered 2.54 crore births in 2022 (CRS). Under the 2026 newborn guidelines (SSBSK) each baby gets at least 4 home visits, 9 if at risk: over 10 crore newborn visit records a year, before pregnancy visits.
+- **Voice makes it better.** Her hands are on a baby, a thermometer or a weighing sling; speaking keeps them there while the record fills, which is exactly the difficulty the 2014 study saw. In a 2024 pilot ASHAs found typing Hindi hard and used voice dictation instead (ASHABot, arXiv 2409.10913). And a danger sign said out loud is heard in the home, not found later at her desk.
 
 ### 2. Design it voice-first: "People finish the main flow by speaking."
 
-The whole visit is done by voice: she speaks the visit, the app asks out loud for anything missing ("Did you check her Hb?"), she answers by voice, corrects herself by voice ("nahi nahi, 150 by 100": the last value said wins), and can say "save". Danger alerts are spoken in her language. The nurse's side is voice-first too: on the board the ANM taps the mic and asks "Aaj kaun kaun refer hua?" (who was referred today?), "Aaj kiske ghar jaana hai?" (whose visits are due?) or about one person by name, and the board answers out loud in Hindi, Marathi or English. Typing exists only as a fallback for browsers without speech recognition.
+The whole visit is done by voice, with one tap to start:
+- she speaks the visit; the app asks out loud for anything missing and **opens the mic for the answer by itself**;
+- she answers with a number, "haan" or "nahi", corrects herself ("nahi nahi, 150 by 100": the last value said wins), or says "chhodo" (skip) or "pata nahi" (not checked);
+- danger signs are spoken in her language, with the action to take;
+- "save karo" reads the visit back in her language and saves on "haan"; it then says the referral has gone to the nurse;
+- voice commands also change the visit type, the language, start a new visit ("naya") or undo ("wapas");
+- the nurse asks the board out loud: who was referred, whose visits are due, how one person is, or "Sunita dekh liya" (mark as seen).
 
-### 3. Build a working prototype: "for one narrow use case."
+The mic pauses while the phone speaks, so it never hears itself. Typing is only a fallback, for browsers without speech recognition or a blocked mic. Offline, a saved visit waits on the phone and is sent when signal returns.
 
-One narrow flow, end to end: **a home visit becomes a checked record and, if needed, a referral the nurse sees at once.** It works today on the live link and with `docker compose up`.
+### 3. Build a working prototype: "Use a coding tool and Wispr Flow for one narrow use case."
+
+- **One narrow use case, end to end:** a home visit becomes a checked record and, if needed, a referral the nurse sees at once. It works on the live link and with `docker compose up`.
+- **Coding tool:** built during the hackathon (first commit 27 Nov 2026) with a coding tool. About 6,800 lines of our own code and tests: the reader (`understand.js`, about 1,070 lines), the rules (`rules.js`, about 540), the server (about 600), the pages, 62 automated tests and a 39-scenario browser voice test.
+- **Wispr Flow:** the visit page's text box works with any dictation tool that types, and we use Wispr Flow for the real-speech test: a person reads visit sentences aloud through Wispr Flow (and, separately, through the browser's mic) on the [real speech test page](https://ghar-bhet-194851097912.us-central1.run.app/dictation.html), and the reader is scored on exactly what the engine wrote. Results are on the [evidence page](https://ghar-bhet-194851097912.us-central1.run.app/evidence) once run.
 
 ### 4. Test it: "A few real users should finish the task unaided."
 
-- **Accuracy test:** 60 held-out spoken visits, written by a separate writer who never saw the code, in Hindi and Marathi (Devanagari and Roman script), Indian English and mixed language. Results above and on the [evidence page](https://ghar-bhet-194851097912.us-central1.run.app/evidence), misses included.
-- **User test:** see [docs/USER-TEST.md](docs/USER-TEST.md) for who tried it unaided and what happened.
+- **Accuracy, first run:** 60 held-out visit transcripts in Hindi and Marathi (Devanagari and Roman script), Indian English and mixed language. They and their right answers were written from the spec alone by a separate AI writing pass that never saw the code. 96.6% of fields, 37 of 38 danger visits, 1 of 22 false alarms. With today's rules (64, after the judges' review) the same 60 give 99.3%, 45 of 45 and 0 of 15, but that is after tuning, so the first run is the honest number. A second sealed set of 60 is run once, at the end.
+- **Against the guidelines, not our own rules:** 30 short cases labelled "should refer" straight from the guideline text. The first run, with the old 37-rule table, caught only 11 of 24. That gap is why the table now has 64 rules (25 of 25 today, tuned on since). Recorded in [eval/README.md](eval/README.md).
+- **Real speech:** the Wispr Flow and browser-mic runs above.
+- **Real users unaided:** see [docs/USER-TEST.md](docs/USER-TEST.md). Rows are added only after a real person has tried it.
 
 ## What it depends on, and what happens if that gets costly or stops
 
 | Part | Uses today | If it gets costly or stops |
 |---|---|---|
-| Hearing her voice | The browser's own speech recognition (Chrome, Edge) in hi-IN, mr-IN, en-IN | Typing always works; any speech engine that returns text can be swapped in |
+| Hearing her voice | The browser's speech recognition: Google's online service in Chrome, Microsoft's in Edge (hi-IN, mr-IN, en-IN). Free, needs a connection; we store no audio. | Typing always works. Any dictation tool that types text works, such as Wispr Flow. India's own speech services (Bhashini; IIT Madras's ASR lists Hindi and Marathi) or open models such as AI4Bharat IndicConformer can be swapped in. Chrome is adding on-device recognition. |
 | Reading the visit | Our rule-based reader, `public/js/understand.js` | Nothing to stop: no AI API, no key, no fee per visit |
-| Danger rules | A fixed, cited table, `public/js/rules.js` (37 rules) | Versioned in code; an update is a reviewed change |
+| Danger rules | A fixed, cited table, `public/js/rules.js` (64 rules, rule set mohfw-2026.2) | Versioned in code; an update is a reviewed change, not a model retrain |
 | Speaking alerts | The phone's own voices | Every alert is also on screen as text |
-| The register | One JSON file on a small server | Runs on any server or a PHC laptop |
+| No signal | Typing works offline | Saved visits wait on the phone and are sent when signal returns |
+| The register | A small Node server; on the live demo it is backed up to the app's own Cloud Storage bucket (free tier) | Runs on any server or a PHC laptop with `docker compose up` (a local JSON file) |
 
 ## How it works
 
 ```mermaid
 flowchart LR
-  A[ASHA speaks the visit] --> B[Browser speech to text<br/>hi-IN / mr-IN / en-IN]
-  B --> C[Reader: numbers in 3 languages,<br/>anchors, negation, corrections]
+  A[ASHA speaks the visit] --> B[Speech to text<br/>browser, or any dictation tool]
+  B --> C[Reader: numbers in 3 languages,<br/>anchors, negation, corrections,<br/>past vs present values]
   C --> D[Visit record<br/>with the words behind each value]
-  D --> E[Fixed rules<br/>MoHFW 2021 + SSBSK 2026]
+  D --> E[Fixed rules<br/>MoHFW manuals + SSBSK 2026]
   E -->|danger| F[Spoken alert + REFER TODAY]
-  E -->|missing field| G[Asks out loud]
+  E -->|missing or odd value| G[Asks out loud, mic opens]
   G --> A
-  D --> H[Save]
+  D --> H[Save by voice, read back]
   H --> I[Server re-checks with the same rules]
-  I --> J[Nurse's board, live + referral slip]
+  I --> J[Nurse's board, live + referral slip,<br/>answers spoken questions]
 ```
 
-- `public/js/understand.js`: the reader. Number words in Hindi, Marathi and English (dedh sau = 150, saadhe aath = 8.5, deedshe = 150, "one forty" = 140, "ek kilo saat sau gram" = 1700 g), Fahrenheit to Celsius, negation ("sujan nahin hai", "taap naahi", "no fits"), self-corrections, months vs weeks, Roman letters for display.
-- `public/js/rules.js`: 37 danger rules, each naming its source.
-- `public/js/ask.js`: the nurse's spoken questions to the board, answered from the register with fixed words.
-- `server/`: a zero-dependency Node server. It keeps the village register, re-checks every saved visit with the same rules (a client can't send its own flags), and streams referrals to the nurse's board with server-sent events.
-- `eval/`: the record spec, the test sets, the checker that re-computes every right answer from the rules, and `run.js`.
+- `public/js/understand.js`: the reader. Number words in Hindi, Marathi and English (dedh sau = 150, saadhe aath = 8.5, deedshe = 150, "one forty" = 140, "ek kilo saat sau gram" = 1700 g, "2,400 grams"), Fahrenheit to Celsius, BP said as "by", "bata" or "upar/neeche", negation ("sujan nahin hai", "taap naahi", "no fits", "jhatke? nahi"), self-corrections, past values ("pichli baar") losing to today's, other people's symptoms (the mother-in-law's) left out, and odd values ("400 grams") asked back. Roman letters for display.
+- `public/js/rules.js`: 64 rules, each with its threshold, source document and page or table, and spoken lines in Hindi, Marathi and English. `noted()` lists any sign she said that no rule covers, so nothing she says is silent.
+- `public/js/visit.js`, `voice.js`, `ask.js`: the voice loop on the phone and the nurse's spoken questions.
+- `server/`: a zero-dependency Node server. It keeps the village register, re-checks every saved visit with the same rules (a client can't send its own flags), rate-limits writes, and streams referrals to the nurse's board with server-sent events.
+- `eval/`: the record spec, the test sets, the checker that re-computes every right answer from the spec, and `run.js`. [eval/README.md](eval/README.md) says which command gives which published number.
 
 ```bash
-npm test                    # 17 tests: reader, rule thresholds, server, no regression on the tuning sets
-node eval/run.js heldout    # the held-out accuracy run
+npm test                          # 62 tests: reader, every rule threshold, server, judges' failure cases
+node eval/run.js heldout          # the held-out set with today's rules
+node eval/run.js vignettes        # the guideline cases
+node test/e2e/voice.e2e.mjs http://localhost:8080   # 39 browser voice scenarios (server started with ALLOW_RESET=1)
 ```
 
 ## Honest limits
 
-- **Not a medical device.** The rules support the ANM's and doctor's judgement and never replace it.
-- **Test sentences are written, not recorded.** They are in the style ASHAs speak, written from the spec and research; a pilot must measure real speech through speech-to-text.
-- **Speech recognition depends on the browser.** Chrome and Edge listen in Hindi, Marathi and English; other browsers can type.
-- **The village on the nurse's board is a made-up sample.** Visits you speak are added to it live.
+- **Not a medical device.** The rules support the nurse's and doctor's judgement and never replace it. No clinician has reviewed the table yet; a PHC medical officer's review is the first step of the pilot.
+- **The main test sentences are written, not recorded.** They are in the style ASHAs speak. Real speech is measured on a small set (Wispr Flow and the browser mic); a pilot must measure it at scale.
+- **Speech recognition depends on the browser** and needs a connection. Chrome and Edge listen in Hindi, Marathi and English; other browsers can type.
+- **The village on the nurse's board is a made-up sample.** Visits you speak are added to it live. The demo board is open so anyone can try it; a pilot adds a nurse login.
 - **Not integrated with government systems** (RCH, ANMOL, the planned Shaishav app). The record follows the MCP card and SSBSK fields so it could feed them.
 
 ## Sources
 
-Every threshold, with its source, is in [docs/RESEARCH.md](docs/RESEARCH.md) and on the [rules page](https://ghar-bhet-194851097912.us-central1.run.app/how). Key documents: SSBSK Operational Guidelines 2026; MoHFW/NHSRC CHO training manuals on pregnancy and on newborn health (2021); HBNC Operational Guidelines 2014; the Mother and Child Protection card.
+Every threshold, with its source, is in [docs/RESEARCH.md](docs/RESEARCH.md) and on the [rules page](https://ghar-bhet-194851097912.us-central1.run.app/how). Key documents: SSBSK Operational Guidelines 2026; MoHFW/NHSRC CHO training manuals on pregnancy and on newborn health (2021); HBNC Operational Guidelines 2014; the Mother and Child Protection card; SBA guidelines 2010; Maternal Near Miss guidelines 2014.
 
 ## License
 

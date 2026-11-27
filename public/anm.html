@@ -4,189 +4,274 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nurse's board · Ghar Bhet</title>
-<meta name="description" content="The ANM's view: open referrals arriving live from ASHAs' spoken visits, who is due a home visit today, and the village register.">
-<meta name="theme-color" content="#f4f1e8">
+<meta name="description" content="The nurse's view: open referrals arriving live from village health workers' spoken visits, who is due a home visit today, and the village register.">
+<meta name="theme-color" content="#f4f1e8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121417" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta property="og:image" content="/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@500&family=Patrick+Hand&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/app.css">
+<link rel="modulepreload" href="/js/ask.js"><link rel="modulepreload" href="/js/understand.js"><link rel="modulepreload" href="/js/voice.js"><link rel="modulepreload" href="/js/ui.js">
 <style>
   .b-wrap { padding-top: 26px; padding-bottom: 48px; }
   .b-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
   .b-head h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(30px, 3.4vw, 42px); margin: 0; line-height: 1.1; }
-  .b-head p { margin: 6px 0 0; }
+  .b-head p { margin: 6px 0 0; max-width: 70ch; }
   .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
   @media (max-width: 700px) { .stats { grid-template-columns: repeat(2, 1fr); } }
   .stat { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
   .stat b { display: block; font-family: var(--mono); font-weight: 500; font-size: 34px; line-height: 1.05; }
   .stat span { font-size: 14px; color: var(--ink-2); }
-  .stat.hot b { color: var(--refer); }
+  .stat small { display: block; font-size: 13px; color: var(--ink-3); margin-top: 4px; line-height: 1.35; }
+  .stat.hot b { color: var(--refer-text); }
   .b-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; align-items: start; }
   @media (max-width: 960px) { .b-grid { grid-template-columns: 1fr; } }
   .col { display: grid; gap: 12px; }
   .col > h2 { font-size: 17px; margin: 0; display: flex; gap: 10px; align-items: center; }
-  .ref { background: var(--card); border: 1px solid var(--line); border-left: 6px solid var(--refer); border-radius: 16px; padding: 14px 16px; position: relative; }
-  .ref.seen { border-left-color: var(--line-2); opacity: .78; }
+  .col > h2.later { margin-top: 10px; }
+  .ref { background: var(--card); border: 1px solid var(--line); border-left: 6px solid var(--refer); border-radius: 16px; padding: 14px 16px; }
+  .ref.seen { border-left-color: var(--line-2); }
+  .ref.seen h3, .ref.seen ul { opacity: .8; }
   .ref.arrive { animation: arrive 1.2s ease-out; }
   @keyframes arrive { 0% { transform: translateY(-8px); box-shadow: 0 0 0 4px var(--refer-soft); } 100% { transform: none; box-shadow: none; } }
+  .ref-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px 12px; flex-wrap: wrap; }
   .ref h3 { margin: 0 0 4px; font-family: var(--serif); font-size: 21px; font-weight: 600; }
+  .ref .stamp { font-size: 13px; padding: 3px 10px; border-width: 3px; flex: none; margin-top: 2px; }
   .ref ul { margin: 6px 0 10px; padding-left: 18px; font-size: 15px; color: var(--ink-2); }
   .ref .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .ref .stamp { position: absolute; right: 14px; top: 12px; font-size: 13px; }
   .due { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; display: grid; gap: 6px; }
-  .due-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .due-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
   .due-top b { font-size: 17px; }
   .plan { display: flex; gap: 4px; flex-wrap: wrap; }
-  .plan span { font-family: var(--mono); font-size: 12px; padding: 2px 7px; border-radius: 999px; background: var(--paper-2); color: var(--ink-3); }
-  .plan span.done { background: var(--ok-soft); color: var(--ok); }
-  .plan span.due { background: var(--voice); color: var(--voice-ink); font-weight: 600; }
-  .plan span.over { background: var(--refer-soft); color: var(--refer); }
+  .plan span, .legend i { font-family: var(--mono); font-size: 12px; padding: 2px 7px; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); font-style: normal; }
+  .plan span.done, .legend i.done { background: var(--ok-soft); color: var(--ok); }
+  .plan span.due, .legend i.due { background: var(--voice); color: var(--voice-ink); font-weight: 600; }
+  .plan span.over, .legend i.over { background: var(--refer-soft); color: var(--refer-text); }
+  .legend { display: flex; gap: 6px 10px; flex-wrap: wrap; font-size: 13px; color: var(--ink-3); align-items: center; margin: -4px 0 0; }
   .reg-wrap { margin-top: 28px; }
   .reg-wrap h2 { font-size: 17px; margin: 0 0 10px; }
-  .register { overflow-x: auto; }
-  .register table { min-width: 680px; }
   .register td.name { font-size: 22px; }
   .register td small { font-family: var(--sans); font-size: 13px; color: var(--ink-3); display: block; }
-  .empty { color: var(--ink-3); font-size: 15px; padding: 14px; border: 1px dashed var(--line-2); border-radius: 14px; }
-  .ask { background: var(--ink); color: var(--paper); border-radius: 22px; padding: 16px 18px; margin-bottom: 20px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 16px; align-items: center; }
+  .register .pill { font-size: 14px; }
+  .reg-cards { list-style: none; margin: 0; padding: 0; display: none; }
+  .reg-cards li { padding: 10px 12px; border-bottom: 1px solid var(--reg-rule); display: grid; gap: 2px; }
+  .reg-cards li:last-child { border-bottom: 0; }
+  .reg-cards .l1 { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .reg-cards .l1 b { font-family: var(--hand); font-weight: 400; font-size: 22px; color: var(--reg-ink); line-height: 1.2; }
+  .reg-cards .l2 { font-size: 14px; color: var(--ink-2); }
+  @media (max-width: 620px) { .register table { display: none; } .reg-cards { display: block; } .reg-head span:last-child { display: none; } }
+  .empty { color: var(--ink-3); font-size: 15px; padding: 14px; border: 1px dashed var(--line-2); border-radius: 14px; margin: 0; }
+  /* the ask panel stays dark in both themes, like the visit page's mic */
+  .ask { background: var(--mic-bg); color: var(--mic-ink); border: 1px solid var(--line); border-radius: 22px; padding: 16px 18px; margin-bottom: 20px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 16px; align-items: center; }
   .ask .mic { width: 64px; height: 64px; border-radius: 50%; border: 0; background: var(--voice); color: var(--voice-ink); cursor: pointer; display: grid; place-items: center; grid-row: span 2; }
+  .ask .mic:focus-visible { outline: 3px solid var(--mic-ink); outline-offset: 4px; box-shadow: none; }
   .ask .mic.on { animation: askring 1.4s infinite; }
   @keyframes askring { 0% { box-shadow: 0 0 0 0 rgba(242, 183, 5, .55); } 70% { box-shadow: 0 0 0 16px rgba(242, 183, 5, 0); } 100% { box-shadow: 0 0 0 0 rgba(242, 183, 5, 0); } }
   @media (prefers-reduced-motion: reduce) { .ask .mic.on { animation: none; outline: 3px solid var(--voice); outline-offset: 4px; } }
   .ask-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
   .ask-top b { font-size: 17px; }
-  .ask .seg { background: color-mix(in srgb, var(--paper) 14%, transparent); }
-  .ask .seg button { color: color-mix(in srgb, var(--paper) 80%, transparent); min-height: 34px; padding: 5px 11px; font-size: 14px; }
-  .ask .seg button[aria-pressed="true"] { background: var(--paper); color: var(--ink); }
-  .ask-heard { margin: 0; font-size: 15px; color: color-mix(in srgb, var(--paper) 72%, transparent); min-height: 1.4em; }
+  .ask .seg { background: color-mix(in srgb, var(--mic-ink) 14%, transparent); }
+  .ask .seg button { color: color-mix(in srgb, var(--mic-ink) 85%, transparent); padding: 5px 12px; font-size: 15px; }
+  .ask .seg button[aria-pressed="true"] { background: var(--mic-ink); color: var(--mic-bg); }
+  .ask-heard { margin: 0; font-size: 15px; color: color-mix(in srgb, var(--mic-ink) 80%, transparent); min-height: 1.4em; }
+  .ask-heard.err { background: var(--alert-bg); color: #fff; padding: 6px 10px; border-radius: 10px; font-weight: 600; }
   .ask-chips { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
-  .ask-chips button { font: inherit; font-size: 14px; border: 1px solid color-mix(in srgb, var(--paper) 30%, transparent); background: none; color: var(--paper); border-radius: 999px; padding: 6px 12px; cursor: pointer; min-height: 36px; }
+  .ask-chips button { font: inherit; font-size: 15px; border: 1px solid color-mix(in srgb, var(--mic-ink) 35%, transparent); background: none; color: var(--mic-ink); border-radius: 999px; padding: 6px 14px; cursor: pointer; min-height: 44px; }
   .ask-chips button:hover { border-color: var(--voice); }
+  .ask-chips button small { display: block; font-size: 12px; color: color-mix(in srgb, var(--mic-ink) 65%, transparent); }
   .ask-out { grid-column: 1 / -1; background: var(--card); color: var(--ink); border-radius: 14px; padding: 12px 14px; margin-top: 8px; }
   .ask-out p { margin: 0; font-size: 17px; line-height: 1.45; }
+  .ask-out p.thinking { color: var(--ink-3); }
   .ask-out ul { margin: 8px 0 0; padding-left: 18px; font-size: 15px; color: var(--ink-2); }
-  @media (max-width: 520px) { .ask { padding: 14px; gap: 6px 12px; } .ask .mic { width: 56px; height: 56px; } .ask-heard { grid-column: 1 / -1; } .ask-chips button { font-size: 13px; padding: 5px 10px; } }
+  .ask-out .hear { margin-top: 8px; }
+  @media (max-width: 520px) { .ask { padding: 14px; gap: 6px 12px; } .ask .mic { width: 56px; height: 56px; } .ask-heard { grid-column: 1 / -1; } .ask-chips button { font-size: 14px; padding: 5px 10px; } }
 </style>
 </head>
 <body>
 <header id="top"></header>
-<main class="wrap b-wrap">
+<main class="wrap b-wrap" id="board">
   <div class="b-head">
-    <div><h1 id="vname">The nurse's board</h1><p class="muted" id="vmeta">Loading the village register…</p></div>
-    <span class="pill" id="live-pill">Connecting…</span>
+    <div><h1 id="vname">The nurse's board</h1>
+      <p class="muted">For the nurse (ANM, auxiliary nurse-midwife) who looks after the village's mothers and babies. Referrals from the village health workers' spoken visits arrive here live.</p>
+      <p class="faint" id="vmeta">Loading the village register…</p></div>
+    <span class="pill" id="live-pill" role="status">Connecting…</span>
   </div>
   <section class="ask" aria-label="Ask the board out loud">
-    <button class="mic" id="ask-mic" aria-label="Ask the board a question out loud"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button>
+    <button class="mic" id="ask-mic" aria-label="Ask the board a question out loud" aria-pressed="false"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button>
     <div class="ask-top"><b>Ask the board out loud</b>
       <div class="seg" role="group" aria-label="Language you ask in"><button data-alang="hi" aria-pressed="true">Hindi</button><button data-alang="mr" aria-pressed="false">Marathi</button><button data-alang="en" aria-pressed="false">English</button></div></div>
-    <p class="ask-heard" id="ask-heard" aria-live="polite">Tap the mic and ask, for example "Aaj kaun kaun refer hua?"</p>
+    <p class="ask-heard" id="ask-heard" aria-live="polite"></p>
     <div class="ask-chips" id="ask-chips"></div>
     <div class="ask-out" id="ask-out" hidden aria-live="polite"></div>
   </section>
   <div class="stats" id="stats"></div>
   <div class="b-grid">
-    <section class="col" aria-label="Open referrals"><h2>Referrals from today's visits</h2><div class="col" id="refs"></div></section>
-    <section class="col" aria-label="Due today"><h2>Visits due today</h2><p class="faint" style="margin:-6px 0 0">Newborn days follow the 2026 SSBSK schedule: 3, 7, 14, 42, or nine visits for a baby at risk.</p><div class="col" id="due"></div></section>
+    <section class="col" aria-label="Referrals">
+      <h2 id="open-h">Open referrals</h2><div class="col" id="refs"></div>
+      <h2 class="later" id="seen-h">Seen recently</h2><div class="col" id="seen"></div>
+    </section>
+    <section class="col" aria-label="Due today"><h2>Visits due today</h2>
+      <p class="faint" style="margin:-6px 0 0">Newborn visits follow the 2026 newborn guidelines (SSBSK): days 3, 7, 14 and 42, or nine visits for a baby with low weight or a danger sign.</p>
+      <p class="legend" aria-hidden="true"><i class="done">done</i><i class="due">today</i><i class="over">missed</i><i>later</i></p>
+      <div class="col" id="due"></div></section>
   </div>
   <section class="reg-wrap" aria-label="Village register">
     <h2>Village register</h2>
-    <div class="register"><div class="reg-head"><span id="reg-title">Register</span><span>Last visit and result</span></div><table><thead><tr><th style="width:auto">Name</th><th style="width:auto">Who</th><th style="width:auto">Last visit</th><th style="width:auto">Result</th><th style="width:auto">Visits</th></tr></thead><tbody id="reg"></tbody></table></div>
+    <div class="register"><div class="reg-head"><span id="reg-title">Register</span><span>Last visit and result</span></div>
+      <table><thead><tr><th style="width:auto">Name</th><th style="width:auto">Who</th><th style="width:auto">Last visit</th><th style="width:auto">Result</th><th style="width:auto">Visits</th></tr></thead><tbody id="reg"></tbody></table>
+      <ul class="reg-cards" id="reg-cards"></ul></div>
   </section>
 </main>
 <footer id="foot"></footer>
 <script type="module">
 import { mountChrome, api, esc, ago } from "/js/ui.js";
+import { answer, findPerson, toWatch, statusEn, reason } from "/js/ask.js";
+import { dictate, speak, hush, support } from "/js/voice.js";
+import { romanize } from "/js/understand.js";
 mountChrome("/anm");
 const $ = (s) => document.querySelector(s);
-let S = null, seenIds = new Set(), firstPaint = true;
+let S = null, seenIds = new Set(), firstPaint = true, interacted = false, announce = [];
 const KIND = { baby: "Newborn", pregnant: "Pregnant", mother: "After birth" };
 const who = (p) => p.kind === "baby" ? `${esc(p.name)}'s baby` : esc(p.name);
-const status = (p) => p.kind === "baby" ? `day ${p.dayOfLife ?? "?"}${p.atRisk ? ", at risk" : ""}` : p.kind === "pregnant" ? `${p.weeks ?? "?"} weeks` : `day ${p.dayAfter ?? "?"} after birth`;
+const visitType = (p) => p.kind === "baby" ? "newborn" : p.kind === "pregnant" ? "anc" : "pnc";
+const SPK = `<svg class="ic" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>`;
+addEventListener("pointerdown", () => (interacted = true), { once: true, capture: true });
+addEventListener("keydown", () => (interacted = true), { once: true, capture: true });
 
+function refCard(r) {
+  const open = r.status === "open";
+  return `<article class="ref ${open ? "" : "seen"} ${!firstPaint && !seenIds.has(r.id) ? "arrive" : ""}">
+    <div class="ref-head"><h3>${r.type === "newborn" ? `${esc(r.name)}'s baby` : esc(r.name)}</h3>${open ? `<span class="stamp">REFER TODAY</span>` : ""}</div>
+    <p class="faint" style="margin:0">${r.type === "newborn" ? "Newborn visit" : r.type === "anc" ? "Pregnancy visit" : "Mother after birth"} · ${ago(r.at)}${r.sample ? " · sample" : ""}</p>
+    <ul>${r.flags.map((f) => `<li><b>${esc(f.title)}.</b> ${esc(f.why)} ${esc(f.action)}</li>`).join("")}</ul>
+    <div class="row"><a class="btn small" href="/slip/${esc(r.id)}">Referral slip</a>${open ? `<button class="btn small ghost" data-seen="${esc(r.id)}">Mark as seen</button>` : `<span class="pill ok">Seen ${r.seenAt ? ago(r.seenAt) : ""}${r.seenBy ? ` by ${esc(r.seenBy)}` : ""}</span><button class="btn small ghost" data-open="${esc(r.id)}">Undo</button>`}</div>
+  </article>`;
+}
 function paint() {
-  const t = S.totals;
+  const t = S.totals, watch = toWatch(S.people);
   $("#vname").textContent = `${S.village.name}: the nurse's board`;
   $("#vmeta").textContent = `${S.village.block}${S.village.sample ? ". The people here are made-up samples; visits you speak on the visit page are added live." : ""}`;
-  $("#stats").innerHTML = [[t.openReferrals, "open referrals", t.openReferrals ? "hot" : ""], [t.highRisk, "at risk after their last visit", ""], [t.dueToday, "visits due today", ""], [t.visitsThisWeek, "visits this week", ""]]
-    .map(([n, l, c]) => `<div class="stat ${c}"><b>${n}</b><span>${l}</span></div>`).join("");
-  // referrals
-  const refs = S.referrals.slice(0, 12);
-  $("#refs").innerHTML = refs.length ? refs.map((r) => `<article class="ref ${r.status === "seen" ? "seen" : ""} ${!firstPaint && !seenIds.has(r.id) ? "arrive" : ""}">
-      ${r.status === "open" ? `<span class="stamp">REFER TODAY</span>` : ""}
-      <h3>${r.type === "newborn" ? `${esc(r.name)}'s baby` : esc(r.name)}</h3>
-      <p class="faint" style="margin:0">${r.type === "newborn" ? "Newborn visit" : r.type === "anc" ? "Pregnancy visit" : "After birth"} · ${ago(r.at)}${r.sample ? " · sample" : ""}</p>
-      <ul>${r.flags.map((f) => `<li><b>${esc(f.title)}.</b> ${esc(f.why)} ${esc(f.action)}</li>`).join("")}</ul>
-      <div class="row"><a class="btn small" href="/slip/${r.id}">Referral slip</a>${r.status === "open" ? `<button class="btn small ghost" data-seen="${r.id}">Mark as seen</button>` : `<span class="pill ok">Seen ${r.seenAt ? ago(r.seenAt) : ""}</span>`}</div>
-    </article>`).join("") : `<p class="empty">No referrals. When an ASHA's visit finds a danger sign, it appears here at once.</p>`;
-  refs.forEach((r) => seenIds.add(r.id));
-  $("#refs").querySelectorAll("[data-seen]").forEach((b) => b.addEventListener("click", async () => { b.disabled = true; b.textContent = "Saving…"; try { await api(`/api/referrals/${b.dataset.seen}/seen`, { by: "ANM" }); } catch (e) { b.textContent = e.message; } }));
+  const open = S.referrals.filter((r) => r.status === "open"), seen = S.referrals.filter((r) => r.status !== "open").slice(0, 6);
+  const watchNames = watch.map((p) => (p.kind === "baby" ? `${p.name}'s baby` : p.name));
+  $("#stats").innerHTML = [[open.length, "open referrals", open.length ? "hot" : "", ""], [watch.length, "to watch after their last visit", "", watchNames.join(", ")], [t.dueToday, "visits due today", "", ""], [t.visitsThisWeek, "visits this week", "", ""]]
+    .map(([n, l, c, names]) => `<div class="stat ${c}"><b>${n}</b><span>${l}</span>${names ? `<small>${esc(names)}</small>` : ""}</div>`).join("");
+  $("#open-h").textContent = `Open referrals (${open.length})`;
+  $("#refs").innerHTML = open.length ? open.map(refCard).join("") : `<p class="empty">No open referrals. When a health worker's visit finds a danger sign, it appears here at once.</p>`;
+  $("#seen-h").hidden = !seen.length;
+  $("#seen").innerHTML = seen.map(refCard).join("");
+  S.referrals.forEach((r) => seenIds.add(r.id));
+  document.querySelectorAll("[data-seen]").forEach((b) => b.addEventListener("click", () => mark(b, b.dataset.seen, "seen")));
+  document.querySelectorAll("[data-open]").forEach((b) => b.addEventListener("click", () => mark(b, b.dataset.open, "open")));
   // due today
   const due = S.people.filter((p) => p.dueToday).sort((a, b) => (b.atRisk ? 1 : 0) - (a.atRisk ? 1 : 0));
-  $("#due").innerHTML = due.length ? due.map((p) => `<div class="due"><div class="due-top"><b>${who(p)}</b><span class="faint">${status(p)}</span></div>
-      ${p.plan ? `<div class="plan" aria-label="Visit plan">${p.plan.map((d) => `<span class="${d.done ? "done" : d.due ? "due" : d.overdue ? "over" : ""}">day ${d.day}</span>`).join("")}</div>` : `<p class="faint" style="margin:0">Monthly pregnancy visit${p.last ? `; last ${ago(p.last.at)}` : ""}.</p>`}
-      ${p.last?.refer ? `<span class="pill refer">Referred after last visit</span>` : p.last?.watch ? `<span class="pill watch">Watch</span>` : ""}
-      <a class="btn small ghost" href="/visit?type=${p.kind === "baby" ? "newborn" : p.kind === "pregnant" ? "anc" : "pnc"}" style="justify-self:start">Start this visit</a></div>`).join("") : `<p class="empty">No visits due today.</p>`;
-  // register
+  $("#due").innerHTML = due.length ? due.map((p) => `<div class="due"><div class="due-top"><b>${who(p)}</b><span class="faint">${esc(statusEn(p))}</span></div>
+      ${p.plan ? `<div class="plan" aria-label="Visit plan">${p.plan.map((d) => `<span class="${d.done ? "done" : d.due ? "due" : d.overdue ? "over" : ""}" title="day ${d.day}: ${d.done ? "done" : d.due ? "due today" : d.overdue ? "missed" : "later"}">day ${d.day}</span>`).join("")}</div>` : `<p class="faint" style="margin:0">Monthly pregnancy visit${p.last ? `; last ${ago(p.last.at)}` : ""}.</p>`}
+      ${p.last?.refer ? `<span class="pill refer" style="justify-self:start">Referred after last visit</span>` : p.last?.watch ? `<span class="pill watch" style="justify-self:start">Watch</span>` : ""}
+      <a class="btn small ghost" href="/visit?type=${visitType(p)}&person=${encodeURIComponent(p.id)}" style="justify-self:start">Start this visit</a></div>`).join("") : `<p class="empty">No visits due today.</p>`;
+  // register: a table on wide screens, two-line cards on phones
+  const rows = [...S.people].sort((a, b) => (b.last?.at || 0) - (a.last?.at || 0));
+  const result = (p) => p.last ? (p.last.refer ? `<span class="pill refer">refer today</span>` : p.last.watch ? `<span class="pill watch">watch</span>` : `<span class="pill ok">fine</span>`) : `<span class="pill">no visit yet</span>`;
   $("#reg-title").textContent = `Register: ${S.people.length} people`;
-  $("#reg").innerHTML = [...S.people].sort((a, b) => (b.last?.at || 0) - (a.last?.at || 0)).map((p) => `<tr>
+  $("#reg").innerHTML = rows.map((p) => `<tr>
       <td class="name">${who(p)}<small>${p.sample ? "sample" : "added by a visit"}</small></td>
-      <td>${KIND[p.kind]}<small>${status(p)}</small></td>
+      <td>${KIND[p.kind]}<small>${esc(statusEn(p))}</small></td>
       <td>${p.last ? ago(p.last.at) : "no visit yet"}</td>
-      <td>${p.last ? (p.last.refer ? `<span class="pill refer">refer</span>` : p.last.watch ? `<span class="pill watch">watch</span>` : `<span class="pill ok">fine</span>`) : "—"}</td>
+      <td>${result(p)}</td>
       <td>${p.visits}</td></tr>`).join("");
+  $("#reg-cards").innerHTML = rows.map((p) => `<li><div class="l1"><b>${who(p)}</b>${result(p)}</div><div class="l2">${p.kind === "baby" ? "Newborn, " : ""}${esc(statusEn(p))} · ${p.last ? `last visit ${ago(p.last.at)}` : "no visit yet"} · ${p.visits} visit${p.visits === 1 ? "" : "s"}</div></li>`).join("");
   firstPaint = false;
+  // a new referral that arrived live is said out loud (only after a tap, so the browser allows sound)
+  while (announce.length) {
+    const id = announce.shift(), r = S.referrals.find((x) => x.id === id);
+    if (!r || !interacted) continue;
+    const w = { en: r.type === "newborn" ? `${r.name}'s baby` : r.name, hi: r.type === "newborn" ? `${r.name} का बच्चा` : r.name, mr: r.type === "newborn" ? `${r.name} चं बाळ` : r.name };
+    const line = { en: `New referral: ${w.en}, ${reason(r.flags[0], "en")}.`, hi: `नया रेफरल: ${w.hi}, ${reason(r.flags[0], "hi")}।`, mr: `नवीन रेफरल: ${w.mr}, ${reason(r.flags[0], "mr")}.` };
+    speak(line[ALANG], ALANG);
+  }
 }
+async function mark(btn, id, to) {
+  btn.disabled = true; btn.textContent = "Saving…";
+  try { await api(`/api/referrals/${encodeURIComponent(id)}/${to}`, { by: "Nurse" }); await refresh(); }
+  catch (e) { btn.disabled = false; btn.textContent = e.status === 404 && to === "open" ? "Can't undo here" : e.message; }
+}
+async function refresh() { try { S = await api("/api/state"); paint(); } catch (e) { $("#vmeta").textContent = e.message; } }
 
+let poll = null;
 async function start() {
-  try { S = await api("/api/state"); paint(); } catch (e) { $("#vmeta").textContent = e.message; }
-  if (!window.EventSource) return;
+  await refresh();
+  if (!window.EventSource) { poll = setInterval(refresh, 30000); return; }
   const es = new EventSource("/api/stream");
-  es.addEventListener("open", () => { $("#live-pill").className = "pill live"; $("#live-pill").textContent = "Live"; });
-  es.addEventListener("error", () => { $("#live-pill").className = "pill"; $("#live-pill").textContent = "Reconnecting…"; });
+  es.addEventListener("open", () => { $("#live-pill").className = "pill live"; $("#live-pill").textContent = "Live"; clearInterval(poll); poll = null; });
+  es.addEventListener("error", () => {
+    if (es.readyState === EventSource.CLOSED) {
+      $("#live-pill").className = "pill"; $("#live-pill").textContent = "Live updates paused, refresh later";
+      if (!poll) poll = setInterval(refresh, 30000);
+    } else { $("#live-pill").className = "pill"; $("#live-pill").textContent = "Reconnecting…"; }
+  });
   es.addEventListener("state", (e) => { S = JSON.parse(e.data); paint(); });
   es.addEventListener("visit", (e) => {
     const v = JSON.parse(e.data);
-    if (v.refer && "Notification" in window === false) return;
-    if (v.refer) { try { const a = new AudioContext(); const o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; g.gain.value = .05; o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime + .18); } catch {} }
+    if (!v.refer) return;
+    announce.push(v.id);
+    if (interacted) { try { const a = new AudioContext(); const o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; g.gain.value = .05; o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime + .18); } catch {} }
   });
   setInterval(() => S && paint(), 60000);
 }
-start();
 
 // ---- Ask the board: the nurse's side is voice-first too ----
 let ALANG = "hi", session = null;
-const CHIPS = { hi: ["Aaj kaun kaun refer hua?", "Aaj kiske ghar jaana hai?", "Kaun khatre mein hai?", "Sunita ka baby kaisa hai?"],
-  mr: ["Aaj konala refer kela?", "Aaj konachi bhet baaki aahe?", "Kon dhokyat aahe?"],
-  en: ["Who was referred today?", "Whose visits are due today?", "Who is at risk?", "How is Meena?"] };
-function setALang(l) { ALANG = l; document.querySelectorAll("[data-alang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.alang === l)));
-  $("#ask-chips").innerHTML = CHIPS[l].map((c) => `<button>${esc(c)}</button>`).join("");
-  $("#ask-chips").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => respond(b.textContent))); }
+const CHIPS = { hi: [["Aaj kaun kaun refer hua?", "Who was referred today?"], ["Aaj kiske ghar jaana hai?", "Whose homes to visit today?"], ["Kis par dhyan rakhna hai?", "Who to watch?"], ["Meena ka BP kitna tha?", "What was Meena's BP?"], ["Sunita dekh liya", "Mark Sunita's referral seen"]],
+  mr: [["Aaj konala refer kela?", "Who was referred today?"], ["Aaj konachi bhet baaki aahe?", "Whose visits are due today?"], ["Konakade laksh dyayche?", "Who to watch?"]],
+  en: [["Who was referred today?"], ["Whose visits are due today?"], ["Who is at risk?"], ["What was Meena's BP?"], ["Sunita seen"]] };
+const HINT = { hi: 'Tap the mic and ask, for example "Aaj kaun kaun refer hua?" (who was referred today?)', mr: 'Tap the mic and ask, for example "Aaj konala refer kela?" (who was referred today?)', en: 'Tap the mic and ask, for example "Who was referred today?"' };
+function setALang(l) {
+  ALANG = l; document.querySelectorAll("[data-alang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.alang === l)));
+  $("#ask-chips").innerHTML = CHIPS[l].map(([c, en]) => `<button data-q="${esc(c)}">${esc(c)}${en ? `<small>${esc(en)}</small>` : ""}</button>`).join("");
+  $("#ask-chips").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => respond(b.dataset.q)));
+  if (!session) { $("#ask-heard").textContent = HINT[l]; $("#ask-heard").className = "ask-heard"; }
+}
 document.querySelectorAll("[data-alang]").forEach((b) => b.addEventListener("click", () => setALang(b.dataset.alang)));
 async function respond(q) {
-  if (!S) return;
-  const [{ answer }, { speak, hush, romanize }] = await Promise.all([import("/js/ask.js"), import("/js/voice.js").then(async (v) => ({ ...v, romanize: (await import("/js/understand.js")).romanize }))]);
-  const a = answer(q, S);
-  $("#ask-heard").textContent = `You asked: "${romanize(q)}"`;
   const out = $("#ask-out"); out.hidden = false;
-  out.innerHTML = `<p>${esc(a.en)}</p>${a.items && a.items.length > 1 ? `<ul>${a.items.map((i) => `<li>${i.id ? `<a href="/slip/${i.id}">${esc(i.text)}</a>` : esc(i.text)}</li>`).join("")}</ul>` : ""}`;
+  $("#ask-heard").className = "ask-heard";
+  $("#ask-heard").textContent = `You asked: "${romanize(q)}"`;
+  out.innerHTML = `<p class="thinking">Thinking…</p>`;
+  if (!S) await refresh();
+  if (!S) { out.innerHTML = `<p>Couldn't reach the register. Check the connection.</p>`; return; }
+  // a named person's last values come from their last visit
+  let state = S;
+  const p = findPerson(q, S.people || []);
+  if (p?.last?.id && !p.last.record) {
+    try { const v = await api(`/api/visits/${encodeURIComponent(p.last.id)}`); state = { ...S, people: S.people.map((x) => x.id === p.id ? { ...x, last: { ...x.last, record: v.record } } : x) }; } catch {}
+  }
+  const a = answer(q, state);
+  if (a.intent === "seen" && a.id) {
+    try { await api(`/api/referrals/${encodeURIComponent(a.id)}/seen`, { by: "Nurse" }); await refresh(); }
+    catch (e) { out.innerHTML = `<p>${esc(e.message)}</p>`; return; }
+  }
+  out.innerHTML = `<p>${esc(a.en)}</p>${a.items && a.items.length > 1 ? `<ul>${a.items.map((i) => `<li>${i.id ? `<a href="/slip/${esc(i.id)}">${esc(i.text)}</a>` : esc(i.text)}</li>`).join("")}</ul>` : ""}<button class="hear" type="button" id="ask-hear">${SPK}<span>Hear it again</span></button>`;
+  $("#ask-hear").onclick = () => { hush(); speak(a[ALANG] || a.en, ALANG); };
   hush(); speak(a[ALANG] || a.en, ALANG);
 }
+const MIC_ERR = { "not-allowed": "The microphone is blocked. Allow it in the address bar, or tap a question below.", "service-not-allowed": "This browser won't let the page listen. Tap a question below, or use Chrome or Edge.", network: "No internet, so this browser can't listen. Tap a question below.", "audio-capture": "No microphone was found. Tap a question below.", "language-not-supported": "This browser can't listen in that language. Try Hindi or English, or tap a question." };
 $("#ask-mic").addEventListener("click", async () => {
-  const btn = $("#ask-mic");
+  const btn = $("#ask-mic"), heard = $("#ask-heard");
   if (session) { session.stop(); return; }
-  const { dictate, support, hush } = await import("/js/voice.js");
-  if (!support().stt) { $("#ask-heard").textContent = "This browser can't listen. Tap a question below, or open this page in Chrome or Edge."; return; }
-  hush(); btn.classList.add("on"); btn.setAttribute("aria-label", "Stop listening");
-  $("#ask-heard").textContent = "Listening…";
-  session = dictate({ lang: ALANG, quietMs: 1500,
-    onInterim: (i, f) => { $("#ask-heard").textContent = (f + " " + i).trim() || "Listening…"; },
-    onError: (e) => { if (e === "not-allowed" || e === "service-not-allowed") $("#ask-heard").textContent = "The microphone is blocked. Allow it in the address bar, or tap a question below."; } });
+  if (!support().stt) { heard.textContent = "This browser can't listen. Tap a question below, or open this page in Chrome or Edge."; heard.className = "ask-heard err"; return; }
+  hush(); btn.classList.add("on"); btn.setAttribute("aria-label", "Stop listening"); btn.setAttribute("aria-pressed", "true");
+  heard.className = "ask-heard"; heard.textContent = "Listening…";
+  let err = null;
+  session = dictate({ lang: ALANG, quietMs: 1500, firstMs: 8000,
+    onInterim: (i, f) => { heard.textContent = romanize((f + " " + i).trim()) || "Listening…"; },
+    onError: (e) => { err = e; heard.textContent = MIC_ERR[e] || `Couldn't hear (${e}). Tap the mic to try again.`; heard.className = "ask-heard err"; } });
   const text = await session.done; session = null;
-  btn.classList.remove("on"); btn.setAttribute("aria-label", "Ask the board a question out loud");
-  if (text) respond(text); else if ($("#ask-heard").textContent === "Listening…") $("#ask-heard").textContent = "Didn't hear a question. Tap the mic and try again, or tap a question below.";
+  btn.classList.remove("on"); btn.setAttribute("aria-label", "Ask the board a question out loud"); btn.setAttribute("aria-pressed", "false");
+  if (text) respond(text);
+  else if (!err) heard.textContent = "Didn't hear a question. Tap the mic and try again, or tap a question below.";
 });
 setALang("hi");
+start();
 window.__ask = (q) => respond(q);
 </script>
 </body>

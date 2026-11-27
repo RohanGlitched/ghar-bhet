@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Real speech test · Ghar Bhet</title>
+<meta name="description" content="Read 12 visit sentences aloud through Wispr Flow or the browser's microphone, to measure the reader on real speech.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f4f1e8">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+  .d-wrap { padding-top: 26px; padding-bottom: 56px; max-width: 760px; }
+  .d-wrap h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(28px, 3.2vw, 38px); margin: 0 0 8px; line-height: 1.12; }
+  .d-steps { margin: 0 0 18px; padding-left: 20px; color: var(--ink-2); }
+  .d-steps li { margin: 4px 0; }
+  .d-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; display: grid; gap: 12px; }
+  .d-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .d-read { font-family: var(--serif); font-size: clamp(21px, 2.4vw, 26px); line-height: 1.45; margin: 0; }
+  .d-meta { font-family: var(--mono); font-size: 13px; color: var(--ink-3); }
+  .d-card textarea { width: 100%; min-height: 110px; font: inherit; font-size: 17px; padding: 12px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--paper); color: var(--ink); box-sizing: border-box; }
+  .d-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .d-bar { height: 6px; border-radius: 3px; background: var(--paper-2); overflow: hidden; }
+  .d-bar i { display: block; height: 100%; background: var(--voice); width: 0; transition: width .2s; }
+  .d-done { display: grid; gap: 10px; }
+  .d-done pre { white-space: pre-wrap; word-break: break-word; font-size: 12px; max-height: 220px; overflow: auto; background: var(--paper-2); padding: 10px; border-radius: 10px; }
+</style>
+</head>
+<body>
+<header id="top"></header>
+<main class="wrap d-wrap">
+  <h1>Real speech test</h1>
+  <p class="muted" style="margin:0 0 12px">The accuracy on the results page comes from written transcripts. This page measures real speech: a person reads 12 visits aloud, and the words the speech engine writes down are scored against the right answers.</p>
+  <ol class="d-steps">
+    <li>Pick the engine. <b>Wispr Flow</b>: click in the box and dictate with your Wispr Flow shortcut. <b>Browser mic</b>: tap the mic (Chrome or Edge).</li>
+    <li>Read the sentence aloud at a normal pace, the way you'd tell a nurse. Don't fix what the engine writes.</li>
+    <li>Press <b>Next</b>. At the end, download the results file.</li>
+  </ol>
+  <div class="seg" role="group" aria-label="Speech engine" style="margin-bottom:14px"><button data-eng="wispr" aria-pressed="true">Wispr Flow</button><button data-eng="browser" aria-pressed="false">Browser mic</button></div>
+  <div id="stage"></div>
+</main>
+<footer id="foot"></footer>
+<script type="module" src="/js/dictation.js"></script>
+</body>
+</html>

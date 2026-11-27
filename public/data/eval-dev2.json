@@ -1,7 +1,7 @@
 {
  "set": "dev2",
- "run_at": "2026-11-27T07:42:13.394Z",
- "ruleset": "mohfw-2026.1",
+ "run_at": "2026-11-27T08:53:10.416Z",
+ "ruleset": "mohfw-2026.2",
  "typed": {
   "mode": "typed",
   "items": 80,
@@ -14,20 +14,20 @@
   },
   "type_detected": 100,
   "danger": {
-   "visits": 40,
-   "caught": 40,
+   "visits": 50,
+   "caught": 50,
    "caught_pct": 100,
-   "normal_visits": 40,
+   "normal_visits": 30,
    "false_alarms": 0,
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 85,
-   "predicted": 84,
-   "correct": 84,
-   "recall": 98.8,
+   "gold": 108,
+   "predicted": 107,
+   "correct": 107,
+   "recall": 99.1,
    "precision": 100,
-   "refer_now_recall": 98.4
+   "refer_now_recall": 98.8
   },
   "exact_visits": 93.8,
   "by_field": {
@@ -188,9 +188,9 @@
     "pct": 88.9
    },
    "normal-visit": {
-    "n": 24,
-    "ok": 21,
-    "pct": 87.5
+    "n": 19,
+    "ok": 16,
+    "pct": 84.2
    },
    "celsius": {
     "n": 11,
@@ -198,9 +198,9 @@
     "pct": 90.9
    },
    "watch-only": {
-    "n": 16,
-    "ok": 15,
-    "pct": 93.8
+    "n": 11,
+    "ok": 11,
+    "pct": 100
    },
    "multi-sign": {
     "n": 26,
@@ -352,27 +352,27 @@
   "items": 80,
   "fields": {
    "gold": 389,
-   "predicted": 376,
+   "predicted": 374,
    "correct": 373,
    "recall": 95.9,
-   "precision": 99.2
+   "precision": 99.7
   },
   "type_detected": 91.3,
   "danger": {
-   "visits": 40,
-   "caught": 39,
-   "caught_pct": 97.5,
-   "normal_visits": 40,
-   "false_alarms": 1,
-   "false_alarm_pct": 2.5
+   "visits": 50,
+   "caught": 49,
+   "caught_pct": 98,
+   "normal_visits": 30,
+   "false_alarms": 0,
+   "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 85,
-   "predicted": 81,
-   "correct": 78,
-   "recall": 91.8,
-   "precision": 96.3,
-   "refer_now_recall": 91.9
+   "gold": 108,
+   "predicted": 100,
+   "correct": 96,
+   "recall": 88.9,
+   "precision": 96,
+   "refer_now_recall": 90.2
   },
   "exact_visits": 87.5,
   "by_field": {
@@ -400,16 +400,16 @@
    "feeding": {
     "gold": 23,
     "hit": 21,
-    "pred": 22,
+    "pred": 21,
     "recall": 91.3,
-    "precision": 95.5
+    "precision": 100
    },
    "symptoms": {
     "gold": 106,
     "hit": 95,
-    "pred": 96,
+    "pred": 95,
     "recall": 89.6,
-    "precision": 99
+    "precision": 100
    },
    "resp_rate": {
     "gold": 7,
@@ -533,9 +533,9 @@
     "pct": 66.7
    },
    "normal-visit": {
-    "n": 24,
-    "ok": 19,
-    "pct": 79.2
+    "n": 19,
+    "ok": 15,
+    "pct": 78.9
    },
    "celsius": {
     "n": 11,
@@ -543,9 +543,9 @@
     "pct": 72.7
    },
    "watch-only": {
-    "n": 16,
-    "ok": 14,
-    "pct": 87.5
+    "n": 11,
+    "ok": 9,
+    "pct": 81.8
    },
    "multi-sign": {
     "n": 26,
@@ -664,7 +664,9 @@
     ],
     "flags_want": [
      "nb_lethargy",
-     "nb_not_feeding"
+     "nb_not_feeding",
+     "nb_sepsis_signs",
+     "nb_weak_cry"
     ],
     "flags_got": []
    },
@@ -686,9 +688,12 @@
      "feeding: want \"good\" got undefined"
     ],
     "flags_want": [
-     "nb_low_weight"
+     "nb_low_weight",
+     "nb_vomiting"
     ],
-    "flags_got": []
+    "flags_got": [
+     "anc_vomiting"
+    ]
    },
    {
     "id": "d2-pnc-005",
@@ -696,7 +701,9 @@
     "wrong": [
      "symptoms.breast_problem: want true got undefined"
     ],
-    "flags_want": [],
+    "flags_want": [
+     "pnc_breast"
+    ],
     "flags_got": []
    },
    {
@@ -733,9 +740,7 @@
      "pads: want 3 got undefined",
      "symptoms.fever: want false got undefined",
      "symptoms.breast_problem: want false got undefined",
-     "symptoms.swelling_face_hands: want false got undefined",
-     "feeding: extra \"good\"",
-     "symptoms.hot_to_touch: extra false"
+     "symptoms.swelling_face_hands: want false got undefined"
     ],
     "flags_want": [],
     "flags_got": []
@@ -747,6 +752,7 @@
      "symptoms.abdominal_pain: want true got undefined"
     ],
     "flags_want": [
+     "pnc_abdominal_pain",
      "pnc_high_fever"
     ],
     "flags_got": [

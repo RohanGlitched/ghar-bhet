@@ -5,57 +5,88 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Referral slip · Ghar Bhet</title>
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#f4f1e8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121417" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@500&family=Patrick+Hand&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/app.css">
 <style>
-  .slip { max-width: 680px; margin: 26px auto 60px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 28px; position: relative; }
+  .slip { max-width: 680px; margin: 26px auto 60px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 28px; }
+  .slip-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px 16px; flex-wrap: wrap; }
   .slip h1 { font-family: var(--serif); font-size: 30px; margin: 0 0 4px; font-weight: 600; }
-  .slip .stamp { position: absolute; right: 24px; top: 24px; font-size: 20px; }
-  .kv { display: grid; grid-template-columns: 180px 1fr; gap: 6px 14px; margin: 18px 0; font-size: 16px; }
+  .slip .stamp { font-size: 20px; flex: none; margin: 4px 4px 0 0; }
+  .slip .do { font-size: 21px; font-weight: 700; margin: 16px 0 0; padding: 10px 14px; border-radius: 12px; background: var(--alert-bg); color: var(--alert-ink); }
+  .kv { display: grid; grid-template-columns: 180px 1fr; gap: 0 14px; margin: 18px 0; font-size: 16px; }
+  .kv dt, .kv dd { border-bottom: 1px solid var(--reg-rule); padding: 6px 0; }
   .kv dt { color: var(--ink-3); } .kv dd { margin: 0; font-family: var(--hand); font-size: 22px; color: var(--reg-ink); line-height: 1.2; }
   .why { border-top: 2px solid var(--ink); padding-top: 14px; }
   .why li { margin-bottom: 8px; }
+  .rule-id { font-size: 13px; color: var(--ink-3); }
   .said-q { font-family: var(--serif); font-size: 18px; color: var(--ink-2); border-left: 3px solid var(--voice); padding-left: 12px; }
+  .gloss { font-size: 14px; color: var(--ink-2); margin: 8px 0 0; }
   .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
-  @media print { .top, .bottom-bar, .actions, footer, .totop { display: none !important; } body { background: #fff; } .slip { border: 0; margin: 0; } }
-  @media (max-width: 560px) { .kv { grid-template-columns: 1fr; } .slip .stamp { position: static; margin-bottom: 10px; } }
+  .nf .stamp { color: var(--ink-3); border-color: var(--ink-3); font-size: 18px; }
+  @media print { .top, .bottom-bar, .actions, footer, .totop, .skip { display: none !important; } body { background: #fff; } .slip { border: 0; margin: 0; } }
+  @media (max-width: 560px) { .kv { grid-template-columns: 1fr; } .kv dt { border-bottom: 0; padding-bottom: 0; } .slip { padding: 20px; } }
 </style>
 </head>
 <body>
 <header id="top"></header>
-<main class="wrap"><article class="slip" id="slip"><p class="muted">Loading the referral…</p></article></main>
+<main class="wrap" id="slip-main"><article class="slip" id="slip" aria-live="polite"><p class="muted">Loading the referral…</p></article></main>
+<footer id="foot"></footer>
 <script type="module">
 import { mountChrome, api, esc } from "/js/ui.js";
 import { romanize } from "/js/understand.js";
 mountChrome("");
 const id = location.pathname.split("/")[2] || new URLSearchParams(location.search).get("id");
-const T = { newborn: "Newborn", anc: "Pregnancy", pnc: "Mother after birth" };
+const T = { newborn: "Newborn visit", anc: "Pregnancy visit", pnc: "Visit to a mother after birth" };
+const FEED = { good: "good", poor: "poor", none: "not feeding" };
+const MOVE = { normal: "moving well", reduced: "moving less", absent: "not moving" };
 const F = (r) => [
-  ["Name", r.type === "newborn" && r.name ? `${r.name}'s baby` : r.name], ["Day of life", r.type === "newborn" ? r.day : null], ["Days since birth", r.type === "pnc" ? r.day : null],
-  ["Pregnancy", r.weeks != null ? `${r.weeks} weeks` : r.month != null ? `month ${r.month}` : null], ["Blood pressure", r.bp_sys != null ? `${r.bp_sys}/${r.bp_dia ?? "?"}` : null], ["Hb", r.hb != null ? `${r.hb} g/dl` : null],
-  ["Urine albumin", r.albumin], ["Weight", r.weight_g != null ? `${r.weight_g} g` : r.weight_kg != null ? `${r.weight_kg} kg` : null], ["Temperature", r.temp_c != null ? `${r.temp_c} °C` : null],
-  ["Breaths a minute", r.resp_rate], ["Feeding", r.feeding], ["Pads a day", r.pads], ["Baby moving", r.fetal_movement],
+  ["Name", r.type === "newborn" && r.name ? `${r.name}'s baby` : r.name], ["Baby's age", r.type === "newborn" && r.day != null ? `${r.day} days` : null], ["Days since birth", r.type === "pnc" && r.day != null ? `${r.day} days` : null],
+  ["Pregnancy", r.weeks != null ? `${r.weeks} weeks` : r.month != null ? `month ${r.month}` : null], ["Blood pressure", r.bp_sys != null ? `${r.bp_sys}/${r.bp_dia ?? "?"}` : null], ["Hb (haemoglobin)", r.hb != null ? `${r.hb} g/dl` : null],
+  ["Urine albumin", r.albumin ? (/\d/.test(r.albumin) ? `${r.albumin}+` : r.albumin) : null], ["Weight", r.weight_g != null ? `${r.weight_g} g` : r.weight_kg != null ? `${r.weight_kg} kg` : null], ["Temperature", r.temp_c != null ? `${r.temp_c} °C` : null],
+  ["Breaths a minute", r.resp_rate], ["Feeding", r.feeding ? FEED[r.feeding] || r.feeding : null], ["Pads a day", r.pads], ["Baby moving", r.fetal_movement ? MOVE[r.fetal_movement] || r.fetal_movement : null], ["Iron tablets", r.ifa_tablets],
 ].filter(([, v]) => v != null && v !== "");
-try {
+const SIGN = (k) => k.replace(/_/g, " ");
+const GLOSS = { FRU: "first referral unit, a hospital that can handle emergency births", PHC: "primary health centre", CHC: "community health centre", SNCU: "special newborn care unit at the district hospital", NBSU: "newborn stabilisation unit at the block hospital", ANM: "auxiliary nurse-midwife, the nurse", IFA: "iron and folic acid tablets" };
+const slip = document.getElementById("slip");
+function notFound(msg) {
+  document.title = "Referral not found · Ghar Bhet";
+  slip.className = "slip nf";
+  slip.innerHTML = `<div class="slip-head"><h1>Referral not found</h1><span class="stamp">NOT IN THE REGISTER</span></div>
+    <p class="muted">${esc(msg || "There is no visit with this link.")} The link may be mistyped, or the visit was removed from the sample register.</p>
+    <div class="actions"><a class="btn" href="/anm">Open the nurse's board</a><a class="btn ghost" href="/visit">Speak a visit</a></div>`;
+}
+if (!id) notFound("This link has no referral in it.");
+else try {
   const v = await api(`/api/visits/${encodeURIComponent(id)}`);
   const refer = v.flags.filter((f) => f.severity === "refer_now"), watch = v.flags.filter((f) => f.severity === "watch");
+  const now = refer.some((f) => /\bnow\b|108/i.test(f.action || ""));
+  const doLine = !refer.length ? "" : v.type === "newborn" ? (now ? "Take the baby to the hospital now. Call 108." : "Take the baby to the newborn care unit today.") : (now ? "Take her to the hospital now. Call 108." : "Take her to the hospital today.");
+  const text = refer.map((f) => `${f.why} ${f.action}`).join(" ");
+  const gloss = Object.entries(GLOSS).filter(([k]) => new RegExp(`\\b${k}\\b`).test(text));
+  const yes = Object.entries(v.record.symptoms || {}).filter(([, x]) => x).map(([k]) => SIGN(k));
+  const version = String(v.ruleset || "").replace(/^[a-z]+-/i, "");
   document.title = `Referral slip: ${v.name} · Ghar Bhet`;
-  document.getElementById("slip").innerHTML = `
-    ${refer.length ? `<span class="stamp">REFER TODAY</span>` : ""}
-    <h1>Referral slip</h1>
-    <p class="muted" style="margin:0">${esc(T[v.type])} visit · ${new Date(v.at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} · ${esc(v.village?.name || "")}${v.person?.sample ? " (sample)" : ""}</p>
-    <dl class="kv">${F(v.record).map(([k, x]) => `<dt>${esc(k)}</dt><dd>${esc(x)}</dd>`).join("")}</dl>
+  slip.innerHTML = `
+    <div class="slip-head"><div><h1>Referral slip</h1>
+    <p class="muted" style="margin:0">${esc(T[v.type] || "Visit")} · ${new Date(v.at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} · ${esc(v.village?.name || "")}${v.person?.sample || v.samplePerson ? " (made-up data)" : ""}</p></div>
+    ${refer.length ? `<span class="stamp">REFER TODAY</span>` : ""}</div>
+    ${doLine ? `<p class="do">${esc(doLine)}</p>` : ""}
+    <dl class="kv">${F(v.record).map(([k, x]) => `<dt>${esc(k)}</dt><dd>${esc(x)}</dd>`).join("")}${yes.length ? `<dt>Signs present</dt><dd>${esc(yes.join(", "))}</dd>` : ""}</dl>
     <section class="why"><h2 style="font-size:17px;margin:0 0 6px">Why this referral</h2>
-      ${refer.length ? `<ul>${refer.map((f) => `<li><b>${esc(f.title)}.</b> ${esc(f.why)} <b>${esc(f.action)}</b><br><span class="faint">${esc(f.source)} · rule ${esc(f.code)}</span></li>`).join("")}</ul>` : `<p>No danger sign found in this visit.</p>`}
+      ${refer.length ? `<ul>${refer.map((f) => `<li><b>${esc(f.title)}.</b> ${esc(f.why)} <b>${esc(f.action)}</b><br><span class="rule-id">${esc(f.source)} · rule ${esc(f.code)}</span></li>`).join("")}</ul>` : `<p>No danger sign found in this visit.</p>`}
       ${watch.length ? `<p class="faint" style="margin:4px 0">Also watch: ${watch.map((f) => esc(f.title)).join(", ")}.</p>` : ""}
+      ${gloss.length ? `<p class="gloss">${gloss.map(([k, x]) => `<b>${k}</b>: ${esc(x)}`).join(". ")}.</p>` : ""}
     </section>
-    ${v.said?.length ? `<p class="faint" style="margin:16px 0 4px">What the ASHA said (in Roman letters)</p>${v.said.map((s) => `<p class="said-q">${esc(romanize(s))}</p>`).join("")}` : ""}
-    <p class="faint">Flags come from fixed rules (${esc(v.ruleset)}); they support the ANM's and doctor's judgement and never replace it. Free transport under JSSK: call 108 or 102.</p>
-    <div class="actions"><button class="btn" onclick="print()">Print the slip</button><a class="btn ghost" href="tel:108">Call 108</a><a class="btn ghost" href="/anm">Nurse's board</a></div>`;
+    ${v.said?.length ? `<p class="faint" style="margin:16px 0 4px">What the village health worker (ASHA) said, in Roman letters</p>${v.said.map((s) => `<p class="said-q">${esc(romanize(s))}</p>`).join("")}` : ""}
+    <p class="faint">Flags come from fixed government rules (rule set version ${esc(version || "unknown")}). They support the nurse's and doctor's judgement and never replace it. Free transport under the government's mother and child scheme (JSSK): call 108 or 102.</p>
+    <div class="actions"><button class="btn" id="print">Print the slip</button><a class="btn ghost" href="tel:108">Call 108</a><a class="btn ghost" href="/anm">Nurse's board</a></div>`;
+  document.getElementById("print").addEventListener("click", () => print());
 } catch (e) {
-  document.getElementById("slip").innerHTML = `<h1>Referral not found</h1><p class="muted">${esc(e.message)} Open the <a href="/anm">nurse's board</a> to see today's referrals.</p>`;
+  notFound(e.status === 404 ? "There is no visit with this link." : e.message);
 }
 </script>
 </body>

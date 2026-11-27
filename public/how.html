@@ -31,27 +31,38 @@
 <header id="top"></header>
 <main class="wrap h-wrap">
   <h1>Rules and method</h1>
-  <p class="lead">How a spoken visit becomes a checked record, and every rule that can raise a flag, with its source. Nothing here uses an AI model.</p>
+  <p class="lead">How a spoken visit becomes a checked record, and every rule that can raise a flag, with its threshold and source. Nothing here uses an AI model; the only outside service is the browser's speech recognition.</p>
 
   <h2 class="s">From speech to a checked record</h2>
   <div class="pipe">
-    <div><b>1. Speech to text</b><span>The browser's speech recognition, in Hindi (hi-IN), Marathi (mr-IN) or Indian English. Or she types.</span></div>
-    <div><b>2. Reading numbers</b><span>Digits, number words in three languages, fractions (dedh, saadhe, paune, deed, adeech), "one forty", Marathi "deedshe", grams and kilos together.</span></div>
-    <div><b>3. Filling fields</b><span>Each field has anchor words (wajan, BP, saans…); the value near it is taken, and the words are kept as evidence.</span></div>
-    <div><b>4. Signs and negation</b><span>Phrases for each sign in three languages; "nahin", "naahi", "no" flip them to absent. The last value said wins, so corrections work.</span></div>
+    <div><b>1. Speech to text</b><span>The browser's speech recognition (Google's online service in Chrome), in Hindi, Marathi or Indian English. Or any dictation tool that types, such as Wispr Flow, or she types.</span></div>
+    <div><b>2. Reading numbers</b><span>Digits, number words in three languages, fractions (dedh = 1½, saadhe = and a half, paune = less a quarter, Marathi deed = 1½, adeech = 2½), "one forty", Marathi "deedshe" (150), grams and kilos together, "2,400 grams".</span></div>
+    <div><b>3. Filling fields</b><span>Each field has anchor words (wajan = weight, saans = breathing, BP…); the value near it is taken, and the words are kept as evidence. Past values ("pichli baar", last time) lose to today's; an odd value ("400 grams") is asked back.</span></div>
+    <div><b>4. Signs and negation</b><span>Phrases for each sign in three languages; "nahin", "naahi", "no" flip them to absent. The last value said wins, so corrections work. Signs about someone else (the mother-in-law, say) are left out.</span></div>
     <div><b>5. Fixed rules</b><span>The record is checked against the table below, on the phone and again on the server.</span></div>
   </div>
 
-  <h2 class="s">Every danger rule, with its source</h2>
-  <p class="muted">Rule set <code id="rs"></code>. "Refer now" means a same-day referral; "watch" means counsel, recheck and tell the ANM. Newborn rules follow SSBSK 2026, where any single danger sign refers.</p>
+  <h2 class="s" id="rules-title">Every rule, with its threshold and source</h2>
+  <p class="muted">Rule set <code id="rs"></code>. <b>Refer today</b> means she must be seen by a doctor or hospital today; where the action says "now", go immediately and call 108. <b>Watch</b> means advise her, check again, and tell the nurse. Newborn rules follow SSBSK 2026, where any single danger sign refers. A sign she mentions that no rule covers is still shown as "Noted: tell the nurse".</p>
   <div class="tblwrap" id="rules"><p class="faint">Loading the rules…</p></div>
+
+  <h2 class="s">Words used on this site</h2>
+  <ul class="muted" style="max-width:72ch">
+    <li><b>ASHA:</b> accredited social health activist, the village health worker (one for about 1,000 people).</li>
+    <li><b>ANM:</b> auxiliary nurse-midwife, the nurse at the sub-centre who supervises ASHAs. We say "nurse".</li>
+    <li><b>PHC:</b> primary health centre. <b>FRU:</b> first referral unit, a hospital that can do emergency delivery and blood transfusion. <b>NBSU / SNCU:</b> newborn care units at the block or district hospital.</li>
+    <li><b>SSBSK:</b> Samagra Shishu Bal Swasthya Karyakram, India's newborn and child health guidelines (2026), which replace <b>HBNC</b> (Home Based Newborn Care, 2014).</li>
+    <li><b>CHO manuals:</b> the Health Ministry's (MoHFW's) training manuals for community health officers (2021). <b>MCP card:</b> the Mother and Child Protection card every pregnant woman gets.</li>
+    <li><b>Hb:</b> haemoglobin, in g/dl. <b>Albumin 2+:</b> protein in urine on a dipstick, a sign of pre-eclampsia with high BP.</li>
+    <li><b>108 / 102:</b> free government ambulance numbers (JSSK, the free mother and child transport scheme).</li>
+  </ul>
 
   <h2 class="s">Data and privacy</h2>
   <ul class="muted" style="max-width:72ch">
-    <li>Visits are kept on the server that runs the app (one JSON file). No visit is sent to any other service.</li>
+    <li>Visits are kept on the server that runs the app (one JSON file, copied to the app's own Cloud Storage bucket on the live demo). No visit is sent to any other service.</li>
     <li>Speech recognition is the browser's own; in Chrome it is processed by Google's speech service. The text, not the audio, reaches Ghar Bhet.</li>
     <li>No audio is stored. The register keeps a first name, the visit fields and the transcript.</li>
-    <li>The live demo uses made-up sample people. A pilot would need consent and the state's data rules.</li>
+    <li>The live demo uses made-up sample people, and its board is open so anyone can try it. A pilot adds a nurse login, a consent form and a data-handling note under India's data protection law (DPDP Act 2023).</li>
   </ul>
 
   <h2 class="s">Sources</h2>
@@ -70,7 +81,9 @@ import { RULE_TABLE, RULESET } from "/js/rules.js";
 mountChrome("/how");
 document.getElementById("rs").textContent = RULESET.id;
 const T = { anc: "Pregnancy", pnc: "Mother after birth", newborn: "Newborn" };
-document.getElementById("rules").innerHTML = `<table class="t"><thead><tr><th>Visit</th><th>Sign</th><th>Level</th><th>What to do</th><th>Source</th><th>Rule id</th></tr></thead><tbody>${RULE_TABLE.map((r) => `<tr><td>${T[r.type]}</td><td>${esc(r.title)}</td><td>${r.severity === "refer_now" ? '<span class="pill refer">refer now</span>' : '<span class="pill watch">watch</span>'}</td><td>${esc(r.action)}</td><td>${esc(r.source)}</td><td><code>${esc(r.code)}</code></td></tr>`).join("")}</tbody></table>`;
+const nRef = RULE_TABLE.filter((r) => r.severity === "refer_now").length;
+document.getElementById("rules-title").textContent = `All ${RULE_TABLE.length} rules (${nRef} refer today, ${RULE_TABLE.length - nRef} watch), with their thresholds and sources`;
+document.getElementById("rules").innerHTML = `<table class="t"><thead><tr><th>Visit</th><th>Sign</th><th>Threshold</th><th>Level</th><th>What to do</th><th>Source</th></tr></thead><tbody>${RULE_TABLE.map((r) => `<tr><td>${T[r.type]}</td><td>${esc(r.title)}</td><td>${esc(r.threshold || "")}</td><td>${r.severity === "refer_now" ? '<span class="pill refer">refer today</span>' : '<span class="pill watch">watch</span>'}</td><td>${esc(r.action)}</td><td>${esc(r.source)}<br><code class="faint" style="font-size:12px">${esc(r.code)}</code></td></tr>`).join("")}</tbody></table>`;
 </script>
 </body>
 </html>

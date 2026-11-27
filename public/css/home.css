@@ -10,12 +10,13 @@
 .facts span { font-size: 14px; color: var(--ink-2); line-height: 1.35; display: block; }
 .hero-demo { margin: 0; }
 .demo-phone { background: var(--card); border: 1px solid var(--line); border-radius: 30px; padding: 18px; box-shadow: var(--shadow); display: grid; gap: 12px; min-height: 470px; align-content: start; }
-.demo-mic { display: flex; align-items: center; gap: 10px; background: var(--ink); color: var(--paper); border-radius: 16px; padding: 10px 14px; font-weight: 600; font-size: 15px; }
+.demo-mic { display: flex; align-items: center; gap: 10px; background: var(--mic-bg); color: var(--mic-ink); border-radius: 16px; padding: 10px 14px; font-weight: 600; font-size: 15px; }
 .demo-mic .dot { width: 26px; height: 26px; border-radius: 50%; background: var(--voice); animation: ring 1.4s infinite; flex: none; }
 @keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(242, 183, 5, .55); } 70% { box-shadow: 0 0 0 12px rgba(242, 183, 5, 0); } 100% { box-shadow: 0 0 0 0 rgba(242, 183, 5, 0); } }
 .demo-phone .said { min-height: 96px; font-size: 21px; }
-.demo-phone .alert h3 { padding-right: 140px; font-size: 21px; }
-.demo-phone .alert .stamp { position: absolute; right: 12px; top: 10px; color: #fff; border-color: #fff; background: transparent; font-size: 15px; }
+.demo-phone .alert h3 { font-size: 21px; }
+.demo-phone .alert .stamp { font-size: 15px; }
+.demo-phone .alert p { margin: 6px 0 0; font-size: 15px; }
 .hero-demo figcaption { margin-top: 10px; }
 .points { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .points li { padding: 14px 16px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); color: var(--ink-2); }

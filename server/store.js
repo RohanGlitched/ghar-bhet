@@ -313,6 +313,7 @@ export class Store {
       said, lang: ["hi", "mr", "en"].includes(body.lang) ? body.lang : "hi", via: body.via === "typed" ? "typed" : "voice",
       asha: clean(body.asha, 40) || "Asha worker",
       noted: notes, count: 1,
+      ...(Array.isArray(body.notAsked) && body.notAsked.length ? { notAsked: body.notAsked.filter((x) => typeof x === "string").slice(0, 12).map((x) => clean(x, 40)).filter(Boolean) } : {}),
       ...(Object.keys(carried).length ? { carried: Object.fromEntries(Object.entries(carried).map(([k, x]) => [k, { from: x.from, at: x.at }])) } : {}),
       transcript: { checked: heard.ok, added: extra.flags.map((f) => f.code), conflicts: extra.flags.filter((f) => f.conflict).map((f) => f.code), heard: extra.heard, disagree: extra.disagree },
       referral: refer ? { status: "open", at: now, urgent } : null,
@@ -707,7 +708,7 @@ export function mergeRegisters(a, b) {
 // filled only by the server from the register; a client's value is ignored
 const SERVER_FIELDS = ["prev_weight_g"];
 const NUM = { pulse: [30, 220], prev_weight_g: [300, 7000], age: [10, 60], height_cm: [100, 200], labour_hours: [0, 96], temp_f: [86, 112], birth_weight_g: [300, 7000], weeks: [1, 45], month: [1, 10], bp_sys: [50, 280], bp_dia: [30, 200], hb: [2, 20], weight_kg: [20, 200], ifa_tablets: [0, 500], day: [0, 120], pads: [0, 40], temp_c: [30, 44], weight_g: [300, 7000], resp_rate: [5, 150] };
-const ENUM = { bp_source: ["card", "today"], hb_source: ["card", "today"], albumin: ["nil", "trace", "1", "2", "3", "4"], fetal_movement: ["normal", "reduced", "absent"], feeding: ["good", "poor", "none"] };
+const ENUM = { bp_source: ["card", "today", "earlier"], hb_source: ["card", "today", "earlier"], albumin: ["nil", "trace", "1", "2", "3", "4"], fetal_movement: ["normal", "reduced", "absent"], feeding: ["good", "poor", "none"] };
 // Per-type fields from eval/SPEC.md (pnc also takes BP and Hb for the postnatal BP / anaemia rules).
 // If rules.js exports FIELDS = { anc: [...], pnc: [...], newborn: [...] }, those are added.
 const BASE_FIELDS = {

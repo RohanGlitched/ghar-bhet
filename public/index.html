@@ -21,12 +21,12 @@
 <main>
   <div class="hero wrap">
     <div class="hero-copy">
-      <h1>An ASHA speaks the visit. The record fills itself.</h1>
-      <p class="lead">India's 10.29 lakh ASHAs (accredited social health activists, the village health workers) write every home visit by hand, often twice. With Ghar Bhet ("home visit" in Hindi and Marathi) she just says it, in Hindi, Marathi or English. The official visit record fills itself, and fixed government rules flag the danger signs that need a same-day referral, out loud, before she leaves the house.</p>
+      <h1>A village health worker speaks the visit. The record fills itself.</h1>
+      <p class="lead">India's 10.29 lakh village health workers (ASHAs) write every home visit by hand, often twice. With Ghar Bhet ("home visit") she speaks the visit in Hindi, Marathi or English: the visit's key fields fill in, and government rules say out loud when the mother or baby must go to hospital.</p>
       <div class="cta"><a class="btn" href="/visit">Speak a visit</a><a class="btn ghost" href="/visit?example=1">Try an example, no microphone</a></div>
       <ul class="facts" aria-label="Key facts">
         <li><b id="f1">96.6%</b><span>of record fields read correctly from 60 unseen visit transcripts (first run)</span></li>
-        <li><b id="f2">37 of 38</b><span>danger visits flagged on that first run (rule set 2026.1); none missed after the fixes</span></li>
+        <li><b id="f2">37 of 38</b><span>visits with a danger sign flagged on that first unseen test; 38 of 38 after fixing the one miss</span></li>
         <li><b>No API keys</b><span>runs with <code>docker compose up</code>; no paid AI service, no account</span></li>
       </ul>
     </div>
@@ -76,7 +76,7 @@
       <ol class="flow">
         <li><h3>She speaks the visit</h3><p>"Sunita ka baby, saat din ka, wajan ek kilo saat sau gram, doodh kam pee raha, pasli chal rahi hai." (Sunita's baby, 7 days old, 1.7 kg, feeding less, chest pulling in.)</p></li>
         <li><h3>The record fills itself</h3><p>Baby 7 days old, 1700 g, feeding poorly, chest indrawing. Every value is marked in the words it came from.</p></li>
-        <li><h3>Fixed rules check it</h3><p>Weight under 1800 g (Health Ministry newborn manual, 2021) and chest indrawing (2026 newborn guidelines) are danger signs. REFER TODAY.</p></li>
+        <li><h3>Fixed rules check it</h3><p>Weight under 1800 g and chest indrawing are danger signs, and with feeding less they are signs of infection (sepsis). The phone says: take the baby to the newborn unit now, call 108.</p></li>
         <li><h3>It asks what's missing</h3><p>"What is the baby's temperature?" She answers by voice, says "nahi" to a yes/no question, or corrects herself: "nahi nahi, 37.8".</p></li>
         <li><h3>The nurse sees it live</h3><p>She says "save karo". The nurse's board shows the open referral and a printable slip, and the nurse can ask the board out loud who was referred.</p></li>
       </ol>
@@ -92,7 +92,7 @@
       </div>
       <div class="rule-list">
         <div><b>Newborn weight under 1800 g</b><span>Refer today to the newborn unit · Health Ministry newborn manual (CHO), 2021</span></div>
-        <div><b>Breathing over 60 a minute, or chest indrawing</b><span>Refer today · SSBSK newborn guidelines 2026, table 3.3</span></div>
+        <div><b>Breathing 60 or more a minute, or chest indrawing</b><span>Refer today · SSBSK newborn guidelines 2026, table 3.3</span></div>
         <div><b>Temperature 37.5 °C or more, or under 36 °C</b><span>Refer today · SSBSK newborn guidelines 2026, table 3.3</span></div>
         <div><b>BP 140/90 or more with albumin 2+</b><span>Possible pre-eclampsia, refer today · Health Ministry pregnancy manual (CHO), 2021</span></div>
         <div><b>Hb (haemoglobin) under 7 g/dl</b><span>Severe anaemia, refer today · Health Ministry pregnancy manual (CHO), 2021</span></div>
@@ -111,8 +111,13 @@
         <div><b>37 of 38</b><span>danger visits flagged; 1 missed on the first run</span></div>
         <div><b>1 of 22</b><span>normal visits wrongly flagged on the first run</span></div>
       </div>
-      <p class="muted" style="max-width:70ch">The first run missed one danger visit, a Marathi way of saying "the baby moves only when touched", and raised one false alarm, from a self-correction ("five pads… no, four"). We fixed both and re-ran: 99.3% of fields and 38 of 38 danger visits. Since then the rule table grew from 37 to 64 rules (after-birth BP, high-risk pregnancy, more newborn signs), and the same 60 give 99.3% of fields, 45 of 45 danger visits and 0 of 15 false alarms. All of that came after reading the held-out misses, so the first run is the honest number. <a href="/evidence">Every result and every miss</a>.</p>
-      <p class="muted" style="max-width:70ch"><b>Checked against the guidelines, not our own rules.</b> 30 short cases were labelled "should refer" or not straight from the guideline text, before the rules were run. The first run, with the old 37-rule table, caught only 11 of 24 that should refer. That gap is why the table now has 64 rules; it now catches 25 of 25, and 14 of 14 urgent cases get an urgent flag. Those cases are now tuned on, so the 11 of 24 is the honest number.</p>
+      <ul class="muted" style="max-width:70ch;padding-left:20px">
+        <li><b>First run:</b> 1 danger visit missed (a Marathi way of saying "the baby moves only when touched") and 1 false alarm ("five pads… no, four").</li>
+        <li><b>After fixing both:</b> 99.3% of fields, 38 of 38 danger visits. These came after we saw the misses, so the first run is the one to trust.</li>
+        <li><b>Today:</b> the rule table has grown from the first 37 rules to 75. The larger table turns 7 of the 22 visits that were normal under the old rules into referrals, so the same 60 now split 45 danger and 15 normal: 45 of 45 caught, 0 false alarms.</li>
+        <li><b>A harder, independent test:</b> 100 tricky visits written by a separate agent that never saw the code (colloquial danger phrases, other people's symptoms, denials, exact thresholds). First run: 88.3% of fields and 50 of 59 danger visits caught, 7 of 41 false alarms. Every miss is published.</li>
+        <li><b>Checked against the guidelines, not our own rules:</b> Short cases labelled "should refer" straight from the guideline text, before the rules were run. The first run, with the 37-rule table, caught only 11 of 24. That gap is why the table grew; with 40 cases it now catches 33 of 33 that should refer, and 18 of 18 urgent cases get an urgent flag (three labels were corrected from the guideline text, and the cases are tuned on since). <a href="/evidence">See every result and every miss</a>.</li>
+      </ul>
       <!--REALSPEECH-->
     </div>
   </section>
@@ -124,7 +129,7 @@
         <p class="lead">The nurse's board shows open referrals, who is due a home visit today on the 2026 schedule (days 3, 7, 14 and 42, or nine visits for a low-weight baby), and the whole village register. She can ask it out loud: "Aaj kaun kaun refer hua?" (Who was referred today?)</p>
         <a class="btn" href="/anm">Open the nurse's board</a>
       </div>
-      <div class="card"><p class="faint" style="margin:0 0 6px">Referral slip, printable</p><p style="font-family:var(--serif);font-size:22px;margin:0 0 8px">Sunita's baby · day 7</p><p style="margin:0">Weight 1700 g, under 1800 g. Chest indrawing. <b>Refer to the newborn unit today.</b></p><p class="faint" style="margin:8px 0 0">SSBSK newborn guidelines 2026, table 3.3 · Health Ministry newborn manual 2021</p></div>
+      <div class="card"><p class="faint" style="margin:0 0 6px">Referral slip, printable</p><p style="font-family:var(--serif);font-size:22px;margin:0 0 8px">Sunita's baby · day 7</p><p style="margin:0">Weight 1700 g, under 1800 g. Chest indrawing. Feeding less. <b>Take the baby to the newborn unit (SNCU) now. Call 108.</b></p><p class="faint" style="margin:8px 0 0">SSBSK newborn guidelines 2026, table 3.3 · Health Ministry newborn manual 2021</p></div>
     </div>
   </section>
 

@@ -1,8 +1,8 @@
 <p align="center"><img src="docs/cover.png" alt="Ghar Bhet: an ASHA speaks the visit, and the record fills itself" width="100%"></p>
 
 <p align="center">
-<img alt="tests" src="https://img.shields.io/badge/tests-62%20passing-1d7347">
-<img alt="voice scenarios" src="https://img.shields.io/badge/browser%20voice%20scenarios-39%20passing-1d7347">
+<img alt="tests" src="https://img.shields.io/badge/tests-92%20passing-1d7347">
+<img alt="voice scenarios" src="https://img.shields.io/badge/browser%20voice%20scenarios-65%20passing-1d7347">
 <img alt="keys" src="https://img.shields.io/badge/API%20keys-none-16191d">
 <img alt="dependencies" src="https://img.shields.io/badge/npm%20dependencies-0-16191d">
 <img alt="languages" src="https://img.shields.io/badge/speaks-Hindi%20%C2%B7%20Marathi%20%C2%B7%20English-f2b705">
@@ -15,7 +15,7 @@
 
 - **What it does:** turns a spoken visit (newborn, pregnancy, or mother after birth) into a checked record, with the words behind every value, and raises a referral the nurse sees at once when a danger sign is present.
 - **Who it's for:** India's **10.29 lakh ASHAs** (PIB, Jan 2025) and the nurses (ANMs, auxiliary nurse-midwives) they report to.
-- **Measured accuracy, first run on 60 visit transcripts it had never seen** (written the way ASHAs speak, not recorded): **96.6%** of record fields read correctly (281 of 291), **98.6%** precision, **37 of 38** danger visits flagged, **1 of 22** normal visits wrongly flagged. [Every result and every miss](https://ghar-bhet-194851097912.us-central1.run.app/evidence).
+- **Measured accuracy, first run on 60 visit transcripts it had never seen** (written the way ASHAs speak, not recorded): **96.6%** of record fields read correctly (281 of 291), **98.6%** precision, **37 of 38** danger visits flagged, **1 of 22** normal visits wrongly flagged. On a harder independent set of 100 tricky visits, written by a separate agent that never saw the code, the first run read 88.3% of fields and caught 50 of 59 danger visits (7 of 41 false alarms). [Every result and every miss](https://ghar-bhet-194851097912.us-central1.run.app/evidence).
 - **Run it in one command:** `docker compose up`, then open http://localhost:8080. No API keys, no accounts, no AI model of our own.
 - **Live demo:** https://ghar-bhet-194851097912.us-central1.run.app (no login). Without a microphone: https://ghar-bhet-194851097912.us-central1.run.app/visit?example=1
 
@@ -43,25 +43,26 @@ The brief asks for "something people in India do today by typing, tapping or fil
 ### 2. Design it voice-first: "People finish the main flow by speaking."
 
 The whole visit is done by voice, with one tap to start:
-- she speaks the visit; the app asks out loud for anything missing and **opens the mic for the answer by itself**;
-- she answers with a number, "haan" or "nahi", corrects herself ("nahi nahi, 150 by 100": the last value said wins), or says "chhodo" (skip) or "pata nahi" (not checked);
-- danger signs are spoken in her language, with the action to take;
+- she speaks the visit; the app asks out loud for anything missing (the name first) and **opens the mic for the answer by itself**; the breath count is a timed minute with a tick every 15 seconds;
+- she answers with a number, "haan" or "nahi", corrects herself, even in the next sentence ("nahi nahi, 37.8" goes to the value she just gave), or says "chhodo" (skip) or "pata nahi" (not checked); odd values are asked back ("Did you say 400 grams?");
+- danger signs are spoken in her language, with the action to take; urgent ones are marked **GO NOW · 108**, and "watch" advice is spoken too;
 - "save karo" reads the visit back in her language and saves on "haan"; it then says the referral has gone to the nurse;
 - voice commands also change the visit type, the language, start a new visit ("naya") or undo ("wapas");
-- the nurse asks the board out loud: who was referred, whose visits are due, how one person is, or "Sunita dekh liya" (mark as seen).
+- the nurse asks the board out loud: who was referred (urgent first), whose visits are due, how one person is, "Sunita dekh liya" (mark as seen), or "Sunita PHC pahunchi" / "gaye nahi" (the referral's outcome; refused or unknown cases come back as a follow-up the next day).
 
-The mic pauses while the phone speaks, so it never hears itself. Typing is only a fallback, for browsers without speech recognition or a blocked mic. Offline, a saved visit waits on the phone and is sent when signal returns.
+The mic pauses while the phone speaks, so it never hears itself, and tones mark when the mic opens and closes. Typing is only a fallback, for browsers without speech recognition or a blocked mic. With no internet, the app tells her to use the keyboard's own mic (which can work offline) and reads what it types without a tap; a saved visit waits on the phone and is sent when signal returns.
 
 ### 3. Build a working prototype: "Use a coding tool and Wispr Flow for one narrow use case."
 
 - **One narrow use case, end to end:** a home visit becomes a checked record and, if needed, a referral the nurse sees at once. It works on the live link and with `docker compose up`.
-- **Coding tool:** built during the hackathon (first commit 27 Nov 2026) with a coding tool. About 6,800 lines of our own code and tests: the reader (`understand.js`, about 1,070 lines), the rules (`rules.js`, about 540), the server (about 600), the pages, 62 automated tests and a 39-scenario browser voice test.
+- **Coding tool:** built during the hackathon (first commit 27 Nov 2026) with a coding tool. About 8,500 lines of our own code and tests: the reader (`understand.js`, about 1,300 lines), the rules (`rules.js`, about 620), the server (about 840), the pages, 92 automated tests and a 65-scenario browser voice test. What was built when: [BUILD-LOG.md](BUILD-LOG.md).
 - **Wispr Flow:** the visit page's text box works with any dictation tool that types, and we use Wispr Flow for the real-speech test: a person reads visit sentences aloud through Wispr Flow (and, separately, through the browser's mic) on the [real speech test page](https://ghar-bhet-194851097912.us-central1.run.app/dictation.html), and the reader is scored on exactly what the engine wrote. Results are on the [evidence page](https://ghar-bhet-194851097912.us-central1.run.app/evidence) once run.
 
 ### 4. Test it: "A few real users should finish the task unaided."
 
-- **Accuracy, first run:** 60 held-out visit transcripts in Hindi and Marathi (Devanagari and Roman script), Indian English and mixed language. They and their right answers were written from the spec alone by a separate AI writing pass that never saw the code. 96.6% of fields, 37 of 38 danger visits, 1 of 22 false alarms. With today's rules (64, after the judges' review) the same 60 give 99.3%, 45 of 45 and 0 of 15, but that is after tuning, so the first run is the honest number. A second sealed set of 60 is run once, at the end.
-- **Against the guidelines, not our own rules:** 30 short cases labelled "should refer" straight from the guideline text. The first run, with the old 37-rule table, caught only 11 of 24. That gap is why the table now has 64 rules (25 of 25 today, tuned on since). Recorded in [eval/README.md](eval/README.md).
+- **Accuracy, first run:** 60 held-out visit transcripts in Hindi and Marathi (Devanagari and Roman script), Indian English and mixed language. They and their right answers were written from the spec alone by a separate AI writing pass that never saw the code. 96.6% of fields, 37 of 38 danger visits, 1 of 22 false alarms. With today's larger rule table the same 60 give 99.3% of fields, 45 of 45 danger visits and 0 of 15 false alarms (the new rules turn 7 visits that were normal under the old rules into referrals, per SSBSK 2026 Forms 3 and 4, so the split moved from 38/22 to 45/15). That is after tuning, so the first run is the honest number. A second sealed set of 60 is run once, at the end.
+- **A harder, independent test:** 100 deliberately tricky visits (colloquial danger phrases, other people's symptoms, denials, mild vs severe, exact thresholds), written by a separate agent given only the spec. Run once before any change: 88.3% of fields, 50 of 59 danger visits caught, 7 of 41 false alarms. This is the more realistic number; the misses were fixed afterwards and are listed in [eval/README.md](eval/README.md).
+- **Against the guidelines, not our own rules:** Short cases labelled "should refer" straight from the guideline text, before the rules were run. The first run, with the old 37-rule table, caught only 11 of 24. That gap is why the table grew: with 40 cases it now catches 33 of 33 that should refer (three labels were corrected from the guideline text, and the cases are tuned on since). Recorded in [eval/README.md](eval/README.md).
 - **Real speech:** the Wispr Flow and browser-mic runs above.
 - **Real users unaided:** see [docs/USER-TEST.md](docs/USER-TEST.md). Rows are added only after a real person has tried it.
 
@@ -99,10 +100,13 @@ flowchart LR
 - `eval/`: the record spec, the test sets, the checker that re-computes every right answer from the spec, and `run.js`. [eval/README.md](eval/README.md) says which command gives which published number.
 
 ```bash
-npm test                          # 62 tests: reader, every rule threshold, server, judges' failure cases
+npm test                          # reader, every rule threshold, server, known failure cases
 node eval/run.js heldout          # the held-out set with today's rules
 node eval/run.js vignettes        # the guideline cases
-node test/e2e/voice.e2e.mjs http://localhost:8080   # 39 browser voice scenarios (server started with ALLOW_RESET=1)
+# 65 browser voice scenarios with a fake recogniser:
+#   npm i --no-save playwright && npx playwright install chromium
+#   PORT=8091 ALLOW_RESET=1 node server/index.js   (in another terminal)
+npm run e2e -- http://localhost:8091
 ```
 
 ## Honest limits

@@ -44,6 +44,10 @@
 
   <div class="runs" id="runs"><p class="faint">Loading results…</p></div>
 
+  <h2 class="s">A harder, independent test</h2>
+  <p class="muted" style="max-width:72ch">Our own test visits share a spec with the reader. So a separate agent, given only the spec and never the code, wrote 100 deliberately tricky visits, and we ran them once before changing anything. It is a lower number than the first test, and it is the more realistic one.</p>
+  <div class="runs" id="adv"></div>
+
   <h2 class="s">Real speech</h2>
   <div class="runs" id="speech"></div>
 
@@ -83,7 +87,7 @@ import { romanize } from "/js/understand.js";
 import { RULE_TABLE } from "/js/rules.js";
 mountChrome("/evidence");
 const get = (f) => fetch(`/data/${f}`).then((r) => r.ok ? r.json() : null).then((d) => (d && !d.pending ? d : null)).catch(() => null);
-const [r1, r2, h2, now, vig, rsW, rsB] = await Promise.all(["eval-heldout-run1.json", "eval-heldout-run2.json", "eval-heldout2.json", "eval-heldout.json", "eval-vignettes.json", "eval-realspeech-wispr.json", "eval-realspeech-browser.json"].map(get));
+const [r1, r2, h2, now, vig, rsW, rsB, adv1, advNow] = await Promise.all(["eval-heldout-run1.json", "eval-heldout-run2.json", "eval-heldout2.json", "eval-heldout.json", "eval-vignettes.json", "eval-realspeech-wispr.json", "eval-realspeech-browser.json", "eval-adversarial-run1.json", "eval-adversarial.json"].map(get));
 const card = (title, sub, r, cls = "") => r ? `<div class="run ${cls}"><h2>${title}</h2><p class="faint" style="margin:0">${sub}</p><div class="nums">
   <div><b>${r.typed.fields.recall}%</b><span>of fields read right (${r.typed.fields.correct} of ${r.typed.fields.gold})</span></div>
   <div><b>${r.typed.fields.precision}%</b><span>of filled fields correct</span></div>
@@ -93,17 +97,20 @@ const card = (title, sub, r, cls = "") => r ? `<div class="run ${cls}"><h2>${tit
 document.getElementById("runs").innerHTML =
   card("Held-out, first run", "60 sealed sentences, never seen before this run (rule set 2026.1). The honest number.", r1, "headline") +
   card("Held-out, after fixes", "Same 60 sentences, after fixing the gaps the first run found (rule set 2026.1).", r2) +
-  (now ? card("Held-out today", `Same 60 sentences with today's rule set (${esc(now.ruleset)}). Tuned after reading them, so not independent.`, now) : "") +
+  (now ? card("Held-out today", `Same 60 sentences with today's rule set (${esc(now.ruleset)}). The larger rule table turns 7 visits that were normal under the old rules into referrals (SSBSK 2026 Forms 3 and 4), so the split is ${now.typed.danger.visits} danger / ${now.typed.danger.normal_visits} normal. Tuned after reading them, so not independent.`, now) : "") +
   (h2 ? card("Second sealed set", "60 new sentences written after the fixes, run once.", h2, "headline") : "");
 const rs = (eng, r) => r ? `<div class="run"><h2>Real speech: ${eng}</h2><p class="faint" style="margin:0">${r.heard} visits read aloud by a person, scored on the words the speech engine wrote. Same visits as written text for comparison.</p><div class="nums">
   <div><b>${r.spoken.fields.recall}%</b><span>of fields right from speech (written: ${r.written.fields.recall}%)</span></div>
   <div><b>${r.spoken.danger.caught} of ${r.spoken.danger.visits}</b><span>danger visits flagged from speech (written: ${r.written.danger.caught} of ${r.written.danger.visits})</span></div>
   <div><b>${r.spoken.danger.false_alarms} of ${r.spoken.danger.normal_visits}</b><span>normal visits wrongly flagged from speech</span></div>
   <div><b>${r.spoken.fields.precision}%</b><span>of filled fields correct from speech</span></div></div></div>` : "";
+document.getElementById("adv").innerHTML =
+  card("Independent set, first run", "100 tricky visits written by a separate agent that never saw the code: colloquial danger phrases, other people's symptoms, denials, mild vs severe, exact thresholds. The honest number.", adv1, "headline") +
+  (advNow && adv1 && advNow.run_at !== adv1.run_at ? card("Independent set, after fixes", "Same 100 visits after fixing the gaps the first run found. Tuned on, so not independent.", advNow) : "");
 document.getElementById("speech").innerHTML = (rs("Wispr Flow", rsW) + rs("browser microphone", rsB)) || `<p class="muted">Not run yet. A person reads 12 of the held-out visits aloud on the <a href="/dictation.html">real speech test page</a>, once through Wispr Flow and once through the browser's microphone; the results appear here.</p>`;
 document.getElementById("vig").innerHTML = vig ? `<div class="run"><h2>Against the guideline text</h2><p class="faint" style="margin:0">${vig.items} short cases, each labelled "should refer" or not, and urgent or not, from the guideline wording before the rules were run.</p><div class="nums">
   <div><b>11 of 24</b><span>should-refer cases caught on the first run, with the old 37-rule table</span></div>
-  <div><b>${vig.refer.tp} of ${vig.refer.positives}</b><span>caught today (${esc(vig.ruleset)}); tuned on since, so not independent</span></div>
+  <div><b>${vig.refer.tp} of ${vig.refer.positives}</b><span>caught today (${esc(vig.ruleset)}); three labels were corrected from the guideline text, and the cases are tuned on since, so not independent</span></div>
   <div><b>${vig.refer.tn} of ${vig.refer.negatives}</b><span>cases that should not refer, left alone</span></div>
   <div><b>${vig.urgent.caught} of ${vig.urgent.gold}</b><span>urgent cases got an urgent flag today</span></div></div>
   <p class="faint" style="margin:10px 0 0">The first run showed the old table had no rules for high BP after birth, high-risk pregnancy or several newborn signs. Three labels were later corrected from the source text, not from the rules. Details in eval/README.md.</p></div>` : "";

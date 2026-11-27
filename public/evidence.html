@@ -82,7 +82,7 @@ import { mountChrome, esc } from "/js/ui.js";
 import { romanize } from "/js/understand.js";
 import { RULE_TABLE } from "/js/rules.js";
 mountChrome("/evidence");
-const get = (f) => fetch(`/data/${f}`).then((r) => r.ok ? r.json() : null).catch(() => null);
+const get = (f) => fetch(`/data/${f}`).then((r) => r.ok ? r.json() : null).then((d) => (d && !d.pending ? d : null)).catch(() => null);
 const [r1, r2, h2, now, vig, rsW, rsB] = await Promise.all(["eval-heldout-run1.json", "eval-heldout-run2.json", "eval-heldout2.json", "eval-heldout.json", "eval-vignettes.json", "eval-realspeech-wispr.json", "eval-realspeech-browser.json"].map(get));
 const card = (title, sub, r, cls = "") => r ? `<div class="run ${cls}"><h2>${title}</h2><p class="faint" style="margin:0">${sub}</p><div class="nums">
   <div><b>${r.typed.fields.recall}%</b><span>of fields read right (${r.typed.fields.correct} of ${r.typed.fields.gold})</span></div>

@@ -15,6 +15,10 @@ mountChrome("/visit");
 const $ = (s) => document.querySelector(s);
 const params = new URLSearchParams(location.search);
 // timings can be shortened by the test harness
+// Android Chrome ends a continuous session after each phrase (and beeps on every restart):
+// there the mic opens for one answer at a time, after each spoken question
+const ANDROID = /Android/i.test(navigator.userAgent) && /Chrome\//.test(navigator.userAgent);
+const REC_MODE = ANDROID || new URLSearchParams(location.search).get("recmode") === "single" ? "single" : "continuous";
 const T = Object.assign({ first: 8000, pause: 4000, quiet: 30000, answerFirst: 8000, step: 650, count: 60000, tick: 15000, typed: 1500, hold: 120000, afterSave: 8000 }, window.__GB_TIMING || {});
 
 let TYPE = ["newborn", "anc", "pnc"].includes(params.get("type")) ? params.get("type") : store.get("gb-type") || "newborn";
@@ -44,7 +48,7 @@ let count = null;        // the timed breath count: { key, t0, timer, lastTick, 
 let hold = null;         // "ruko": the mic waits up to 2 minutes, then asks again
 let stopAsking = false, lastBas = 0; // a second "bas" stops the questions for this visit
 let shownRefer = new Set(); // refer codes already brought into view
-let lastEchoSay = 0;
+let lastEchoSay = 0, lastNotAsked = [];
 
 /* ---------- words the phone says, in her language ---------- */
 const L = (o) => (o && (o[LANG] || o.en)) || "";
@@ -71,6 +75,10 @@ const LINES = {
   noMic: { en: "No microphone found. Tap your keyboard's mic and speak, or type.", hi: "माइक नहीं मिला। कीबोर्ड का माइक दबाकर बोलिए, या टाइप कीजिए।", mr: "माइक सापडला नाही. कीबोर्डचा माइक दाबून बोला, किंवा टाइप करा." },
   skipped: { en: "Skipped.", hi: "छोड़ दिया।", mr: "सोडलं." },
   notChecked: { en: "Marked not checked.", hi: "नहीं देखा, लिख लिया।", mr: "तपासलं नाही, लिहून घेतलं." },
+  langNot: { en: "This browser can't listen in this language. Choose Hindi or English, or type below.", hi: "यह ब्राउज़र इस भाषा में नहीं सुन सकता। हिंदी या इंग्लिश चुनिए, या नीचे टाइप कीजिए।", mr: "हा ब्राउझर या भाषेत ऐकू शकत नाही. हिंदी किंवा इंग्लिश निवडा, किंवा खाली टाइप करा." },
+  helpQ: { en: "Say the answer. Or say: skip, not checked, wait, or say again.", hi: "जवाब बोलिए। या बोलिए: 'छोड़ो', 'पता नहीं', 'रुको', या 'फिर से बोलो'।", mr: "उत्तर सांगा. किंवा म्हणा: 'सोडा', 'माहीत नाही', 'थांबा', किंवा 'पुन्हा सांगा'." },
+  helpVisit: { en: "Say the visit. Then say save, read back, or bas to stop the mic.", hi: "विज़िट बोलिए। फिर 'सेव करो', 'पढ़ के सुनाओ', या माइक बंद करने के लिए 'बस' बोलिए।", mr: "भेट सांगा. मग 'जतन करा', 'वाचून दाखवा', किंवा माइक बंद करायला 'बस' म्हणा." },
+  backToQ: { en: "OK, back to the questions.", hi: "ठीक है, बाकी सवाल पूछती हूँ।", mr: "ठीक आहे, बाकी प्रश्न विचारते." },
   yesNo: { en: "Please say yes or no.", hi: "हाँ या नहीं बोलिए।", mr: "हो किंवा नाही सांगा." },
   badName: { en: "That name doesn't look right. Say her name again.", hi: "यह नाम ठीक नहीं लगा। नाम फिर से बताइए।", mr: "हे नाव बरोबर वाटत नाही. नाव पुन्हा सांगा." },
   timeUp: { en: "Time up. How many breaths?", hi: "समय पूरा। कितनी साँसें?", mr: "वेळ संपली. किती श्वास?" },
@@ -101,14 +109,17 @@ const GUIDE = {
 };
 /* the screen's own words follow the language she picks: Roman letters only */
 const UI = {
-  en: { who: "Who you visited", lang: "Language", newborn: "Newborn", anc: "Pregnancy", pnc: "After birth", tap: "Tap to speak", tapStop: "Tap to stop", said: "What you said", save: "Save visit", saveCmd: "save", read: "Read the record aloud", readCmd: "read back", fresh: "New visit", freshCmd: "new visit", hearQ: "Hear the question", answer: "Answer", skip: "Skip", skipCmd: "skip", unchecked: "Not checked", uncheckedCmd: "not checked", wait: "wait", hearAgain: "Hear it again", yesSave: "Yes, save", no: "No", missing: "Missing", of: "of", check: "Check this", howTo: "How to speak", typeBox: "Type instead of speaking", saved: "Saved", saving: "Saving…",
+  en: { who: "Who you visited", lang: "Language", newborn: "Newborn", anc: "Pregnant", pnc: "After birth", tap: "Tap to speak", tapStop: "Tap to stop", said: "What you said", save: "Save visit", saveCmd: "save", read: "Read the record aloud", readCmd: "read back", fresh: "New visit", freshCmd: "new visit", hearQ: "Hear the question", answer: "Answer", skip: "Skip", skipCmd: "skip", unchecked: "Not checked", uncheckedCmd: "not checked", wait: "wait", hearAgain: "Hear it again", yesSave: "Yes, save", no: "No", missing: "Missing", of: "of", check: "Check this", howTo: "How to speak", typeBox: "Type instead of speaking", saved: "Saved", saving: "Saving…",
     idle: "Tap the mic and say the visit, the way you would tell the nurse.", listening: (l) => `Listening in ${l}. Say the visit; say "bas" when you are done.`, answering: "Listening for your answer…", paused: "The phone is speaking. The mic waits…", closed: "Mic off. Tap the mic to add more, or tap Save visit.", savedClosed: "Mic off. Tap the mic to start the next visit.", answerClosed: "Mic off. Tap Answer or the mic to reply.", nothing: "Didn't hear anything. Tap the mic and try again.", counting: "Counting. The mic stays on; say the number when the minute is up.", holding: "Waiting. The mic stays on; say the answer when you are ready.",
+    nextVisitLine: 'Saved. Say "new" for the next visit.',
     titles: { newborn: "Newborn visit", anc: "Pregnancy visit", pnc: "Mother after birth" } },
-  hi: { who: "Kiske ghar gaye", lang: "Bhasha", newborn: "Navjaat", anc: "Garbhavati", pnc: "Delivery ke baad", tap: "Mic dabaiye", tapStop: "Rokne ke liye dabaiye", said: "Aapne kya kaha", save: "Visit save karo", saveCmd: "save karo", read: "Padh ke sunao", readCmd: "padh ke sunao", fresh: "Nayi visit", freshCmd: "naya", hearQ: "Sawaal suno", answer: "Jawab do", skip: "Chhodo", skipCmd: "chhodo", unchecked: "Pata nahi", uncheckedCmd: "pata nahi", wait: "ruko", hearAgain: "Phir se suno", yesSave: "Haan, save karo", no: "Nahi", missing: "Baaki", of: "mein se", check: "Yeh dekhiye", howTo: "Kaise bolein", typeBox: "Bolne ki jagah type kijiye", saved: "Save ho gaya", saving: "Save ho raha hai…",
+  hi: { who: "Kiske ghar gaye", lang: "Bhasha", newborn: "Navjaat", anc: "Garbhavati", pnc: "Prasav ke baad", tap: "Mic dabaiye", tapStop: "Rokne ke liye dabaiye", said: "Aapne kya kaha", save: "Visit save karo", saveCmd: "save karo", read: "Padh ke sunao", readCmd: "padh ke sunao", fresh: "Nayi visit", freshCmd: "naya", hearQ: "Sawaal suno", answer: "Jawab do", skip: "Chhodo", skipCmd: "chhodo", unchecked: "Pata nahi", uncheckedCmd: "pata nahi", wait: "ruko", hearAgain: "Phir se suno", yesSave: "Haan, save karo", no: "Nahi", missing: "Baaki", of: "mein se", check: "Yeh dekhiye", howTo: "Kaise bolein", typeBox: "Bolne ki jagah type kijiye", saved: "Save ho gaya", saving: "Save ho raha hai…",
     idle: "Mic dabaiye aur visit boliye, jaise nurse ko batati hain.", listening: () => `Sun rahi hoon. Visit boliye; ho jaye to "bas" boliye.`, answering: "Jawab sun rahi hoon…", paused: "Phone bol raha hai. Mic ruka hai…", closed: "Mic band. Aur bolne ke liye mic dabaiye, ya Visit save karo dabaiye.", savedClosed: "Mic band. Agli visit ke liye mic dabaiye.", answerClosed: "Mic band. Jawab ke liye Jawab do ya mic dabaiye.", nothing: "Kuch sunai nahi diya. Mic dabakar phir se boliye.", counting: "Gin rahi hain. Mic chalu hai; minute pura hone par number boliye.", holding: "Ruki hoon. Mic chalu hai; tayyar hon to jawab boliye.",
-    titles: { newborn: "Navjaat ki visit", anc: "Garbhavati ki visit", pnc: "Delivery ke baad maa" } },
+    nextVisitLine: 'Save ho gaya. Agli visit ke liye "naya" boliye.',
+    titles: { newborn: "Navjaat ki visit", anc: "Garbhavati ki visit", pnc: "Prasav ke baad maa" } },
   mr: { who: "Konakade gelat", lang: "Bhasha", newborn: "Navjaat bal", anc: "Garodar", pnc: "Prasutinantar", tap: "Mic daba", tapStop: "Thambavnyasathi daba", said: "Tumhi kay sangitla", save: "Bhet jatan kara", saveCmd: "jatan kara", read: "Vachun dakhva", readCmd: "vachun dakhva", fresh: "Navin bhet", freshCmd: "navin", hearQ: "Prashna aika", answer: "Uttar dya", skip: "Soda", skipCmd: "soda", unchecked: "Mahit nahi", uncheckedCmd: "mahit nahi", wait: "thamba", hearAgain: "Punha aika", yesSave: "Ho, jatan kara", no: "Nahi", missing: "Baki", of: "paiki", check: "He tapasa", howTo: "Kasa bolaycha", typeBox: "Bolnyaaivaji type kara", saved: "Jatan zali", saving: "Jatan hot aahe…",
     idle: "Mic daba ani bhet sanga, jasa nurse la sangta.", listening: () => `Aikte aahe. Bhet sanga; zala ki "bas" mhana.`, answering: "Uttar aikte aahe…", paused: "Phone bolto aahe. Mic thambla aahe…", closed: "Mic band. Aankhi bolayla mic daba, kiva Bhet jatan kara daba.", savedClosed: "Mic band. Pudhchya bhetisathi mic daba.", answerClosed: "Mic band. Uttarasathi Uttar dya kiva mic daba.", nothing: "Kahi aiku aala nahi. Mic dabun punha bola.", counting: "Mojat aahat. Mic chalu aahe; minit sampla ki aakda sanga.", holding: "Thambli aahe. Mic chalu aahe; tayar zalat ki uttar sanga.",
+    nextVisitLine: 'Jatan zali. Pudhchya bhetisathi "navin" mhana.',
     titles: { newborn: "Navjaat balachi bhet", anc: "Garodar bhet", pnc: "Prasutinantar aai" } },
 };
 const t = (k) => (UI[LANG] && UI[LANG][k] !== undefined ? UI[LANG][k] : UI.en[k]);
@@ -136,6 +147,8 @@ const CORE = {
   read: W("padh ke sunao|padhke sunao|padh kar sunao|padhkar sunao|पढ के सुनाओ|पढकर सुनाओ|पढ के सुनाइए|पढकर सुनाइए|पढ के सुनाइये|वाचून दाखवा|वाचून दाखव|vachun dakhva|vaachun daakhva|read back|read it back|read the record|read it out|sunao|सुनाओ|सुनाइए|फिर से सुनाओ|रीड बैक|रीड बॅक"),
   fresh: W("new visit|naya|nayi visit|naya visit|नया|नई विजिट|नया विजिट|नवीन|नवीन भेट|naveen|navin|next visit|अगली विजिट"),
   undo: W("undo|वापस|wapas|vapas|वापस लाओ|परत|parat|परत आणा|पूर्ववत"),
+  repeat: W("phir se bolo|phir se boliye|phir se puchho|phir se puchhiye|phir se pucho|phir se|kya poocha|kya pucha|dobara|dobara bolo|dobara boliye|kya bola|kya kaha|punha sanga|punha bola|kay vicharla|kay mhanala|repeat|say again|again|फिर से बोलो|फिर से बोलिए|फिर से पूछो|फिर से पूछिए|फिर से|क्या पूछा|दोबारा|दोबारा बोलो|दोबारा बोलिए|क्या बोला|क्या कहा|पुन्हा सांगा|पुन्हा बोला|काय विचारलं|काय विचारले|काय म्हणाला"),
+  help: W("madad|मदद|madat|मदत|kya bolun|kya bolu|क्या बोलूं|क्या बोलू|kay bolu|काय बोलू|help|help me"),
   wait: W("ruko|ruk jao|ruko zara|zara ruko|thoda ruko|ek minute|ek min|ek second|ek sec|wait|wait a minute|one minute|just a minute|hold on|रुको|रुकिए|रुक जाओ|जरा रुको|थोडा रुको|एक मिनट|एक सेकंड|थांबा|थांब|एक मिनिट|thamba|thamb|वेट|थोडं थांबा|थोडा थांबा"),
   skip: W("chhodo|chodo|chhod do|chod do|छोडो|छोड दो|छोडिए|छोड दीजिए|छोड|rehne do|rahne do|रहने दो|रहने दीजिए|baad mein|baad me|बाद में|aage|आगे|skip|next|agla|अगला|पुढे|pudhe|सोडा|soda|सोड|सोडून द्या|राहू दे|राहू द्या|rahu de|rahu dya|नंतर|nantar|later|skip it|स्किप|स्किप करो|नेक्स्ट"),
   unchecked: W("pata nahi|pata nahin|nahi pata|nahin pata|पता नहीं|पता नही|नहीं पता|नही पता|maloom nahi|malum nahi|मालूम नहीं|नहीं मालूम|माहीत नाही|माहित नाही|नाही माहीत|mahit nahi|mahiti nahi|not checked|didn't check|did not check|nahi dekha|नहीं देखा|देखा नहीं|नहीं जांचा|जांचा नहीं|तपासलं नाही|तपासले नाही|नाही तपासलं|tapasla nahi|don't know|dont know|i don't know"),
@@ -152,7 +165,7 @@ const LANG_CMD = [["mr", W("(?:marathi|मराठी)(?: mein| में| madh
 function command(text) {
   const k0 = norm(text), k = strip(k0);
   const is = (name) => CORE[name].test(k) || CORE[name].test(k0);
-  for (const name of ["save", "unchecked", "skip", "read", "stop", "fresh", "undo", "wait"]) {
+  for (const name of ["save", "unchecked", "skip", "read", "stop", "fresh", "undo", "wait", "repeat", "help"]) {
     if (is(name)) return name;
     const words = k.split(" ");
     if (words.length <= 4 && ["save", "skip", "unchecked", "read"].includes(name)) {
@@ -311,10 +324,23 @@ const ASK = {
 const ANCHOR = { birth_weight_g: "janam ke samay wajan", temp: "तापमान", bp: "बीपी", weight_g: "वजन", weight_kg: "वजन", temp_c: "तापमान", temp_f: "तापमान", resp_rate: "साँस", bp_sys: "बीपी", bp_dia: "बीपी", hb: "हीमोग्लोबिन", pads: "पैड" };
 const SAY_FIELD = { temp: ["तापमान", "तापमान", "temperature"], bp: ["बीपी", "बीपी", "BP"], weight_g: ["वज़न", "वजन", "weight"], weight_kg: ["वज़न", "वजन", "weight"], temp_c: ["तापमान", "तापमान", "temperature"], temp_f: ["तापमान", "तापमान", "temperature"], resp_rate: ["साँस", "श्वास", "breaths"], bp_sys: ["बीपी", "बीपी", "BP"], bp_dia: ["बीपी", "बीपी", "BP"], hb: ["हीमोग्लोबिन", "हिमोग्लोबिन", "Hb"], pads: ["पैड", "पॅड", "pads"], day: ["दिन", "दिवस", "days"], weeks: ["हफ्ते", "आठवडे", "weeks"], month: ["महीना", "महिना", "month"] };
 const fieldsOf = (row) => row[4] || [row[0]];
+/** This visit's questions; the danger list comes from the rules' grouped checks (ASK_CHECKS) when they exist. */
+function rowsFor(type = TYPE) {
+  const base = ASK[type];
+  // ASK_CHECKS mixes question polarity ("feeding well?" vs "any fits?"), so a bare "nahi" cannot be
+  // read as "every sign absent": the built-in danger rows stay until the checks say which answer is a danger
+  const checks = USE_ASK_CHECKS ? R.ASK_CHECKS?.[type] : null;
+  if (!Array.isArray(checks) || !checks.length) return base;
+  const rows = base.filter((r) => r[0] !== "danger");
+  checks.forEach((c, i) => rows.push(["danger", "", { en: c.en, hi: c.hi || c.en, mr: c.mr || c.en }, c.codes || [], null, true, 0, `danger:${i}`, c.roman || null]));
+  return rows;
+}
+const USE_ASK_CHECKS = false;
+const rowKey = (row) => row[7] || row[0];
 function missing() {
-  return ASK[TYPE].filter((row) => {
+  return rowsFor().filter((row) => {
     const [field, , , syms] = row;
-    if (skipped.has(field) || notChecked.has(field)) return false;
+    if (skipped.has(rowKey(row)) || notChecked.has(rowKey(row)) || skipped.has(field) && field !== "danger" || notChecked.has(field) && field !== "danger") return false;
     if (field === "danger") return !(syms || []).some((s) => record.symptoms && s in record.symptoms);
     return !fieldsOf(row).some((f) => record[f] != null);
   });
@@ -339,7 +365,7 @@ function nextQuestion() {
     return { key: "doubt:" + k, field: d.field, fields, prefix: ANCHOR[d.field] || "", q: { en, hi, mr }, doubt: d, yesno: /^(did|is|are|was)\b/i.test(en) };
   }
   const row = missing()[0];
-  if (row) return { key: row[0], field: row[0], fields: fieldsOf(row), prefix: row[1], q: row[2], syms: row[3], yesno: !!row[5], timed: row[6] || 0 };
+  if (row) return { key: rowKey(row), field: row[0], fields: fieldsOf(row), prefix: row[1], q: row[2], syms: row[3], yesno: !!row[5], timed: row[6] || 0, roman: row[8] || null };
   // then anything extra the rules want (for a newborn: the birth weight from the MCP card)
   const e = extras()[0];
   if (!e) return null;
@@ -442,7 +468,7 @@ function alertRoman(groups) {
 }
 function render() {
   // spoken words
-  $("#said").innerHTML = utter.length ? utter.map(highlightUtterance).join("") : `<p class="said faint">Nothing yet. Speak, <a href="#type-box" data-open-type>type below</a>, or <a href="#examples">try an example</a>.</p>`;
+  $("#said").innerHTML = utter.length ? utter.map(highlightUtterance).join("") : `<p class="said faint">Nothing yet. Speak, type, or try an example.</p><div class="empty-acts"><a class="btn small ghost" href="#type-box" data-open-type>Type it</a><a class="btn small ghost" href="#examples">Try an example</a></div>`;
   $("#said [data-open-type]")?.addEventListener("click", () => { $("#type-box").open = true; setTimeout(() => $("#typed").focus(), 30); });
   $("#said-note").textContent = utter.some((u) => /[ऀ-ॿ]/.test(u.text)) ? "Shown in Roman letters" : "";
   // tiles
@@ -487,8 +513,10 @@ function render() {
   if (refer.length) {
     // one action, said once; the signs as short lines under it (same component on the slip and the board)
     const groups = groupAlerts(flags, TYPE, R.groupFlags);
-    html += `<div class="alert refer ${refer.some(isUrgent) ? "urgent" : ""}" id="alert-refer" tabindex="-1"><div class="alert-head"><h3>${esc(refer[0].title)}${refer.length > 1 ? `, and ${refer.length - 1} more` : ""}</h3>${stampHTML(refer)}</div>
-      ${referHTML(groups, alertRoman(groups))}${hearBtn("refer", t("hearAgain"), LANG === "en" ? null : tEn("hearAgain"))}</div>`;
+    // by default: the stamp, one big action line and a call + hear-again pair; the rest behind "Kyun? / Why"
+    const title = `${refer[0].title}${refer.length > 1 ? ` and ${refer.length - 1} other danger sign${refer.length > 2 ? "s" : ""}` : ""}`;
+    html += `<div class="alert refer ${refer.some(isUrgent) ? "urgent" : ""}" id="alert-refer" tabindex="-1" aria-label="${esc(title)}"><div class="alert-head"><h3 class="sr">${esc(title)}</h3>${stampHTML(refer)}</div>
+      ${referHTML(groups, { ...alertRoman(groups), title, hear: hearBtn("refer", t("hearAgain"), LANG === "en" ? null : tEn("hearAgain")) })}</div>`;
   }
   if (watch.length) {
     html += `<div class="alert watch"><h3>${refer.length ? "Also watch" : "No danger sign, but watch"}</h3><ul>${watch.map((f) => `<li><b>${esc(f.title)}.</b> ${esc(f.action)}${whyBox(f)}</li>`).join("")}</ul>${hearBtn("watch", t("hearAgain"))}</div>`;
@@ -516,7 +544,9 @@ function render() {
   if (pending) {
     ask.hidden = false; ask.className = "v-ask confirm";
     const body = pending.kind === "save"
-      ? [`Before saving`, pending.needName ? "Save without a name?" : "Save this visit?", pending.needName ? `Say the name, or "haan" to save without it.` : `Say "haan" or "nahi", or tap.`, `${ICON.tick}${t("yesSave")}`, t("no")]
+      ? [`Before saving`, pending.missing ? `Still missing: ${pending.missingEn}. Save anyway?` : pending.needName ? "Save without a name?" : "Save this visit?", pending.missing ? `Say "haan" to save now, or "nahi" to answer them.` : pending.needName ? `Say the name, or "haan" to save without it.` : `Say "haan" or "nahi", or tap.`, `${ICON.tick}${t("yesSave")}`, t("no")]
+      : pending.kind === "confirmBack"
+        ? ["Check the change", `${pending.labelEn}: is that right?`, `Say "haan", or "nahi" to say it again.`, `${ICON.tick}Yes`, "No, say again"]
       : pending.kind === "correct"
         ? ["Correction", `${FIELD[pending.field]?.[0] || pretty(pending.field)} ${pending.value}?`, `Say "haan" or "nahi".`, `${ICON.tick}Yes`, "No"]
         : ["This visit is not saved", "Clear it and start a new visit?", `Say "haan" or "nahi", or tap.`, "Yes, clear", "No, keep it"];
@@ -525,13 +555,13 @@ function render() {
     $("#no").onclick = () => confirmPending(false);
   } else if (q && !playing) {
     ask.hidden = false; ask.className = "v-ask";
-    const rows = ASK[TYPE];
+    const rows = rowsFor();
     const left = missing();
     const missLabel = (r) => (r[0] === "name" ? "name" : r[0] === "danger" ? "danger signs" : (r[0] === "day" && TYPE === "newborn" ? "baby's age" : (FIELD[r[0]]?.[0] || pretty(r[0])).toLowerCase()));
     const words = LANG === "en" ? [`"skip"`, `"not checked"`, `"wait"`] : LANG === "mr" ? [`"soda" (skip)`, `"mahit nahi" (not checked)`, `"thamba" (wait)`] : [`"chhodo" (skip)`, `"pata nahi" (not checked)`, `"ruko" (wait)`];
     const hint = q.yesno ? `Say "${LANG === "mr" ? "hoy" : LANG === "en" ? "yes" : "haan"}" or "${LANG === "mr" ? "nahi" : LANG === "en" ? "no" : "nahi"}". Or ${words[0]}${q.field === "danger" || q.field === "severity" ? "" : `, or ${words[1]}`}.` : `Say the answer, ${words[0]}, ${words[1]}, or ${words[2]}.`;
     const timer = count && count.key === q.key ? `<span class="count" id="count" role="timer">${ICON.timer}<span id="count-s">${countLeft()}</span></span>` : "";
-    ask.innerHTML = `<div class="v-ask-q"><span class="faint">${ICON.question}${q.doubt ? t("check") : q.extra ? (LANG === "hi" ? "Ek aur sawaal (one more question)" : LANG === "mr" ? "Aankhi ek prashna (one more question)" : "One more question") : `${esc(missingText(left.length, rows.length))}: ${esc(left.map(missLabel).join(", "))}`}</span><b>${esc(followUp ? "Which one? Say the sign." : q.q.en)}</b>${timer}<span class="hint">${esc(hint)}</span></div>
+    ask.innerHTML = `<div class="v-ask-q"><span class="faint">${ICON.question}${q.doubt ? t("check") : q.extra ? (LANG === "hi" ? "Ek aur sawaal (one more question)" : LANG === "mr" ? "Aankhi ek prashna (one more question)" : "One more question") : `${esc(missingText(left.length, rows.length))}: ${esc([...new Set(left.map(missLabel))].join(", "))}`}</span><b>${esc(followUp ? "Which one? Say the sign." : q.q.en)}</b>${timer}<span class="hint">${esc(hint)}</span></div>
       <div class="v-ask-btns">${hearBtn("ask", t("hearQ"), LANG === "en" ? null : tEn("hearQ"))}<button class="btn small voice" id="answer">${ICON.mic}<span>${lab("answer")}</span></button><button class="btn small ghost" id="skip">${ICON.skip}<span>${lab("skip")}<small class="cmd">or say "${esc(t("skipCmd"))}"</small></span></button>${q.field !== "danger" && q.field !== "severity" ? `<button class="btn small ghost" id="unchecked"><span>${lab("unchecked")}<small class="cmd">or say "${esc(t("uncheckedCmd"))}"</small></span></button>` : ""}</div>`;
     $("#answer").onclick = () => { asking = q; startListening("answer"); };
     $("#skip").onclick = () => skipQuestion(q, false);
@@ -701,7 +731,7 @@ function answerName(text, via) {
 }
 function skipQuestion(q, unchecked) {
   if (q.doubt) skipped.add("doubt:" + (q.code ? `severity:${q.code}` : q.field));
-  else if (unchecked) notChecked.add(q.field); else skipped.add(q.field);
+  else if (unchecked) notChecked.add(q.field === "danger" ? q.key : q.field); else skipped.add(q.field === "danger" ? q.key : q.field);
   if (count && count.key === q.key) stopCount();
   asking = null; followUp = null; retries = 0;
   say(L(unchecked ? LINES.notChecked : LINES.skipped));
@@ -766,7 +796,10 @@ function take(text, via = "voice") {
   text = String(text || "").trim();
   if (!text) return;
   const cmd = command(text);
-  // a pending "save?", "clear?" or "temperature 37?" is answered first
+  // "phir se bolo" / "madad": say the question (or the open yes/no) again, or what she can say now; nothing changes
+  if (cmd === "repeat") return repeatLine();
+  if (cmd === "help") return helpLine();
+  // a pending "save?", "clear?", "temperature 37?" or "…, theek?" is answered first
   if (pending) {
     if (cmd === "yes" || (pending.kind === "save" && cmd === "save")) return confirmPending(true);
     if (cmd === "no") return confirmPending(false);
@@ -776,7 +809,7 @@ function take(text, via = "voice") {
       if (record.name) { pending = null; return askSave(); }
     }
     // an unclear reply keeps the yes/no question open once, and asks again
-    if (!cmd && !pending.reasked) { pending.reasked = true; say(L(LINES.yesNo), { now: true }).then(() => { if (pending) openAnswerMic(null); }); render(); return; }
+    if (!cmd && !pending.reasked && pending.kind !== "confirmBack") { pending.reasked = true; say(L(LINES.yesNo), { now: true }).then(() => { if (pending) openAnswerMic(null); }); render(); return; }
     pending = null; // anything else: carry on with what she said
   }
   if (cmd === "undo") { if (banner?.kind === "switch") { const from = banner.from; banner = null; return switchType(from, { announce: false }); } return restoreCleared(); }
@@ -843,7 +876,8 @@ function take(text, via = "voice") {
     }
     if (!hit && changed.length) asked.delete(q.key); // she said something else; ask this again later
     if (hit || retries > 2) retries = 0;
-    asking = changed.includes("followup") ? q : null;
+    // anything that sets no field keeps the question open
+    asking = changed.includes("followup") ? q : hit ? null : changed.filter((c) => c !== "unread").length ? null : q;
     if (hit && !asking && session?.mode === "visit") { clearTimeout(turnTimer); turnTimer = setTimeout(() => maybeAsk(), 700); }
   }
   render();
@@ -853,7 +887,8 @@ function take(text, via = "voice") {
 /* ---------- the next turn: ask the next question, then listen for one answer ---------- */
 let turnTimer = null;
 function afterTurn(again = false) {
-  if (session) return; // an open mic asks after a pause (or the 700 ms timer set after an answer), or is listening already
+  if (session) return;
+  if (pending) { clearTimeout(turnTimer); turnTimer = setTimeout(() => chain.then(() => { if (pending && !session) openAnswerMic(null); }), 60); return; } // an open mic asks after a pause (or the 700 ms timer set after an answer), or is listening already
   clearTimeout(turnTimer);
   turnTimer = setTimeout(() => maybeAsk(again), 60);
 }
@@ -934,7 +969,7 @@ const ERR = {
   "service-not-allowed": ["This browser won't let the page use speech recognition. Type the visit below, or open the page in Chrome or Edge.", "blocked"],
   "network": ["No internet, so this page can't listen. Tap the mic on your phone's keyboard and speak into the box below: it is read by itself. The visit stays on this screen and saves on this phone.", "offline"],
   "audio-capture": ["No microphone was found. Plug one in, or type the visit below.", "noMic"],
-  "language-not-supported": [null, null],
+  "language-not-supported": [null, "langNot"],
   "unsupported": ["This browser can't listen. Type the visit below, or open the page in Chrome or Edge.", "unsupported"],
 };
 function showError(e) {
@@ -947,12 +982,14 @@ function showError(e) {
   setStatus(ro || en, "err", ro ? en : null);
   $("#type-box").open = true;
   // every no-mic case points to the keyboard's own mic, the voice fallback
-  if (["network", "not-allowed", "service-not-allowed", "audio-capture", "unsupported"].includes(e)) setTimeout(() => $("#typed").focus({ preventScroll: false }), 50);
+  if (["network", "not-allowed", "service-not-allowed", "audio-capture", "unsupported", "language-not-supported"].includes(e)) setTimeout(() => $("#typed").focus({ preventScroll: false }), 50);
   if (line) say(L(LINES[line]), { now: true });
 }
 function listeningStatus(state) {
   if (!session || state === "ended" || lastError) return;
   if (state === "paused") return setStatus(t("paused"), "wait", LANG === "en" ? null : tEn("paused"));
+  // after a save the phone waits only for "naya": never show a question the visit no longer needs
+  if (saved) return setStatus(t("nextVisitLine"), "on", LANG === "en" ? null : tEn("nextVisitLine"));
   // what the phone is waiting for comes first: the save yes/no, then the question
   if (pending) { const [line, en] = pendingLine(); return setStatus(line, "on", en); }
   if (count) return setStatus(t("counting"), "on", LANG === "en" ? null : tEn("counting"));
@@ -965,12 +1002,14 @@ function listeningStatus(state) {
 function questionLine(q) {
   const en = `${followUp ? "Which one? Say the sign." : q.q.en} Say the answer${q.yesno ? ' ("yes" or "no")' : ""}, "skip", "not checked" or "wait".`;
   if (LANG === "en") return [en, null];
-  const ro = followUp ? (LANG === "hi" ? "Kaun sa? Lakshan boliye." : "Konta? Lakshan sanga.") : (ROQ[`${TYPE}:${q.field}`]?.[LANG] || (q.roman?.[LANG] ? String(q.roman[LANG]).replace(/(^|[.!?]\s+)([a-z])/g, (m, a, b) => a + b.toUpperCase()) : null) || romanize(q.q[LANG] || "").replace(/^./, (c) => c.toUpperCase()));
+  const ro = followUp ? (LANG === "hi" ? "Kaun sa? Lakshan boliye." : "Konta? Lakshan sanga.") : ((typeof q.roman === "string" ? q.roman : q.roman?.[LANG]) ? String(typeof q.roman === "string" ? q.roman : q.roman[LANG]).replace(/(^|[.!?]\s+)([a-z])/g, (m, a, b) => a + b.toUpperCase()) : null) || (ROQ[`${TYPE}:${q.field}`]?.[LANG] || (q.roman?.[LANG] ? String(q.roman[LANG]).replace(/(^|[.!?]\s+)([a-z])/g, (m, a, b) => a + b.toUpperCase()) : null) || romanize(q.q[LANG] || "").replace(/^./, (c) => c.toUpperCase()));
   const say = LANG === "hi" ? `Boliye: jawab${q.yesno ? ' ("haan" ya "nahi")' : ""}, "chhodo", "pata nahi" ya "ruko".` : `Sanga: uttar${q.yesno ? ' ("ho" kiva "nahi")' : ""}, "soda", "mahit nahi" kiva "thamba".`;
   return [`${ro} ${say}`, en];
 }
 function pendingLine() {
   const p = pending;
+  if (p.kind === "confirmBack") return LANG === "en" ? [`${p.labelEn}: is that right? Say "yes", or "no" to say it again.`, null] : [LANG === "hi" ? 'Theek hai? Boliye: "haan", ya dobara batane ke liye "nahi".' : 'Barobar? Mhana: "ho", kiva punha sangayla "nahi".', `${p.labelEn}: is that right? Say "yes" or "no".`];
+  if (p.kind === "save" && p.missing) return LANG === "en" ? [`Still missing: ${p.missingEn}. Save anyway? Say "yes" or "no".`, null] : [LANG === "hi" ? `Baaki: ${p.missingEn}. Phir bhi save karun? Boliye: "haan" ya "nahi".` : `Baki: ${p.missingEn}. Tarihi jatan karu? Mhana: "ho" kiva "nahi".`, `Still missing: ${p.missingEn}. Save anyway?`];
   const en = p.kind === "save" ? (p.needName ? 'Say her name, or "yes" to save without it.' : 'Save? Say "yes" or "no".') : p.kind === "correct" ? `${FIELD[p.field]?.[0] || p.field} ${p.value}? Say "yes" or "no".` : 'Clear this visit? Say "yes" or "no".';
   if (LANG === "en") return [en, null];
   const hi = p.kind === "save" ? (p.needName ? 'Naam boliye, ya bina naam ke save karne ke liye "haan".' : 'Save karein? Boliye: "haan" ya "nahi".') : p.kind === "correct" ? `${p.value}? Boliye: "haan" ya "nahi".` : 'Yeh visit mita dein? Boliye: "haan" ya "nahi".';
@@ -1012,8 +1051,8 @@ async function startListening(mode = "visit", { firstMs } = {}) {
   let interimEl = null;
   if (mode === "visit" && !/Android|iPhone|iPad/.test(navigator.userAgent)) micMeter((v) => { $("#mic").style.setProperty("--lvl", v.toFixed(2)); const bars = wave.children; for (let k = 0; k < bars.length; k++) bars[k].style.height = `${4 + Math.max(0, v * 22 * (0.4 + 0.6 * Math.abs(Math.sin(k * 1.7 + Date.now() / 160))))}px`; }).then((s) => { if (session) stopMeter = s; else s && s(); });
   const me = dictate({
-    lang: LANG, single: mode === "answer",
-    firstMs: firstMs || (mode === "answer" ? T.answerFirst : T.first), quietMs: T.quiet, pauseMs: mode === "visit" ? T.pause : null,
+    lang: LANG, single: mode === "answer" || REC_MODE === "single",
+    firstMs: firstMs || (mode === "answer" ? T.answerFirst : T.first), quietMs: T.quiet, pauseMs: mode === "visit" && REC_MODE !== "single" ? T.pause : null,
     onState: (s) => listeningStatus(s),
     onPause: () => maybeAsk(),
     keep: (t) => !!command(t), // a command is never thrown away as an echo
@@ -1044,6 +1083,8 @@ function stopListening(fromDone) {
   [...wave.children].forEach((b) => (b.style.height = "4px"));
   if (me) micCloseTone();
   if (count && me && !me.heard) stopCount();
+  // no answer to "theek?": silence means yes, so the questions carry on
+  if (me && !me.heard && pending?.kind === "confirmBack") { pending = null; afterTurn(); }
   if (lastError) { render(); return; } // keep the error on screen
   if (me && !me.heard && !me.byUser && !saved && !pending) {
     if (me.mode === "visit") { setStatus(t("nothing"), "err", LANG === "en" ? null : tEn("nothing")); say(L(LINES.nothing)); }
@@ -1112,11 +1153,56 @@ $("#readback").addEventListener("click", readBack);
 function askSave() {
   if (!utter.length || saved) return;
   pending = { kind: "save", needName: !record.name && !notChecked.has("name") }; asking = null;
+  // fields not yet asked are said out loud first; "nahi" goes back to them
+  const left = missing();
+  if (left.length) {
+    const labs = [...new Set(left.map((r) => missingLabel(r, LANG)))], labsEn = [...new Set(left.map((r) => missingLabel(r, "en")))];
+    pending.missing = left.map(rowKey); pending.missingEn = labsEn.join(", "); pending.missingSay = missingLine(labs);
+  }
   if (count) stopCount();
   render();
-  setStatus(pending.needName ? "Say the name, or \"haan\" to save without it." : "Say \"haan\" to save, or \"nahi\".");
+  { const [line, en] = pendingLine(); setStatus(line, "", en); }
   say(readBackText({ short: true }), { now: true });
-  say(L(pending.needName ? LINES.noName : LINES.confirmSave)).then(() => { if (pending?.kind === "save") openAnswerMic(null); });
+  say(pending.missingSay || L(pending.needName ? LINES.noName : LINES.confirmSave)).then(() => { if (pending?.kind === "save") openAnswerMic(null); });
+}
+const SAY_MISSING = { name: ["नाम", "नाव", "name"], danger: ["ख़तरे के लक्षण", "धोक्याची लक्षणं", "danger signs"], feeding: ["दूध पीना", "दूध पिणे", "feeding"], fetal_movement: ["बच्चे का हिलना", "बाळाची हालचाल", "baby's movement"], birth_weight_g: ["जन्म का वज़न", "जन्माचं वजन", "birth weight"] };
+function missingLabel(row, lang) {
+  const i = lang === "hi" ? 0 : lang === "mr" ? 1 : 2, f = row[0];
+  if (SAY_MISSING[f]) return SAY_MISSING[f][i];
+  if (f === "day") return TYPE === "newborn" ? ["उम्र", "वय", "baby's age"][i] : SAY_FIELD.day[i];
+  return SAY_FIELD[f]?.[i] || (lang === "en" ? (FIELD[f]?.[0] || pretty(f)).toLowerCase() : f);
+}
+function missingLine(labs) {
+  const join = (a, and) => (a.length > 1 ? `${a.slice(0, -1).join(", ")} ${and} ${a[a.length - 1]}` : a[0]);
+  return LANG === "hi" ? `${join(labs, "और")} अभी बाकी हैं। फिर भी सेव करूँ? हाँ या नहीं बोलिए।` : LANG === "mr" ? `${join(labs, "आणि")} अजून बाकी आहे. तरीही जतन करू? हो किंवा नाही सांगा.` : `${join(labs, "and")} still missing. Save anyway? Say yes or no.`;
+}
+/** "Phir se bolo": the current question or the open yes/no again; nothing changes. */
+function repeatLine() {
+  if (pending) { say(pendingSpoken(), { now: true }).then(() => { if (pending) openAnswerMic(null); }); return; }
+  const q = asking || (!saved && utter.length ? nextQuestion() : null);
+  if (!q) { say(L(LINES.helpVisit), { now: true }); return; }
+  asking = q; render();
+  say(followUp ? L(LINES.which) : L(q.q), { now: true }).then(() => openAnswerMic(q));
+}
+/** "Madad": three or four things she can say right now. */
+function helpLine() {
+  const q = asking;
+  say(pending ? L(LINES.yesNo) : q ? L(LINES.helpQ) : L(LINES.helpVisit), { now: true }).then(() => { if (pending) openAnswerMic(null); else if (q) openAnswerMic(q); });
+}
+function pendingSpoken() {
+  const p = pending;
+  if (p.kind === "save") return p.missingSay || L(p.needName ? LINES.noName : LINES.confirmSave);
+  if (p.kind === "clear") return L(LINES.confirmClear);
+  if (p.kind === "confirmBack") return p.text;
+  const lab = SAY_FIELD[p.field];
+  return `${lab ? lab[LANG === "hi" ? 0 : LANG === "mr" ? 1 : 2] : p.field} ${p.value}?`;
+}
+/** The question that fills a field, to ask it again after "nahi". */
+function questionFor(f) {
+  const row = rowsFor().find((r) => fieldsOf(r).includes(f));
+  if (row) return { key: rowKey(row), field: row[0], fields: fieldsOf(row), prefix: row[1], q: row[2], syms: row[3], yesno: !!row[5], timed: 0, roman: row[8] || null };
+  const lab = SAY_FIELD[f] || [f, f, f];
+  return { key: f, field: f, fields: [f], prefix: ANCHOR[f] || "", q: { en: `Say the ${lab[2]} again.`, hi: `${lab[0]} फिर से बताइए।`, mr: `${lab[1]} पुन्हा सांगा.` } };
 }
 function askClear() {
   if (!utter.length || saved) {
@@ -1130,7 +1216,23 @@ function askClear() {
 function confirmPending(yes) {
   const p = pending; pending = null;
   if (!p) return;
-  if (p.kind === "save") { if (yes) save(); else { say(L(LINES.notSaved), { now: true }); render(); } }
+  if (p.kind === "save") {
+    if (yes) save();
+    else if (p.missing) { asked = new Map(); offerSave = false; say(L(LINES.backToQ), { now: true }); render(); maybeAsk(); } // back to the questions
+    else { say(L(LINES.notSaved), { now: true }); render(); }
+  }
+  else if (p.kind === "confirmBack") {
+    if (yes) { render(); if (session?.mode === "visit") { clearTimeout(turnTimer); turnTimer = setTimeout(() => maybeAsk(), 700); } else afterTurn(); }
+    else {
+      // "nahi": clear the value just said back and ask for that field again
+      const f = p.fields[0];
+      for (const k of p.fields.concat(f === "temp_c" ? ["temp_f"] : f === "bp_sys" ? ["bp_dia"] : [])) { delete record[k]; delete evidence[k]; }
+      flags = check();
+      const q = questionFor(f);
+      asked.set(q.key, 1); asking = q; render();
+      say(L(q.q), { now: true }).then(() => openAnswerMic(q));
+    }
+  }
   else if (p.kind === "clear") { if (yes) { clearVisit(); say(L(LINES.cleared), { now: true }); } else { say(L(LINES.kept), { now: true }); render(); } }
   else if (p.kind === "correct") {
     if (yes) applyCorrection(p.field, p.text, p.rest, p.via);
@@ -1174,11 +1276,12 @@ function savedBox(v, { queued = false } = {}) {
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   const yes = Object.entries(v.record.symptoms || {}).filter(([, x]) => x).map(([k]) => cap(symLabel(k)));
   const no = Object.entries(v.record.symptoms || {}).filter(([, x]) => !x).map(([k]) => symLabel(k));
-  const unchecked = [...notChecked].map((k) => FIELD[k]?.[0] || (k === "danger" ? "danger signs" : pretty(k)));
+  const unchecked = [...new Set([...notChecked].map((k) => FIELD[k]?.[0] || (k.startsWith("danger") ? "danger signs" : pretty(k))))];
+  const notAsked = Array.isArray(v.notAsked) && v.notAsked.length ? v.notAsked : lastNotAsked;
   const heard = v.flags.filter((f) => f.from === "transcript" || f.conflict);
   return `<div class="saved-box">
     <div class="register"><div class="reg-head"><span>Village register · ${esc(TITLES[v.type])}</span><span>${new Date(v.at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span></div>
-    <table>${rows.map(([l, x]) => `<tr><th>${esc(l)}</th><td>${esc(x)}</td></tr>`).join("")}${yes.length ? `<tr><th>Signs present</th><td>${esc(yes.join(", "))}</td></tr>` : ""}${no.length ? `<tr><th>Checked, not present</th><td>${esc(no.join(", "))}</td></tr>` : ""}${unchecked.length ? `<tr><th>Not checked</th><td>${esc(unchecked.join(", "))}</td></tr>` : ""}<tr><th>Result</th><td>${refer.length ? stampHTML(refer, false).replace('class="stamp', 'class="stamp small-stamp') : v.flags.length ? "watch" : "no danger signs"}</td></tr></table></div>
+    <table>${rows.map(([l, x]) => `<tr><th>${esc(l)}</th><td>${esc(x)}</td></tr>`).join("")}${yes.length ? `<tr><th>Signs present</th><td>${esc(yes.join(", "))}</td></tr>` : ""}${no.length ? `<tr><th>Checked, not present</th><td>${esc(no.join(", "))}</td></tr>` : ""}${unchecked.length ? `<tr><th>Not checked</th><td>${esc(unchecked.join(", "))}</td></tr>` : ""}${notAsked.length ? `<tr><th>Not asked</th><td>${esc(notAsked.join(", "))}</td></tr>` : ""}<tr><th>Result</th><td>${refer.length ? stampHTML(refer, false).replace('class="stamp', 'class="stamp small-stamp') : v.flags.length ? "watch" : "no danger signs"}</td></tr></table></div>
     ${heard.length ? `<p class="alert watch" style="margin:0"><b>${heard.some((f) => f.conflict) ? "Said in the visit, but the record disagrees (the nurse will check):" : "Also heard in what was said:"}</b> ${esc(heard.map((f) => f.title).join(", "))}. The nurse will see this on the slip.</p>` : ""}
     <div class="saved-links">${refer.length && !queued ? `<a class="btn refer" href="/slip/${esc(v.id)}">Open the referral slip</a>` : ""}${refer.length ? `<a class="btn ghost" href="tel:108">Call 108</a>` : ""}${queued ? "" : `<a class="btn ghost" href="/anm">See it on the nurse's board</a>`}</div>
     <p class="faint" id="saved-note" style="margin:0">${queued ? "Saved on this phone. It will be sent to the nurse when there is signal." : `Saved to the register${refer.length ? " and sent to the nurse's board as an open referral" : ""}. ${v.via === "voice" ? "Recorded by voice." : "Typed."}`}</p></div>`;
@@ -1204,6 +1307,9 @@ async function save() {
     return askSave();
   }
   if (notChecked.size) body.notChecked = [...notChecked];
+  const notAsked = [...new Set(missing().map((r) => missingLabel(r, "en")))];
+  lastNotAsked = notAsked;
+  if (notAsked.length) body.notAsked = notAsked;
   const tail = () => { const w = watchTail(); return w ? " " + w : ""; };
   const queue = () => {
     const it = { localId: Math.random().toString(36).slice(2), at: Date.now(), body };
@@ -1248,9 +1354,15 @@ function afterSaveMic() {
 /** Say corrected values back: "saans 39. Theek?" */
 function speakBack(fields) {
   const sep = LANG === "hi" ? "। " : ". ";
-  const said = [...new Set(fields.map((f) => (f === "temp_f" ? "temp_c" : f === "bp_dia" ? "bp_sys" : f === "month" ? "weeks" : f)))].map((f) => { const sp = SP[f]?.(record); return sp ? (typeof sp === "string" ? sp : sp[LANG] || sp.en) : null; }).filter(Boolean);
+  const keys = [...new Set(fields.map((f) => (f === "temp_f" ? "temp_c" : f === "bp_dia" ? "bp_sys" : f === "month" ? "weeks" : f)))].filter((f) => SP[f]?.(record));
+  const said = keys.map((f) => { const sp = SP[f](record); return typeof sp === "string" ? sp : sp[LANG] || sp.en; });
   if (!said.length) return;
-  say(said.join(sep) + sep + L(LINES.ok));
+  // "theek?" is a real question: the phone waits for haan / nahi before asking anything else
+  const text = said.join(sep) + sep + L(LINES.ok);
+  const labelEn = keys.map((f) => { const sp = SP[f](record); return typeof sp === "string" ? sp : sp.en; }).join(", ");
+  pending = { kind: "confirmBack", fields: keys, text, labelEn };
+  render();
+  say(text).then(() => { if (pending?.kind === "confirmBack") openAnswerMic(null); });
 }
 function snapshot() { return JSON.parse(JSON.stringify({ TYPE, utter, record, evidence, doubts, unread, spoken: [...spoken], skipped: [...skipped], notChecked: [...notChecked] })); }
 function resetVisit() {
@@ -1360,11 +1472,12 @@ const gl = $("#glossary"); if (gl) gl.innerHTML = glossaryHTML({ open: false });
 const tips = $("#tips");
 if (tips) { tips.checked = store.get("gb-tips") !== "off"; tips.addEventListener("change", () => { store.set("gb-tips", tips.checked ? "on" : "off"); if (tips.checked) store.set("gb-guided", false); }); }
 
+$("#mic-mode").textContent = REC_MODE === "single" ? "Mic mode: one answer at a time (Android)" : "Mic mode: continuous";
 setLang(LANG);
 paintType();
 render(); loadVillage(); flushOutbox();
 if (!support().stt) { setStatus("This browser can't listen for speech. Type the visit below, or open this page in Chrome or Edge."); $("#type-box").open = true; }
 if (params.get("example") === "1") setTimeout(() => $("#examples .ex")?.click(), 500);
 // Read-only view for automated checks
-window.__gb = () => ({ deadlineIn: session?.deadline ? session.deadline - Date.now() : null, TYPE, LANG, record, flags: flags.map((f) => f.code), utter: utter.length, session: !!session, mode: session?.mode || null, asking: asking?.key || null, pending: pending?.kind || null, doubts: Object.keys(doubts), notChecked: [...notChecked], skipped: [...skipped], saved: saved ? (saved.queued ? "queued" : saved.id) : null, outbox: outbox.get().length, lastError, status: $("#status").textContent, banner: banner?.kind || null, counting: !!count, said: utter.map((u) => u.text) });
+window.__gb = () => ({ recMode: REC_MODE, deadlineIn: session?.deadline ? session.deadline - Date.now() : null, TYPE, LANG, record, flags: flags.map((f) => f.code), utter: utter.length, session: !!session, mode: session?.mode || null, asking: asking?.key || null, pending: pending?.kind || null, doubts: Object.keys(doubts), notChecked: [...notChecked], skipped: [...skipped], saved: saved ? (saved.queued ? "queued" : saved.id) : null, outbox: outbox.get().length, lastError, status: $("#status").textContent, banner: banner?.kind || null, counting: !!count, said: utter.map((u) => u.text) });
 window.__cmd = command;

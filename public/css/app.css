@@ -234,3 +234,21 @@ footer .faint { color: var(--ink-2); }
 .seg button { display: inline-flex; align-items: center; gap: 4px; }
 .seg button .pict { flex: none; }
 .seg button > span { display: grid; text-align: left; line-height: 1.15; }
+/* the danger card by default: one action, a big call button and "hear again"; the rest behind "Kyun? / Why" */
+.alert-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0 4px; }
+.alert-acts .btn, .alert-acts .hear { min-height: 56px; margin: 0; justify-content: center; font-size: 17px; }
+.btn.call { background: #fff; color: #7a1409; border: 0; gap: 8px; }
+.btn.call.soft { background: color-mix(in srgb, #fff 92%, transparent); }
+.btn.call .en-line { font-size: 12px; opacity: .85; }
+.btn.call span { display: grid; text-align: left; line-height: 1.1; }
+.alert .hear { border-width: 2px; }
+.kyun { margin-top: 10px; border-top: 1px solid color-mix(in srgb, currentColor 30%, transparent); }
+.kyun > summary { list-style: none; cursor: pointer; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 700; }
+.kyun > summary::-webkit-details-marker, .gloss-box > summary::-webkit-details-marker { display: none; }
+.kyun > summary::after, .gloss-box > summary::after { content: "+"; font-size: 22px; line-height: 1; }
+.kyun[open] > summary::after, .gloss-box[open] > summary::after { content: "−"; }
+.kyun > summary .en-line { font-weight: 500; }
+.signs .src { display: block; font-size: 13px; opacity: .85; }
+.gloss-box > summary { list-style: none; justify-content: space-between; }
+.gloss-hint { display: block; font-size: 13px; font-weight: 500; color: var(--ink-2); }
+.en-gloss { opacity: .92; }

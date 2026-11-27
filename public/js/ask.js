@@ -199,6 +199,14 @@ function splitAction(action) {
   const a = String(action || ""), i = a.search(/on the way:/i);
   return { main: (i >= 0 ? a.slice(0, i) : a).trim(), otw: i >= 0 ? a.slice(i).replace(/^on the way:\s*/i, "").trim() : "" };
 }
+/** The place and timing from the fired rule itself: its \`where\`, else the first sentence of its action. */
+function whereOf(fl, type) {
+  const sorted = [...fl].sort((a, b) => (b.urgent ? 1 : 0) - (a.urgent ? 1 : 0));
+  const w = sorted.map((f) => f.where).find(Boolean);
+  if (w) return w;
+  const first = sorted.map((f) => sentencesOf(splitAction(f.action).main)[0]).find(Boolean);
+  return first ? (sorted[0]?.urgent && !/108/.test(first) ? first + " Call 108." : first) : bigLine(fl, type);
+}
 export function groupAlerts(flags, type, groupFlags) {
   const refer = (flags || []).filter((f) => f.severity === "refer_now");
   if (!refer.length) return [];
@@ -207,7 +215,7 @@ export function groupAlerts(flags, type, groupFlags) {
       const g = groupFlags(refer);
       if (Array.isArray(g) && g.length) {
         return g.filter((x) => (x.flags || []).some((f) => f.severity !== "watch")).map((x) => ({
-          where: x.where || bigLine(x.flags || [], type), urgent: !!x.urgent, flags: (x.flags || []).filter((f) => f.severity !== "watch"), extra: [],
+          where: x.where || whereOf(x.flags || [], type), urgent: !!x.urgent, flags: (x.flags || []).filter((f) => f.severity !== "watch"), extra: [],
           onTheWay: Array.isArray(x.onTheWay) ? x.onTheWay : x.onTheWay ? otwItems(x.onTheWay) : [],
         }));
       }

@@ -86,7 +86,7 @@ else try {
     ${heard.length ? `<p class="heard"><b>Heard in what was said, not in the record:</b> ${esc(heard.map((f) => f.title).join(", "))}. The server re-read the health worker's words and found ${heard.length > 1 ? "these signs" : "this sign"}; check with her.</p>` : ""}
     <dl class="kv">${F(v.record).map(([k, x]) => `<dt>${esc(k)}</dt><dd>${esc(x)}</dd>`).join("")}${yes.length ? `<dt>Signs present</dt><dd>${esc(yes.join(", "))}</dd>` : ""}</dl>
     <section class="why"><h2 style="font-size:17px;margin:0 0 6px">Why this referral</h2>
-      ${refer.length ? `<div class="slip-alert">${referHTML(groups).replace(/<p class="alert-do">[\s\S]*?<\/p>/, "")}</div>` : `<p>No danger sign found in this visit.</p>`}
+      ${refer.length ? `<div class="slip-alert">${referHTML(groups, { doLine: false, actions: false, open: true, title: refer.map((f) => f.title).join(", ") })}</div>` : `<p>No danger sign found in this visit.</p>`}
       ${watch.length ? `<p class="faint" style="margin:4px 0">Also watch: ${watch.map((f) => esc(f.title)).join(", ")}.</p>` : ""}
       ${glossaryHTML({ only: text, open: false })}
     </section>

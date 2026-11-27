@@ -62,29 +62,42 @@ export function sessionId() {
 }
 const AMBULANCE = `<svg class="pict" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 22V11h15v11M18 14h6l4 5v3H3"/><circle cx="9" cy="23" r="2.5" fill="currentColor"/><circle cx="23" cy="23" r="2.5" fill="currentColor"/><path d="M10.5 13.5v5M8 16h5"/></svg>`;
 const HOSPITAL = `<svg class="pict" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 28V9h22v19M3 28h26"/><path d="M16 12v8M12 16h8"/></svg>`;
-export function referHTML(groups, { signs = true, why = true, main = null, otw = null } = {}) {
+const PHONE = `<svg class="ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"/></svg>`;
+/**
+ * One referral alert body, the same on the visit page, the slip and the board.
+ * By default it shows only one big action line (her language when given, the
+ * English under it) and a large call + "hear again" pair; "On the way" and the
+ * signs that fired sit behind a "Kyun? / Why" disclosure (open on the slip, for
+ * print). Lower-level groups are context under the highest. `groups` comes
+ * from groupAlerts() in ask.js.
+ */
+export function referHTML(groups, { why = true, main = null, otw = null, open = false, hear = "", title = "", doLine = true, actions = true } = {}) {
   if (!groups || !groups.length) return "";
   const [top, ...rest] = groups;
   const cap = (x) => String(x).charAt(0).toUpperCase() + String(x).slice(1);
   // the reason without repeating the sign's own name ("Signs of sepsis: signs of sepsis: ...")
   const reasonText = (f) => { const w = String(f.why || ""), t = String(f.title || ""); return w.toLowerCase().startsWith(t.toLowerCase()) ? w.slice(t.length).replace(/^[\s:,.-]+/, "") : w; };
-  const line = (f) => `<li><b>${esc(f.title)}</b>${f.urgent ? ' <span class="go">go now</span>' : ""}${reasonText(f) ? `: ${esc(reasonText(f))}` : ""}`
+  const line = (f) => `<li><b>${esc(f.title)}</b>${reasonText(f) ? `: ${esc(reasonText(f))}` : ""}`
     + `${f.from === "transcript" ? ' <span class="pill watch">heard in what was said</span>' : ""}${f.conflict ? ' <span class="pill watch">said in the visit, record disagrees: nurse to check</span>' : ""}`
-    + `${why && (f.source || f.code) ? `<details class="why"><summary>Why</summary><p class="src">${esc(f.source || "")}${f.code ? ` · Rule: ${esc(f.code)}` : ""}</p></details>` : ""}</li>`;
-  // the action in her language (Roman letters) when there is one, with the English under it; a pictogram for go-now vs today
+    + `${why && f.source ? `<span class="src" title="${esc(f.code ? `rule id ${f.code}` : "")}">Source: ${esc(f.source)}</span>` : ""}</li>`;
   const otwList = Array.isArray(otw) ? otw : otw ? String(otw).replace(/\.\s*$/, "").split(/,\s*/) : null;
-  return `<p class="alert-do">${top.urgent ? AMBULANCE : HOSPITAL}<span>${main ? `${esc(main)}<small class="en-line">${esc(top.where)}</small>` : esc(top.where)}</span></p>`
+  const otwHTML = otwList && otwList.length ? `<div class="otw"><b>Raste mein · On the way</b><ul>${otwList.map((x) => `<li>${esc(cap(x))}</li>`).join("")}</ul><small class="en-line">${esc(top.onTheWay.map(cap).join(". "))}</small></div>`
+    : top.onTheWay && top.onTheWay.length ? `<div class="otw"><b>On the way</b><ul>${top.onTheWay.map((x) => `<li>${esc(cap(x))}</li>`).join("")}</ul></div>` : "";
+  const call = top.urgent ? `<a class="btn call" href="tel:108">${PHONE}<span>Call 108<small class="en-line">free ambulance</small></span></a>` : `<a class="btn call soft" href="tel:102">${PHONE}<span>Call 102<small class="en-line">free transport</small></span></a>`;
+  return (doLine ? `<p class="alert-do">${top.urgent ? AMBULANCE : HOSPITAL}<span>${main ? `${esc(main)}<small class="en-line">${esc(top.where)}</small>` : esc(top.where)}</span></p>` : "")
+    + (actions ? `<div class="alert-acts">${call}${hear}</div>` : "")
+    + `<details class="kyun"${open ? " open" : ""}><summary>Kyun? · Why${title ? `<small class="en-line">${esc(title)}</small>` : ""}</summary>`
     + (top.extra && top.extra.length ? `<p class="alert-extra">${esc(top.extra.join(" "))}</p>` : "")
-    + (otwList && otwList.length ? `<div class="otw"><b>Raste mein · On the way</b><ul>${otwList.map((x) => `<li>${esc(cap(x))}</li>`).join("")}</ul><small class="en-line">${esc(top.onTheWay.map(cap).join(". "))}</small></div>`
-      : top.onTheWay && top.onTheWay.length ? `<div class="otw"><b>On the way</b><ul>${top.onTheWay.map((x) => `<li>${esc(cap(x))}</li>`).join("")}</ul></div>` : "")
-    + (signs ? `<ul class="signs">${top.flags.map(line).join("")}</ul>` : "")
-    + (signs && rest.length ? `<p class="also-found">Also found; the referral above covers ${rest.length > 1 || rest[0].flags.length > 1 ? "them" : "it"}:</p><ul class="signs">${rest.flatMap((g) => g.flags).map(line).join("")}</ul>` : "");
+    + otwHTML
+    + `<ul class="signs">${top.flags.map(line).join("")}</ul>`
+    + (rest.length ? `<p class="also-found">Also found; the referral above covers ${rest.length > 1 || rest[0].flags.length > 1 ? "them" : "it"}:</p><ul class="signs">${rest.flatMap((g) => g.flags).map(line).join("")}</ul>` : "")
+    + `</details>`;
 }
 
 /** The shared "Words used here" block. With `only`, just the words that text uses (plus 102/108). */
 export function glossaryHTML({ only = null, open = false } = {}) {
   const rows = only == null ? GLOSSARY : GLOSSARY.filter(([w]) => w === "Go now · 108" || w.split(" / ").some((x) => new RegExp(`\\b${x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(only)));
-  return `<details class="gloss-box"${open ? " open" : ""}><summary>Words used here</summary><dl class="gloss">${rows.map(([w, d]) => `<dt>${esc(w)}</dt><dd>${esc(d)}</dd>`).join("")}</dl></details>`;
+  return `<details class="gloss-box"${open ? " open" : ""}><summary><span>Words used here<small class="gloss-hint">ASHA, ANM, SNCU, 108… tap to open</small></span></summary><dl class="gloss">${rows.map(([w, d]) => `<dt>${esc(w)}</dt><dd>${esc(d)}</dd>`).join("")}</dl></details>`;
 }
 
 const theme = () => document.documentElement.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");

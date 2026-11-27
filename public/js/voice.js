@@ -60,21 +60,24 @@ export function speak(text, lang = "en", { rate = 0.9 } = {}) {
   });
 }
 const plainWords = (s) => String(s || "").toLowerCase().replace(/[.,!?;:।"'()\-]/g, " ").split(/\s+/).filter(Boolean);
+// words that change a meaning: an answer holding one of these is never thrown away as an echo
+const KEEP_WORDS = /(^|\s)(कम|नहीं|नही|नाही|ज़्यादा|ज्यादा|जास्त|कमी|बहुत|थोड़ा|थोडा|less|more|not|no|nahi|nahin|nai|kam|kami|zyada|jyada|jast|bahut|thoda|haan|हाँ|हां|होय|yes)(\s|$)/i;
 /**
  * True when a heard phrase is most likely the phone's own voice coming back.
- * Only a phrase that overlaps the last spoken line is dropped: a quick "haan"
- * right after a question is her answer, not an echo.
+ * The mic is paused while the phone talks, so only a short tail can leak: a
+ * phrase is dropped only if it comes within ~800 ms of the phone stopping AND
+ * is a near word-for-word, in-order piece of the spoken line covering most of
+ * it. Answers that repeat the question's words ("doodh kam pee raha hai") pass.
  */
-export function isEcho(text, { windowMs = 1500 } = {}) {
+export function isEcho(text, { windowMs = 800 } = {}) {
   if (said.speaking) return true;
-  if (!said.text || Date.now() - said.endedAt > 10000) return false;
-  const a = plainWords(text), spokenWords = plainWords(said.text), b = new Set(spokenWords);
-  if (!a.length) return false;
-  if (a.join(" ") === spokenWords.join(" ")) return true;
-  const shared = a.filter((w) => b.has(w)).length;
-  if (a.length < 2 || shared < 2) return false;
-  const recent = Date.now() - said.endedAt < windowMs;
-  return shared / a.length >= (recent ? 0.5 : 0.7);
+  if (!said.text || Date.now() - said.endedAt > windowMs) return false;
+  const a = plainWords(text), s = plainWords(said.text);
+  if (a.length < 2 || !s.length || KEEP_WORDS.test(" " + a.join(" ") + " ")) return false;
+  // the heard words must appear in the spoken line in the same order
+  let j = 0, hits = 0;
+  for (const w of a) { const k = s.indexOf(w, j); if (k >= 0) { hits++; j = k + 1; } }
+  return hits / a.length >= 0.85 && hits / s.length >= 0.6;
 }
 export function hush() { speakingToken++; if (window.speechSynthesis) speechSynthesis.cancel(); }
 /** Has the microphone worked at least once on this page? Then the app may open it by itself. */
@@ -174,7 +177,7 @@ export const echoTone = () => tone([220], 0.12, 0, 0.04);
  * phrase that is the phone's own echo is dropped.
  * Returns { stop, pause, resume, done, error, heard, lastHeard, deadline }.
  */
-export function dictate({ lang = "hi", onInterim, onPhrase, onError, onPause, onEcho, onState, firstMs = 8000, quietMs = 4000, pauseMs = null, single = false } = {}) {
+export function dictate({ lang = "hi", onInterim, onPhrase, onError, onPause, onEcho, onState, keep, firstMs = 8000, quietMs = 4000, pauseMs = null, single = false } = {}) {
   let rec, stopped = false, paused = false, running = false, finalText = "", quiet = null, pauseT = null, resolveDone, startedAt = Date.now();
   const done = new Promise((r) => (resolveDone = r));
   const S = { stop: () => finish(), pause, resume, extend, release, done, error: null, heard: false, lastHeard: 0, deadline: 0, lang };
@@ -191,9 +194,10 @@ export function dictate({ lang = "hi", onInterim, onPhrase, onError, onPause, on
     clearTimeout(pauseT);
     if (pauseMs && onPause) pauseT = setTimeout(() => { if (!stopped && !paused) onPause(); }, pauseMs);
   };
+  let gotSincePause = true;
   function pause() {
     if (stopped || paused) return;
-    paused = true; clearTimeout(quiet); clearTimeout(pauseT); S.deadline = 0;
+    paused = true; gotSincePause = false; clearTimeout(quiet); clearTimeout(pauseT); S.deadline = 0;
     try { rec && rec.abort(); } catch {}
     onState && onState("paused");
   }
@@ -209,7 +213,8 @@ export function dictate({ lang = "hi", onInterim, onPhrase, onError, onPause, on
   function resume() {
     if (stopped || !paused) return;
     paused = false;
-    if (!running) { try { rec.start(); running = true; } catch {} }
+    // restart unless audio or a result has come since the pause; never trust the running flag alone
+    if (!running || !gotSincePause) { try { rec.start(); running = true; } catch { /* still running or ending: onend restarts it */ } }
     // the silence clock restarts: she gets the full wait again after the phone spoke
     const hold = Math.max(0, (S.holdUntil || 0) - Date.now());
     if (hold > 0) arm(hold); else if (S.heard) armAfterSpeech(); else arm(firstMs);
@@ -220,18 +225,19 @@ export function dictate({ lang = "hi", onInterim, onPhrase, onError, onPause, on
     rec = new SR();
     rec.lang = LANGS[lang]?.speech || "hi-IN";
     rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
-    rec.onaudiostart = () => { micState.granted = true; };
-    rec.onstart = () => { running = true; };
+    rec.onaudiostart = () => { micState.granted = true; gotSincePause = true; };
+    // a late start after a pause or stop must not leave the mic on
+    rec.onstart = () => { if (stopped || paused) { try { rec.abort(); } catch {} return; } running = true; };
     rec.onresult = (e) => {
       if (stopped || paused) return;
-      micState.granted = true;
+      micState.granted = true; gotSincePause = true;
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const r = e.results[i];
         const t = r[0].transcript.trim();
         if (r.isFinal) {
           if (!t) continue;
-          if (isEcho(t)) { onEcho && onEcho(t); continue; }
+          if (!(keep && keep(t)) && isEcho(t)) { onEcho && onEcho(t); continue; }
           S.heard = true; S.lastHeard = Date.now();
           finalText += (finalText ? " " : "") + t;
           onPhrase && onPhrase(t, finalText);

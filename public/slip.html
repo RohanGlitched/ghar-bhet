@@ -32,7 +32,7 @@
   .gloss { font-size: 14px; color: var(--ink-2); margin: 8px 0 0; }
   .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
   .nf .stamp { color: var(--ink-3); border-color: var(--ink-3); font-size: 18px; }
-  @media print { .top, .bottom-bar, .actions, footer, .totop, .skip { display: none !important; } body { background: #fff; } .slip { border: 0; margin: 0; } }
+  @media print { .top, .bottom-bar, .actions, footer, .totop, .skip, .gloss-box, .why summary { display: none !important; } .why[open] p, .why p { display: block; } body { background: #fff; } .slip { border: 0; margin: 0; } }
   @media (max-width: 560px) { .kv { grid-template-columns: 1fr; } .kv dt { border-bottom: 0; padding-bottom: 0; } .slip { padding: 20px; } }
 </style>
 </head>
@@ -41,7 +41,7 @@
 <main class="wrap" id="slip-main"><article class="slip" id="slip" aria-live="polite"><p class="muted">Loading the referral…</p></article></main>
 <footer id="foot"></footer>
 <script type="module">
-import { mountChrome, api, esc, glossaryHTML, referHTML } from "/js/ui.js";
+import { mountChrome, api, esc, glossaryHTML, referHTML, sessionId } from "/js/ui.js";
 import { romanize } from "/js/understand.js";
 import { groupAlerts } from "/js/ask.js";
 import * as R from "/js/rules.js";
@@ -61,13 +61,13 @@ const slip = document.getElementById("slip");
 function notFound(msg) {
   document.title = "Referral not found · Ghar Bhet";
   slip.className = "slip nf";
-  slip.innerHTML = `<div class="slip-head"><h1>Referral not found</h1><span class="stamp">NOT IN THE REGISTER</span></div>
+  slip.innerHTML = `<div class="slip-head"><h1>Referral not found</h1><span class="stamp">SLIP NOT FOUND</span></div>
     <p class="muted">${esc(msg || "There is no visit with this link.")} The link may be mistyped, or the visit was removed from the sample register.</p>
     <div class="actions"><a class="btn" href="/anm">Open the nurse's board</a><a class="btn ghost" href="/visit">Speak a visit</a></div>`;
 }
 if (!id) notFound("This link has no referral in it.");
 else try {
-  const v = await api(`/api/visits/${encodeURIComponent(id)}`);
+  const v = await api(`/api/visits/${encodeURIComponent(id)}?sid=${encodeURIComponent(sessionId())}`);
   const refer = v.flags.filter((f) => f.severity === "refer_now"), watch = v.flags.filter((f) => f.severity === "watch");
   const urgent = refer.some((f) => f.urgent === true);
   // one destination: the highest level wins; lower ones are context under it
@@ -88,7 +88,7 @@ else try {
     <section class="why"><h2 style="font-size:17px;margin:0 0 6px">Why this referral</h2>
       ${refer.length ? `<div class="slip-alert">${referHTML(groups).replace(/<p class="alert-do">[\s\S]*?<\/p>/, "")}</div>` : `<p>No danger sign found in this visit.</p>`}
       ${watch.length ? `<p class="faint" style="margin:4px 0">Also watch: ${watch.map((f) => esc(f.title)).join(", ")}.</p>` : ""}
-      ${glossaryHTML({ only: text, open: true })}
+      ${glossaryHTML({ only: text, open: false })}
     </section>
     ${v.said?.length ? `<p class="faint" style="margin:16px 0 4px">What the village health worker (ASHA) said, in Roman letters</p>${v.said.map((s) => `<p class="said-q">${esc(romanize(s))}</p>`).join("")}` : ""}
     <p class="faint">Flags come from fixed government rules (rule set ${esc(version || "unknown")}). They support the nurse's and doctor's judgement and never replace it. Free transport under the government's mother and child scheme (JSSK): call 108 or 102.</p>

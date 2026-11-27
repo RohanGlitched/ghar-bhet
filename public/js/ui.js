@@ -54,7 +54,15 @@ export const GLOSSARY = [
  * line with a "Why" toggle. Lower-level groups are context under the highest.
  * `groups` comes from groupAlerts() in ask.js.
  */
-export function referHTML(groups, { signs = true, why = true } = {}) {
+/** A random id for this browser, so the public demo board can show its own saves only. */
+export function sessionId() {
+  let s = store.get("gb-sid");
+  if (!s || typeof s !== "string") { s = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); store.set("gb-sid", s); }
+  return s;
+}
+const AMBULANCE = `<svg class="pict" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 22V11h15v11M18 14h6l4 5v3H3"/><circle cx="9" cy="23" r="2.5" fill="currentColor"/><circle cx="23" cy="23" r="2.5" fill="currentColor"/><path d="M10.5 13.5v5M8 16h5"/></svg>`;
+const HOSPITAL = `<svg class="pict" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 28V9h22v19M3 28h26"/><path d="M16 12v8M12 16h8"/></svg>`;
+export function referHTML(groups, { signs = true, why = true, main = null, otw = null } = {}) {
   if (!groups || !groups.length) return "";
   const [top, ...rest] = groups;
   const cap = (x) => String(x).charAt(0).toUpperCase() + String(x).slice(1);
@@ -63,9 +71,12 @@ export function referHTML(groups, { signs = true, why = true } = {}) {
   const line = (f) => `<li><b>${esc(f.title)}</b>${f.urgent ? ' <span class="go">go now</span>' : ""}${reasonText(f) ? `: ${esc(reasonText(f))}` : ""}`
     + `${f.from === "transcript" ? ' <span class="pill watch">heard in what was said</span>' : ""}${f.conflict ? ' <span class="pill watch">said in the visit, record disagrees: nurse to check</span>' : ""}`
     + `${why && (f.source || f.code) ? `<details class="why"><summary>Why</summary><p class="src">${esc(f.source || "")}${f.code ? ` · Rule: ${esc(f.code)}` : ""}</p></details>` : ""}</li>`;
-  return `<p class="alert-do">${esc(top.where)}</p>`
+  // the action in her language (Roman letters) when there is one, with the English under it; a pictogram for go-now vs today
+  const otwList = Array.isArray(otw) ? otw : otw ? String(otw).replace(/\.\s*$/, "").split(/,\s*/) : null;
+  return `<p class="alert-do">${top.urgent ? AMBULANCE : HOSPITAL}<span>${main ? `${esc(main)}<small class="en-line">${esc(top.where)}</small>` : esc(top.where)}</span></p>`
     + (top.extra && top.extra.length ? `<p class="alert-extra">${esc(top.extra.join(" "))}</p>` : "")
-    + (top.onTheWay && top.onTheWay.length ? `<div class="otw"><b>On the way</b><ul>${top.onTheWay.map((x) => `<li>${esc(cap(x))}</li>`).join("")}</ul></div>` : "")
+    + (otwList && otwList.length ? `<div class="otw"><b>Raste mein · On the way</b><ul>${otwList.map((x) => `<li>${esc(cap(x))}</li>`).join("")}</ul><small class="en-line">${esc(top.onTheWay.map(cap).join(". "))}</small></div>`
+      : top.onTheWay && top.onTheWay.length ? `<div class="otw"><b>On the way</b><ul>${top.onTheWay.map((x) => `<li>${esc(cap(x))}</li>`).join("")}</ul></div>` : "")
     + (signs ? `<ul class="signs">${top.flags.map(line).join("")}</ul>` : "")
     + (signs && rest.length ? `<p class="also-found">Also found; the referral above covers ${rest.length > 1 || rest[0].flags.length > 1 ? "them" : "it"}:</p><ul class="signs">${rest.flatMap((g) => g.flags).map(line).join("")}</ul>` : "");
 }

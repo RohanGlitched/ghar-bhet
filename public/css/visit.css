@@ -117,3 +117,36 @@
 .rules-found .lvl.watch { background: var(--watch-soft); color: var(--watch-text); }
 .src-d summary { min-height: 44px; }
 .vil a { display: inline-flex; min-width: 44px; }
+
+.src-inline { display: block; font-size: 14px; color: var(--ink-3); }
+.rules-found .lvl { font-size: 12px; }
+.v-status .en-gloss { margin-top: 4px; color: color-mix(in srgb, var(--mic-ink) 80%, transparent); opacity: 1; }
+.v-status.err .en-gloss { color: #fff; }
+.how-ic { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 2px solid currentColor; font-weight: 800; font-size: 14px; margin-right: 8px; flex: none; }
+.how-to > summary { align-items: center; }
+.how-txt { flex: 1; }
+/* a cheap 360 x 640 phone: the mic right under the title, choices in one sideways row */
+@media (max-width: 400px) {
+  .v-intro h1 { font-size: 26px; margin-bottom: 4px; }
+  .v-intro > p { font-size: 15px; }
+  .v-intro { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; margin-bottom: 10px; }
+  .v-intro h1 { flex: 1 1 auto; }
+  .v-intro > p { flex: 1 1 100%; order: 3; margin: 0; }
+  .how-to { border: 0; padding: 0; background: none; margin: 0; order: 2; }
+  .how-to > summary { min-width: 44px; justify-content: center; }
+  .how-to > summary::after, .how-txt { display: none; }
+  .how-to[open] { flex: 1 1 100%; order: 4; border: 1px solid var(--line); padding: 0 12px 12px; border-radius: 14px; background: var(--card); }
+  .how-to[open] .how-txt { display: inline; }
+  .v-app > .v-mic { order: -2; }
+  .v-app > .v-pick { order: -1; }
+  .v-pick { flex-wrap: nowrap; overflow-x: auto; gap: 8px; padding-bottom: 4px; scrollbar-width: none; justify-content: flex-start; min-width: 0; max-width: 100%; }
+  .v-pick .seg { flex-wrap: nowrap; }
+  .pick-group { flex: none; }
+  .pick-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .seg button { padding: 6px 10px; font-size: 14px; white-space: nowrap; }
+  .v-mic { padding: 10px 12px; }
+  .mic { width: 72px; height: 72px; }
+  .v-cmds { display: none; }
+}
+.how-to:not([open]) > :not(summary) { display: none; }
+@media (max-width: 400px) { .v-pick, .pick-group { position: relative; } }

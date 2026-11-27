@@ -34,10 +34,12 @@ function plain(s) { return normalise(String(s || "")).toLowerCase(); }
 
 function whoEn(p) { return p.kind === "baby" ? `${p.name}'s baby` : p.name; }
 function whoHi(p) { return p.kind === "baby" ? `${p.name} का बच्चा` : p.name; }
+function whoHiObl(p) { return p.kind === "baby" ? `${p.name} के बच्चे` : p.name; }
+function whoMrObl(p) { return p.kind === "baby" ? `${p.name} च्या बाळा` : p.name; }
 function whoMr(p) { return p.kind === "baby" ? `${p.name} चं बाळ` : p.name; }
 const refWho = (r, f) => f({ kind: r.type === "newborn" ? "baby" : "x", name: r.name });
 /** The board's short status line for a person. */
-export const statusEn = (p) => p.kind === "baby" ? `day ${p.dayOfLife ?? "?"}${p.atRisk ? ", low weight or sick (9 visits)" : ""}` : p.kind === "pregnant" ? `${p.weeks ?? "?"} weeks pregnant` : `day ${p.dayAfter ?? "?"} after birth`;
+export const statusEn = (p) => p.kind === "baby" ? `day ${p.dayOfLife ?? "?"}${p.atRisk ? ", at-risk baby (9-visit schedule)" : ""}` : p.kind === "pregnant" ? `${p.weeks ?? "?"} weeks pregnant` : `day ${p.dayAfter ?? "?"} after birth`;
 const list = (xs, sep = ", ") => xs.join(sep);
 
 /** One definition, used by the board's tile and by the spoken answer: whose last visit found a sign to refer or watch. */
@@ -138,14 +140,14 @@ export function answer(question, S) {
       return { intent: "seen", en: who ? `${who} has no open referral to mark as seen.` : "Say whose referral you saw, for example \"Sunita dekh liya\".",
         hi: who ? `${whoHi(person)} का कोई रेफरल बाकी नहीं है।` : "किसका रेफरल देखा, नाम बताइए।", mr: who ? `${whoMr(person)} चा कोणताही रेफरल बाकी नाही.` : "कोणाचा रेफरल पाहिला, नाव सांगा." };
     }
-    return { intent: "seen", id: r.id, en: `Marked ${refWho(r, whoEn)} as seen.`, hi: `${refWho(r, whoHi)} का रेफरल देख लिया, लिख दिया।`, mr: `${refWho(r, whoMr)} चा रेफरल पाहिला, नोंद केली.` };
+    return { intent: "seen", id: r.id, en: `Marked ${refWho(r, whoEn)} as seen.`, hi: `${refWho(r, whoHiObl)} का रेफरल देख लिया, लिख दिया।`, mr: `${refWho(r, whoMrObl)}चा रेफरल पाहिला, नोंद केली.` };
   }
   if (intent === "referrals" && !(person && !/aaj|today|आज|kaun|कौन|कोण|kon|who/.test(q))) {
     if (!open.length) return { intent, en: "No open referrals right now.", hi: "अभी कोई रेफरल बाकी नहीं है।", mr: "आत्ता कोणताही रेफरल बाकी नाही." };
     // urgent cases first, and said as urgent
     const nU = open.filter(isUrgentRef).length;
-    const tag = { en: (r) => (isUrgentRef(r) ? "urgent, " : ""), hi: (r) => (isUrgentRef(r) ? "तुरंत, " : ""), mr: (r) => (isUrgentRef(r) ? "तातडीने, " : "") };
-    const lead = { en: nU ? `${nU} urgent. ` : "", hi: nU ? `${nU} तुरंत वाले। ` : "", mr: nU ? `${nU} तातडीचे. ` : "" };
+    const tag = { en: (r) => (isUrgentRef(r) ? "go now, " : ""), hi: (r) => (isUrgentRef(r) ? "तुरंत, " : ""), mr: (r) => (isUrgentRef(r) ? "तातडीने, " : "") };
+    const lead = { en: nU ? `${nU} go now. ` : "", hi: nU ? `${nU} तुरंत वाले। ` : "", mr: nU ? `${nU} तातडीचे. ` : "" };
     return {
       intent, items: open.map((r) => ({ id: r.id, text: `${isUrgentRef(r) ? "GO NOW · " : ""}${refWho(r, whoEn)}: ${r.flags[0]?.title || "danger sign"}` })),
       en: `${lead.en}${open.length} open referral${open.length > 1 ? "s" : ""}: ${list(open.map((r) => `${refWho(r, whoEn)}, ${tag.en(r)}${reason(r.flags[0], "en")}`), "; ")}.`,

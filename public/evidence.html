@@ -39,7 +39,14 @@
 <header id="top"></header>
 <main class="wrap e-wrap">
   <h1>How accurately it reads a spoken visit</h1>
-  <p class="lead"><b>The numbers to trust are the first runs:</b> 96.6% of fields and 37 of 38 danger visits on 60 visits the reader had never seen; 88.3% of fields and 50 of 59 danger visits on a harder set of 100 written by a separate agent; and on a second, English-heavy independent set of 60, 80.3% of fields and 36 of 39 danger visits, but 9 of 21 normal visits wrongly flagged. Everything else on this page is after tuning or a supporting check. The transcripts and their right answers were written from the record format and the government rules alone, by a separate AI writing pass that never saw the reader's code; they are written the way ASHAs speak, not recorded.</p>
+  <p class="lead">We tested the reader on written visits it had never seen. These first-run numbers are the honest ones; numbers lower on this page come after we fixed what these runs found.</p>
+  <div class="tblwrap"><table class="t"><thead><tr><th>Test (first run, before any fix)</th><th>Fields read right</th><th>Danger visits flagged</th><th>Normal visits wrongly flagged</th></tr></thead><tbody>
+    <tr><td>60 everyday visits (our own spec)</td><td class="n">96.6%</td><td class="n">37 of 38</td><td class="n">1 of 22</td></tr>
+    <tr><td>100 tricky visits by a separate agent</td><td class="n">88.3%</td><td class="n">50 of 59</td><td class="n">7 of 41</td></tr>
+    <tr><td>60 English clinical-shorthand visits by another agent</td><td class="n">80.3%</td><td class="n">36 of 39</td><td class="n">9 of 21</td></tr>
+  </tbody></table></div>
+  <p class="faint">"Danger visits flagged" is measured against our own rule table. Against cases labelled from the guideline text alone, the first rule table caught 11 of 24 that should refer; see below.</p>
+  <p class="muted"> The transcripts and their right answers were written from the record format and the government rules alone, by a separate AI writing pass that never saw the reader's code; they are written the way ASHAs speak, not recorded.</p>
   <p class="faint">Reproduce it: every number here comes from <code>node eval/run.js</code> on files in the <a href="https://github.com/RohanGlitched/ghar-bhet/tree/main/eval">repository's eval folder</a>.</p>
 
   <div class="runs" id="runs"><p class="faint">Loading results…</p></div>
@@ -108,7 +115,7 @@ document.getElementById("adv").innerHTML =
   card("Independent set, first run", "100 tricky visits written by a separate agent that never saw the code: colloquial danger phrases, other people's symptoms, denials, mild vs severe, exact thresholds. Run once, before any change.", adv1, "headline") +
   (advNow && adv1 && advNow.run_at !== adv1.run_at ? card("Independent set, after fixes", "Same 100 visits after fixing the gaps the first run found. Tuned on, so not independent.", advNow) : "") +
   card("Second independent set, first run", "60 visits in mostly English and clinical shorthand (\u201cno h/o fits\u201d, \u201ctemp 101.4F\u201d, \u201cwt 2.1kg\u201d), written by another separate agent and run once against the reader as it was. Its false alarms are the weakest number on this page.", adv21, "headline") +
-  (adv2Now && adv21 && adv2Now.run_at !== adv21.run_at ? card("Second independent set, after fixes", "Same 60 after fixing what the first run found. Tuned on, so not independent.", adv2Now) : "");
+  (adv2Now && adv21 && adv2Now.run_at !== adv21.run_at ? card("Second independent set, after fixes", `Same 60 after fixing what the first run found. Tuned on, so not independent. Newer rules (low mood after birth now refers; weight loss after birth weight is now checked) turn visits that were normal into danger visits, so the split is now ${adv2Now.typed.danger.visits} danger / ${adv2Now.typed.danger.normal_visits} normal.`, adv2Now) : "");
 document.getElementById("speech").innerHTML = (rs("Wispr Flow", rsW) + rs("browser microphone", rsB)) || `<p class="muted">Not run yet. A person reads 12 of the held-out visits aloud on the <a href="/dictation.html">real speech test page</a>, once through Wispr Flow and once through the browser's microphone; the results appear here.</p>`;
 document.getElementById("vig").innerHTML = vig ? `<div class="run"><h2>Against the guideline text</h2><p class="faint" style="margin:0">${vig.items} short cases, each labelled "should refer" or not, and urgent or not, from the guideline wording before the rules were run.</p><div class="nums">
   <div><b>11 of 24</b><span>should-refer cases caught on the first run, with the old 37-rule table</span></div>

@@ -22,11 +22,11 @@
   <div class="hero wrap">
     <div class="hero-copy">
       <h1>A village health worker speaks the visit. The record fills itself.</h1>
-      <p class="lead">India's 10.29 lakh village health workers (ASHAs) write every home visit by hand, often twice. With Ghar Bhet ("home visit") she speaks the visit in Hindi, Marathi or English: the visit's key fields fill in, and government rules say out loud when the mother or baby must go to hospital.</p>
+      <p class="lead">India's 10.29 lakh village health workers (ASHAs) write every home visit by hand, often twice. With Ghar Bhet ("home visit") she speaks the visit in Hindi, Marathi or English: the danger-sign and vital fields of the visit form fill in, and government rules say out loud when the mother or baby must go to hospital.</p>
       <div class="cta"><a class="btn" href="/visit">Speak a visit</a><a class="btn ghost" href="/visit?example=1">Try an example, no microphone</a></div>
       <ul class="facts" aria-label="Key facts">
-        <li><b id="f1">96.6%</b><span>of record fields read correctly from 60 unseen visit transcripts (first run)</span></li>
-        <li><b id="f2">37 of 38</b><span>visits with a danger sign flagged on that first unseen test; 38 of 38 after fixing the one miss</span></li>
+        <li><b id="f1">96.6%</b><span>of record fields read right on 60 written test visits it had never seen (first run; not yet tested on real speech)</span></li>
+        <li><b id="f2">37 of 38</b><span>test visits with a danger sign flagged on that first run, measured against our rule table; harder and guideline-based checks below</span></li>
         <li><b>No API keys</b><span>runs with <code>docker compose up</code>; no paid AI service, no account</span></li>
       </ul>
     </div>
@@ -91,10 +91,10 @@
         <a class="btn ghost" href="/how">See every rule, its threshold and its source</a>
       </div>
       <div class="rule-list">
-        <div><b>Newborn weight under 1800 g</b><span>Refer today to the newborn unit · Health Ministry newborn training manual, 2021</span></div>
-        <div><b>Breathing 60 or more a minute, or chest indrawing</b><span>Refer today · SSBSK newborn guidelines 2026, table 3.3</span></div>
-        <div><b>Temperature 37.5 °C or more, or under 36 °C</b><span>Refer today · SSBSK newborn guidelines 2026, table 3.3</span></div>
-        <div><b>BP 140/90 or more with albumin 2+</b><span>Possible pre-eclampsia (protein in urine with high BP), refer today · Health Ministry pregnancy training manual, 2021</span></div>
+        <div><b>Newborn weight under 1800 g (first weighing)</b><span>Go now: newborn unit (SNCU), call 108 · Health Ministry newborn training manual, 2021</span></div>
+        <div><b>Breathing 60 or more a minute, or chest indrawing</b><span>Go now: newborn unit, call 108 · SSBSK newborn guidelines 2026, table 3.3</span></div>
+        <div><b>Temperature 37.5 °C or more, or under 36 °C</b><span>Go now: newborn unit, call 108 · SSBSK newborn guidelines 2026, table 3.3</span></div>
+        <div><b>BP 140/90 or more with albumin 2+</b><span>Possible pre-eclampsia (protein in urine with high BP): go now, hospital (FRU), call 108 · Health Ministry pregnancy training manual, 2021</span></div>
         <div><b>Hb (haemoglobin) under 7 g/dl</b><span>Severe anaemia: go now, hospital with blood transfusion · Health Ministry pregnancy training manual, 2021</span></div>
         <div><b>5 or more pads a day after delivery</b><span>Heavy bleeding: go now, call 108 · SSBSK mother's visit form</span></div>
       </div>
@@ -114,7 +114,7 @@
       <ul class="muted" style="max-width:70ch;padding-left:20px">
         <li><b>First run:</b> 1 danger visit missed (a Marathi way of saying "the baby moves only when touched") and 1 false alarm ("five pads… no, four").</li>
         <li><b>After fixing both:</b> 99.3% of fields, 38 of 38 danger visits. These came after we saw the misses, so the first run is the one to trust.</li>
-        <li><b>Today:</b> the rule table has grown from the first 37 rules to 82. The larger table turns 7 of the 22 visits that were normal under the old rules into referrals, so the same 60 now split 45 danger and 15 normal: 45 of 45 caught, 0 false alarms.</li>
+        <li><b>Today:</b> the rule table has grown from the first 37 rules to 88. The larger table turns 7 of the 22 visits that were normal under the old rules into referrals, so the same 60 now split 45 danger and 15 normal: 45 of 45 caught, 0 false alarms.</li>
         <li><b>A harder, independent test:</b> 100 tricky visits written by a separate agent that never saw the code (colloquial danger phrases, other people's symptoms, denials, exact thresholds). First run: 88.3% of fields and 50 of 59 danger visits caught, 7 of 41 false alarms. A second independent set of 60, mostly English clinical shorthand: 80.3% of fields and 36 of 39 danger visits, but 9 of 21 false alarms on its first run. Every miss is published.</li>
         <li><b>Checked against the guidelines, not our own rules:</b> Short cases labelled "should refer" straight from the guideline text, before the rules were run. The first run, with the 37-rule table, caught only 11 of 24. That gap is why the table grew; with 40 cases it now catches 33 of 33 that should refer, and 18 of 18 urgent cases get an urgent flag (three labels were corrected from the guideline text, and the cases are tuned on since). <a href="/evidence">See every result and every miss</a>.</li>
       </ul>

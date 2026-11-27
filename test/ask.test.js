@@ -80,7 +80,7 @@ test("urgent referrals come first in the spoken answer; outcomes and undo are un
     { id: "v1", status: "open", type: "newborn", name: "Sunita", flags: [{ code: "nb_chest_indrawing", title: "Chest indrawing" }] },
     { id: "v2", status: "open", type: "anc", name: "Meena", urgent: true, flags: [{ code: "anc_imminent_eclampsia", title: "Very high BP", urgent: true }] }] };
   const a = answer("Aaj kaun kaun refer hua?", S2);
-  assert.match(a.en, /^1 urgent\. 2 open referrals: Meena, urgent/);
+  assert.match(a.en, /^1 go now\. 2 open referrals: Meena, go now/);
   assert.match(a.hi, /Meena, तुरंत/);
   for (const [q, o] of [["Sunita PHC pahunchi", "reached"], ["Sunita gaye nahi", "refused"], ["सुनीता पहुंची नहीं", "refused"], ["Meena bharti ho gayi", "admitted"], ["Meena ka phone nahi lag raha", "not_reachable"]]) {
     const r = answer(q, S2);

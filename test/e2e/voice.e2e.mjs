@@ -28,17 +28,20 @@ const args = process.argv.slice(2);
 const BASE = (args.find((a) => /^https?:/.test(a)) || "http://localhost:8091").replace(/\/$/, "");
 const SHOTS = args.includes("--shots") ? args[args.indexOf("--shots") + 1] : null;
 const ONLY = args.includes("--only") ? args[args.indexOf("--only") + 1].split(",") : null;
+// one board session for the whole run: the test browser and the visits posted from here share it
+const SID = "e2etest" + Date.now().toString(36);
 const FAST = { first: 2500, pause: 1500, quiet: 8000, answerFirst: 3000, step: 120, count: 3000, tick: 1000, typed: 600 };
 
-const INIT = ({ timing }) => {
+const INIT = ({ timing, sid }) => {
   if (timing) window.__GB_TIMING = timing;
+  try { if (sid) localStorage.setItem("gb-sid", JSON.stringify(sid)); } catch {}
   const sr = (window.__sr = { instances: [], starts: 0, aborts: 0, current: null });
   class FakeSR {
     constructor() { this.lang = ""; this.continuous = false; this.interimResults = false; this.running = false; this._results = []; sr.instances.push(this); }
     start() {
       if (this.running) throw new DOMException("already started", "InvalidStateError");
       this.running = true; sr.starts++; sr.current = this; this._results = [];
-      setTimeout(() => { this.onstart && this.onstart(); this.onaudiostart && this.onaudiostart(); }, 5);
+      setTimeout(() => { this.onstart && this.onstart(); if (this.running) this.onaudiostart && this.onaudiostart(); }, window.__srStartDelay ?? 5);
     }
     stop() { this._end(); }
     abort() { sr.aborts++; this._end(); }
@@ -80,7 +83,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const browser = await chromium.launch({ channel: CHANNEL || undefined, headless: true, args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream", "--autoplay-policy=no-user-gesture-required"] });
 async function open(path, { timing = FAST, width = 390, height = 844, scheme = "light" } = {}) {
   const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, deviceScaleFactor: 1 });
-  await ctx.addInitScript(INIT, { timing });
+  await ctx.addInitScript(INIT, { timing, sid: SID });
   const page = await ctx.newPage();
   page.errors = [];
   page.on("pageerror", (e) => page.errors.push(e.message));
@@ -133,7 +136,7 @@ await run("loose save regex is gone (sevan, own Marathi alert)", async () => {
   await sleep(400);
   const after = await spoken(page);
   ok("'save karo' reads back in Hindi, asks, saves on haan, says it saved", asked && readBack && confirm && saved && after.some((t) => /विज़िट सेव हो गई/.test(t)), `readBack=${readBack} confirm=${confirm} saved=${saved}`);
-  const st = await (await fetch(BASE + "/api/state")).json();
+  const st = await (await fetch(BASE + "/api/state?sid=" + SID)).json();
   ok("the saved visit reached the register", st.people.some((p) => /sunita/i.test(p.name) && p.kind === "pregnant" && p.visits > 0));
   await ctx.close();
 });
@@ -152,36 +155,33 @@ await run("nahi cancels a voice save", async () => {
   await ctx.close();
 });
 
-/* 3. half-duplex */
+/* 3. half-duplex and echo */
 await run("half-duplex", async () => {
   const { ctx, page } = await open("/visit?type=newborn&lang=mr", { timing: { ...FAST, pause: 60000 } });
   await tapMic(page);
   await say(page, "Sunita ka baby, saat din ka, wajan ek kilo saat sau gram, pasli chal rahi hai");
-  await until(page, () => window.__spoken.length > 0);
+  await until(page, () => window.__spoken.length > 1);
+  await page.waitForFunction(() => !window.speechSynthesis.speaking && window.__sr.current?.running, null, { timeout: 8000 });
   const sp = await page.evaluate(() => window.__spoken);
-  const dangerSpoken = sp.length > 0;
-  const micOffWhileSpeaking = sp.every((x) => !x.recRunning);
-  // a quick reply right after the phone stops counts: only a phrase overlapping the phone's own line is dropped
-  await page.waitForFunction(() => !window.speechSynthesis.speaking && window.__sr.current?.running, null, { timeout: 8000 });
-  await sleep(300);
-  await page.waitForFunction(() => !window.speechSynthesis.speaking && window.__sr.current?.running, null, { timeout: 8000 });
-  const before = (await gb(page)).utter;
-  const quick = await page.evaluate(() => { const ms = Date.now() - window.__ttsEnd; window.__say("saans chalis"); return ms; });
-  await sleep(200);
-  const mid = (await gb(page)).utter;
-  // the phone's own Marathi line coming back is dropped, and a low tone plays
-  await page.waitForFunction(() => !window.speechSynthesis.speaking && window.__sr.current?.running, null, { timeout: 8000 });
-  const last = await lastSpoken(page);
-  const osc0 = await page.evaluate(() => window.__osc);
-  await page.evaluate((t) => window.__say(t), last);
-  await sleep(200);
-  const mid2 = (await gb(page)).utter;
-  const osc1 = await page.evaluate(() => window.__osc);
-  await say(page, "taapmaan saintees");
-  const after = (await gb(page)).utter;
-  ok("half-duplex: mic off while the phone speaks, restarts after", dangerSpoken && micOffWhileSpeaking && (await page.evaluate(() => window.__sr.starts)) >= 2, `spoken=${sp.length} recRunningAtSpeak=${sp.map((x) => x.recRunning)}`);
-  ok("echo: a quick reply within 1 s of the phone stopping counts; the phone's own line is dropped with a low tone", quick < 1000 && mid === before + 1 && mid2 === mid && osc1 > osc0 && after === mid + 1, `quick=${quick}ms utter ${before} -> ${mid} -> ${mid2} -> ${after}, tones ${osc0} -> ${osc1}`);
+  ok("half-duplex: mic off while the phone speaks, restarts after", sp.length > 1 && sp.every((x) => !x.recRunning) && (await page.evaluate(() => window.__sr.starts)) >= 2, `spoken=${sp.length} recRunningAtSpeak=${sp.map((x) => x.recRunning)}`);
   await ctx.close();
+  // the phone's own question coming straight back is dropped, and she hears "say again"; her real answer counts
+  const p2 = await open("/visit?type=newborn&lang=mr");
+  await tapMic(p2.page);
+  await say(p2.page, "Rekha ka baby, saat din ka, wajan 2800 gram");
+  await stopMic(p2.page);
+  await until(p2.page, () => window.__gb().asking === "temp_c" && window.__gb().mode === "answer" && window.__sr.current?.running && !window.speechSynthesis.speaking);
+  const before = (await gb(p2.page)).utter;
+  const osc0 = await p2.page.evaluate(() => window.__osc);
+  const ms = await p2.page.evaluate(() => { const q = window.__spoken[window.__spoken.length - 1].text; window.__say(q); return Date.now() - window.__ttsEnd; });
+  await sleep(300);
+  const mid = (await gb(p2.page)).utter;
+  const again = await until(p2.page, () => window.__spoken.some((x) => /समजलं नाही/.test(x.text)), null, 3000);
+  const osc1 = await p2.page.evaluate(() => window.__osc);
+  await say(p2.page, "temperature 37");
+  const got = await until(p2.page, () => window.__gb().record.temp_c === 37);
+  ok("echo: the phone's own question coming back within 800 ms is dropped, with a tone and a spoken 'say again'; her answer then counts", ms < 800 && mid === before && again && osc1 > osc0 && got, JSON.stringify({ ms, before, mid, again, got }));
+  await p2.ctx.close();
 });
 
 /* 4. mic errors stay on screen */
@@ -235,6 +235,9 @@ await run("yes/no Hindi newborn", async () => {
   const syms = s.record.symptoms || {};
   ok("yes/no: haan to feeding = good (Hindi)", q1 && fed === "good", `asked=${q1} feeding=${fed}`);
   ok("yes/no: nahi to the danger list sets every sign in it to no and closes it", q2 && ["convulsions", "chest_indrawing", "jaundice_palms_soles", "lethargy"].every((k) => syms[k] === false) && s.asking !== "danger", JSON.stringify(syms));
+  // the rules ask one more thing for a newborn (birth weight from the MCP card): skip it here
+  await until(page, () => window.__gb().asking === "extra:birth_weight_g" && window.__sr.current?.running && !window.speechSynthesis.speaking);
+  await say(page, "chhodo");
   ok("all filled: the phone says 'say save'", await until(page, () => window.__spoken.some((x) => /सेव करो' बोलिए/.test(x.text))));
   await ctx.close();
 });
@@ -491,7 +494,7 @@ await run("urgent", async () => {
   ok("urgent rules show GO NOW · 108 and 'now, call 108'; non-urgent ones REFER TODAY and 'today' (from the rule's urgent field)", a.stamp === "GO NOW · 108" && consistent(a) && consistent(b), JSON.stringify({ a, b, ca: consistent(a), cb: consistent(b), nUrgent: urgentCodes.size }));
   await ctx.close();
   // the board puts it first with the same stamp; so does the slip
-  const v = await (await fetch(BASE + "/api/visits", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "anc", record: { type: "anc", name: "Urmila", weeks: 34, bp_sys: 168, bp_dia: 116 }, said: ["Urmila, 34 hafte, BP 168 by 116"], lang: "hi", via: "typed" }) })).json();
+  const v = await (await fetch(BASE + "/api/visits", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sid: SID, type: "anc", record: { type: "anc", name: "Urmila", weeks: 34, bp_sys: 168, bp_dia: 116 }, said: ["Urmila, 34 hafte, BP 168 by 116"], lang: "hi", via: "typed" }) })).json();
   const p2 = await open("/anm", { width: 1440, height: 900 });
   await p2.page.waitForSelector("#refs .ref");
   const first = await p2.page.evaluate(() => ({ name: document.querySelector("#refs .ref h3")?.textContent, stamp: document.querySelector("#refs .ref .stamp")?.textContent }));
@@ -573,21 +576,21 @@ await run("board r2", async () => {
   const id = await page.evaluate(() => document.querySelector("#refs .ref").dataset.ref);
   await page.click(`#refs .ref[data-ref="${id}"] [data-outcome="reached"]`);
   await sleep(700);
-  let st = await (await fetch(BASE + "/api/state")).json();
+  let st = await (await fetch(BASE + "/api/state?sid=" + SID)).json();
   const tapOk = st.referrals.find((r) => r.id === id)?.outcome === "reached";
   const other = st.referrals.find((r) => r.status === "open" && r.id !== id && !r.outcome) || st.referrals.find((r) => r.id !== id);
   await page.evaluate((n) => window.__ask(`${n} gaye nahi`), other.name);
-  st = await (await fetch(BASE + "/api/state")).json();
+  st = await (await fetch(BASE + "/api/state?sid=" + SID)).json();
   const voiceOk = st.referrals.find((r) => r.id === other.id)?.outcome === "refused";
   ok("board: referral outcome by tap (Reached) and by voice ('X gaye nahi' = refused)", tapOk && voiceOk, JSON.stringify({ tapOk, voiceOk }));
   // seen by voice, then a spoken "wapas" undoes it
   const open1 = st.referrals.find((r) => r.status === "open");
   await page.evaluate((n) => window.__ask(`${n} dekh liya`), open1.name);
-  const seen = (await (await fetch(BASE + "/api/state")).json()).referrals.find((r) => r.id === open1.id)?.status;
+  const seen = (await (await fetch(BASE + "/api/state?sid=" + SID)).json()).referrals.find((r) => r.id === open1.id)?.status;
   await page.evaluate(() => window.__ask("wapas"));
-  const back = (await (await fetch(BASE + "/api/state")).json()).referrals.find((r) => r.id === open1.id)?.status;
+  const back = (await (await fetch(BASE + "/api/state?sid=" + SID)).json()).referrals.find((r) => r.id === open1.id)?.status;
   ok("board: 'X dekh liya' then 'wapas' undoes it", seen === "seen" && back === "open", `${seen} -> ${back}`);
-  const misc = await page.evaluate(() => ({ csv: document.querySelector('a[href="/api/export.csv"]')?.textContent, gloss: !!document.querySelector("#glossary .gloss-box"), chip: [...document.querySelectorAll("#ask-chips button")].map((b) => b.dataset.q) }));
+  const misc = await page.evaluate(() => ({ csv: document.querySelector("#csv")?.textContent, gloss: !!document.querySelector("#glossary .gloss-box"), chip: [...document.querySelectorAll("#ask-chips button")].map((b) => b.dataset.q) }));
   const csv = await fetch(BASE + "/api/export.csv").then((r) => r.ok && r.headers.get("content-type")?.includes("csv"));
   ok("board: CSV export link works, glossary present, seen chip uses an open referral's name", /Export for the register/.test(misc.csv || "") && csv && misc.gloss && misc.chip.some((c) => c === `${st.referrals.find((r) => r.status === "open")?.name} dekh liya` || /dekh liya$/.test(c)), JSON.stringify({ ...misc, csv }));
   ok("board r2: no console errors", !page.errors.length, page.errors.join(" | "));
@@ -726,19 +729,19 @@ await run("grouped alert", async () => {
   const r = await page.evaluate(() => {
     const a = document.querySelector("#alert-refer"), txt = a.innerText, count = (re) => (txt.match(re) || []).length;
     const ask = document.querySelector("#ask"), ar = a.getBoundingClientRect();
-    return { doLines: a.querySelectorAll(".alert-do").length, otw: a.querySelectorAll(".otw li").length, onTheWay: count(/On the way/gi), skin: count(/skin to skin/gi), place: (txt.split(a.querySelector(".alert-do").textContent).length - 1),
+    return { doLines: a.querySelectorAll(".alert-do").length, otw: a.querySelectorAll(".otw li").length, onTheWay: count(/On the way/gi), skin: count(/skin to skin/gi), place: (txt.split((a.querySelector(".alert-do .en-line") || a.querySelector(".alert-do")).textContent).length - 1),
       aboveQuestion: ask.hidden || ar.top < ask.getBoundingClientRect().top, inView: ar.top < innerHeight && ar.bottom > 0, focused: document.activeElement === a,
       rulesFound: document.querySelector(".v-side h2:not(.x)") && [...document.querySelectorAll(".v-side h2")].some((h) => h.textContent === "What the rules found"), watchTag: !!document.querySelector(".rules-found .lvl.watch"), glossClosed: !document.querySelector("#glossary details").open };
   });
   ok("grouped alert: one action line, one 'On the way' list, no repeated sentences", r.doLines === 1 && r.otw === 3 && r.onTheWay === 1 && r.skin === 1 && r.place === 1, JSON.stringify(r));
   ok("375: the red card sits under the transcript above the question, is scrolled into view and focused; side list is 'What the rules found' with watch tagged; glossary folded", r.aboveQuestion && r.inView && r.focused && r.rulesFound && r.watchTag && r.glossClosed, JSON.stringify(r));
   // the Romanised screen words follow the language
-  const hi = await page.evaluate(() => { document.querySelector('[data-lang="hi"]').click(); return { save: document.querySelector("#save [data-ui]").textContent, cmd: document.querySelector("#save .cmd").textContent, who: document.querySelector("#lab-type").textContent, dev: /[ऀ-ॿ]/.test(document.body.innerText) }; });
-  const en = await page.evaluate(() => { document.querySelector('[data-lang="en"]').click(); return document.querySelector("#save [data-ui]").textContent; });
-  ok("language switch changes screen words to Romanised Hindi (with the voice command), English stays default, no Devanagari", hi.save === "Visit save karo" && hi.cmd === '"save karo"' && hi.who === "Kiske ghar gaye" && !hi.dev && en === "Save visit", JSON.stringify({ ...hi, en }));
+  const hi = await page.evaluate(() => { document.querySelector('[data-lang="hi"]').click(); const ui = (s) => document.querySelector(s); return { save: ui("#save [data-ui]").firstChild.textContent, saveEn: ui("#save [data-ui] .en-gloss")?.textContent, cmd: ui("#save .cmd").textContent, who: ui("#lab-type").firstChild.textContent, whoEn: ui("#lab-type .en-gloss")?.textContent, chip: ui('[data-type="newborn"]').innerText.replace(/\s+/g, " "), mic: ui("#mic-label").innerText.replace(/\s+/g, " "), dev: /[ऀ-ॿ]/.test(document.body.innerText) }; });
+  const en = await page.evaluate(() => { document.querySelector('[data-lang="en"]').click(); return { save: document.querySelector("#save [data-ui]").textContent, gloss: document.querySelectorAll(".v-app .en-gloss").length }; });
+  ok("language switch: Romanised Hindi with English under every label, the voice command shown; English has no glosses; no Devanagari", hi.save === "Visit save karo" && hi.saveEn === "Save visit" && hi.cmd === 'or say "save karo"' && hi.who === "Kiske ghar gaye" && hi.whoEn === "Who you visited" && /Navjaat/.test(hi.chip) && /Newborn/.test(hi.chip) && /Mic dabaiye/.test(hi.mic) && /Tap to speak/.test(hi.mic) && !hi.dev && en.save === "Save visit" && en.gloss === 0, JSON.stringify({ ...hi, en }));
   await ctx.close();
   // the slip: one destination; lower-level signs are context, never a second instruction
-  const v = await (await fetch(BASE + "/api/visits", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "anc", record: { type: "anc", name: "Rajni", month: 8, hb: 4.5, symptoms: { breathless: true } }, said: ["Rajni, aathva mahina, Hb saadhe chaar, saans phoolti hai"], lang: "hi", via: "typed" }) })).json();
+  const v = await (await fetch(BASE + "/api/visits", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sid: SID, type: "anc", record: { type: "anc", name: "Rajni", month: 8, hb: 4.5, symptoms: { breathless: true } }, said: ["Rajni, aathva mahina, Hb saadhe chaar, saans phoolti hai"], lang: "hi", via: "typed" }) })).json();
   const p2 = await open(`/slip/${v.id}`, { width: 390 });
   await p2.page.waitForSelector(".slip-head");
   const slip = await p2.page.evaluate(() => { const t = document.querySelector("#slip").innerText; return { doLines: document.querySelectorAll(".slip .do").length, phcToday: /PHC today/i.test(t), also: /Also found/.test(t), flags: document.querySelectorAll(".slip-alert .signs li").length }; });
@@ -748,8 +751,102 @@ await run("grouped alert", async () => {
   const p3 = await open("/anm", { width: 1440, height: 900 });
   await p3.page.waitForSelector("#refs .ref");
   const b = await p3.page.evaluate(() => ({ firstLine: !!document.querySelector("#refs .ref .ref-do")?.textContent, showAll: !!document.querySelector("#refs .ref details.show-all"), seen: [...document.querySelectorAll("#seen .seen-line")].map((d) => d.dataset.person), stat: document.querySelectorAll("#stats .stat span")[0].textContent, stat2: document.querySelectorAll("#stats .stat span")[1].textContent, chip: [...document.querySelectorAll("#ask-chips button small")].map((x) => x.textContent) }));
-  ok("board: first instruction line + Show all; Seen recently one line per person (max 3); new labels; one translation for the referral question", b.firstLine && b.showAll && b.seen.length <= 3 && new Set(b.seen).size === b.seen.length && /not yet read/.test(b.stat) && /to keep an eye on/.test(b.stat2) && b.chip[0] === "Who was referred today?", JSON.stringify(b));
+  ok("board: first instruction line + Show all; Seen recently one line per person (max 3); new labels; one translation for the referral question", b.firstLine && b.showAll && b.seen.length <= 3 && new Set(b.seen).size === b.seen.length && /not yet read/.test(b.stat) && /to keep an eye on/.test(b.stat2) && b.chip[0] === "Who has an open referral?", JSON.stringify(b));
   await p3.ctx.close();
+});
+
+/* ---------- round 6 ---------- */
+await run("echo keeps answers", async () => {
+  // answers that repeat the question's words, given right after it, are kept
+  const { ctx, page } = await open("/visit?type=newborn&lang=hi");
+  await tapMic(page);
+  await say(page, "Sunita ka baby, saat din ka, wajan do kilo aath sau gram, temperature 37, saans chalis");
+  await stopMic(page);
+  await until(page, () => window.__gb().asking === "feeding" && window.__gb().mode === "answer" && window.__sr.current?.running && !window.speechSynthesis.speaking);
+  const ms1 = await page.evaluate(() => { window.__say("दूध कम पी रहा है"); return Date.now() - window.__ttsEnd; });
+  const feed = await until(page, () => window.__gb().record.feeding === "poor");
+  await until(page, () => window.__gb().asking === "danger" && window.__sr.current?.running && !window.speechSynthesis.speaking);
+  await say(page, "नहीं");
+  // the extra question (birth weight, from the MCP card) takes a bare answer through its anchor
+  await until(page, () => window.__gb().asking === "extra:birth_weight_g" && window.__sr.current?.running && !window.speechSynthesis.speaking);
+  const askedBw = await page.evaluate(() => /Janm ke samay|janm ke samay/i.test(document.querySelector("#status").innerText) && /MCP card/.test(document.querySelector("#status").innerText));
+  await say(page, "do kilo aath sau gram");
+  const bw = await until(page, () => window.__gb().record.birth_weight_g === 2800);
+  ok("the rules' extra question (birth weight from the MCP card) is asked with its Roman line and a bare answer fills it", askedBw && bw, JSON.stringify({ askedBw, bw }));
+  await until(page, () => window.__spoken.some((x) => /सेव करो' बोलिए/.test(x.text)) && window.__sr.current?.running && !window.speechSynthesis.speaking);
+  const ms3 = await page.evaluate(() => { window.__say("सेव करो"); return Date.now() - window.__ttsEnd; });
+  const save = await until(page, () => window.__gb().pending === "save");
+  ok("echo filter keeps real answers: 'doodh kam pee raha hai' right after the feeding question, 'save karo' right after the all-filled prompt", ms1 < 800 && feed && ms3 < 800 && save, JSON.stringify({ ms1, feed, ms3, save }));
+  await ctx.close();
+  const p2 = await open("/visit?type=anc&lang=hi");
+  await tapMic(p2.page);
+  await say(p2.page, "Meena, battees hafte, BP 120 by 80, Hb gyarah");
+  await stopMic(p2.page);
+  await until(p2.page, () => window.__gb().asking === "fetal_movement" && window.__gb().mode === "answer" && window.__sr.current?.running && !window.speechSynthesis.speaking);
+  const ms2 = await p2.page.evaluate(() => { window.__say("बच्चा कम हिल रहा है"); return Date.now() - window.__ttsEnd; });
+  const fm = await until(p2.page, () => window.__gb().record.fetal_movement === "reduced");
+  ok("echo filter keeps 'bachcha kam hil raha hai' right after the fetal-movement question", ms2 < 800 && fm, JSON.stringify({ ms2, fm }));
+  await p2.ctx.close();
+  const p3 = await open("/visit?type=newborn&lang=mr", { timing: { ...FAST, pause: 60000 } });
+  await tapMic(p3.page);
+  await say(p3.page, "Rekhache baal, tisra divas, vajan 2800 gram, temperature 37, shwas chalis, doodh neet pitay, jhatke nahi, chhati aat odhat nahi, talve pivle nahi, bal halchal karta");
+  await stopMic(p3.page);
+  await until(p3.page, () => window.__gb().asking === "extra:birth_weight_g" && window.__sr.current?.running && !window.speechSynthesis.speaking, null, 10000);
+  await say(p3.page, "सोडा");
+  await until(p3.page, () => window.__spoken.some((x) => /जतन करा' म्हणा/.test(x.text)) && window.__sr.current?.running && !window.speechSynthesis.speaking, null, 10000);
+  const ms4 = await p3.page.evaluate(() => { window.__say("जतन करा"); return Date.now() - window.__ttsEnd; });
+  const save2 = await until(p3.page, () => window.__gb().pending === "save");
+  ok("echo filter keeps 'jatan kara' right after the Marathi all-filled prompt", ms4 < 800 && save2, JSON.stringify({ ms4, save2, asking: (await gb(p3.page)).asking }));
+  await p3.ctx.close();
+});
+
+await run("save words", async () => {
+  const { ctx, page } = await open("/visit?type=anc&lang=hi");
+  const cases = [["ओके", "yes"], ["ओके जी", "yes"], ["ठीक", "yes"], ["हाँ हाँ", "yes"], ["okay", "yes"], ["स्किप", "skip"], ["नेक्स्ट", "skip"], ["skip it", "skip"], ["स्टॉप", "stop"], ["डन", "stop"], ["बस हो गया", "stop"], ["वेट", "wait"], ["रीड बैक", "read"], ["कैंसल", "no"], ["रद्द करो", "no"], ["save the visit", "save"]];
+  const got = await page.evaluate((c) => c.map(([t]) => String(window.__cmd(t))), cases);
+  const bad = cases.map(([t, e], i) => [t, e, got[i]]).filter(([, e, g]) => e !== g);
+  ok("save-step words: ओके / ठीक / हाँ हाँ are yes; स्किप, नेक्स्ट, स्टॉप, डन, वेट, रीड बैक, कैंसल / रद्द करो and English forms are understood", !bad.length, bad.map(([t, e, g]) => `${t}: want ${e} got ${g}`).join(" | "));
+  await tapMic(page);
+  await say(page, "Meena, battees hafte, BP 120 by 80, Hb gyarah");
+  await say(page, "save karo");
+  await until(page, () => window.__gb().pending === "save" && window.__sr.current?.running && !window.speechSynthesis.speaking);
+  await say(page, "kela");
+  const kept = await until(page, () => window.__gb().pending === "save" && window.__spoken.some((x) => /हाँ या नहीं बोलिए/.test(x.text)));
+  await until(page, () => window.__sr.current?.running && !window.speechSynthesis.speaking);
+  const status = (await gb(page)).status;
+  await until(page, () => window.__sr.current?.running && !window.speechSynthesis.speaking);
+  await say(page, "ओके");
+  const savedOk = await until(page, () => window.__gb().saved && window.__gb().saved !== "queued");
+  ok("an unclear reply to 'save?' keeps the question open and asks again; 'ओके' saves; the mic panel shows the save question", kept && savedOk && /Save karein/.test(status), JSON.stringify({ kept, savedOk, status }));
+  await ctx.close();
+});
+
+await run("late onstart", async () => {
+  const { ctx, page } = await open("/visit?type=newborn&lang=hi");
+  await page.evaluate(() => { window.__srStartDelay = 120; });
+  await page.click("#mic");
+  // the first-use tip pauses the mic at once; a late onstart must not leave it dead
+  const alive = await until(page, () => window.__sr.current?.running && !window.speechSynthesis.speaking && window.__spoken.length > 0, null, 5000);
+  const s = alive && (await say(page, "Sunita ka baby, saat din ka"));
+  ok("recogniser restart: a late onstart after a pause is ignored and the mic comes back after the phone speaks", alive && s && (await gb(page)).utter === 1, JSON.stringify({ alive, s }));
+  await ctx.close();
+});
+
+await run("status shows question", async () => {
+  const { ctx, page } = await open("/visit?type=newborn&lang=hi", { width: 375, height: 812 });
+  await tapMic(page);
+  await say(page, "Sunita ka baby, saat din ka");
+  await stopMic(page);
+  await until(page, () => window.__gb().asking === "weight_g" && window.__gb().mode === "answer" && window.__sr.current?.running && !window.speechSynthesis.speaking);
+  const st = await page.evaluate(() => ({ text: document.querySelector("#status").innerText, box: document.querySelector("#status").getBoundingClientRect().top < innerHeight }));
+  const miss = await page.evaluate(() => document.querySelector("#ask .v-ask-q .faint")?.innerText || "");
+  ok("mic panel shows the current question in Roman Hindi, what to say, and English under it", /Bachche ka wajan kitna hai\?/.test(st.text) && /chhodo/.test(st.text) && /What is the baby's weight\?/.test(st.text), JSON.stringify(st));
+  ok("missing line reads '6 mein se N baaki (N of 6 still missing)'", /^6 mein se \d baaki \(\d of 6 still missing\)/.test(miss.trim()), miss);
+  await ctx.close();
+  const p2 = await open("/visit?type=newborn&lang=hi", { width: 360, height: 640 });
+  const mic = await p2.page.evaluate(() => { const r = document.querySelector("#mic").getBoundingClientRect(); const row = document.querySelector(".v-pick").getBoundingClientRect(); return { wide: document.documentElement.scrollWidth, bottom: r.bottom, rowH: row.height, picts: document.querySelectorAll("[data-type] .pict").length, sel: getComputedStyle(document.querySelector('[data-type][aria-pressed="true"]')).backgroundColor }; });
+  ok("360x640: the mic sits fully on the first screen above the bottom bar; one-row choices with pictograms; selected chip filled", mic.wide <= 360 && mic.bottom < 640 - 72 && mic.rowH < 90 && mic.picts === 3 && mic.sel === "rgb(22, 25, 29)", JSON.stringify(mic));
+  await p2.ctx.close();
 });
 
 /* 10. offline */
@@ -785,7 +882,7 @@ await run("board", async () => {
   await fetch(BASE + "/api/reset", { method: "POST" }).catch(() => {});
   const { ctx, page } = await open("/anm", { width: 1440, height: 900 });
   await page.waitForFunction(() => document.querySelectorAll("#stats .stat").length === 4);
-  const st = await (await fetch(BASE + "/api/state")).json();
+  const st = await (await fetch(BASE + "/api/state?sid=" + SID)).json();
   // thinking (while a person's last visit is fetched), then the answer
   const p0 = page.evaluate(() => { const p = window.__ask("Meena ka BP kitna tha?"); window.__thinking = document.querySelector("#ask-out").innerText; return p; });
   await p0;
@@ -811,16 +908,16 @@ await run("board", async () => {
   await page.click("h1"); // the nurse has interacted, so sound is allowed
   const r0 = openRefs[0];
   await page.evaluate((n) => window.__ask(`${n} dekh liya`), r0.name);
-  const seen = (await (await fetch(BASE + "/api/state")).json()).referrals.find((r) => r.id === r0.id);
+  const seen = (await (await fetch(BASE + "/api/state?sid=" + SID)).json()).referrals.find((r) => r.id === r0.id);
   ok("board: 'X dekh liya' marks the referral seen", seen?.status === "seen", seen?.status);
   await page.waitForSelector(`[data-open="${r0.id}"]`, { timeout: 5000 }).catch(() => {});
   await page.evaluate((id) => document.querySelector(`[data-open="${id}"]`)?.closest("details")?.setAttribute("open", ""), r0.id);
   const undo = await page.$(`[data-open="${r0.id}"]`);
   if (undo) { await undo.click(); await sleep(600); }
-  const re = (await (await fetch(BASE + "/api/state")).json()).referrals.find((r) => r.id === r0.id);
+  const re = (await (await fetch(BASE + "/api/state?sid=" + SID)).json()).referrals.find((r) => r.id === r0.id);
   ok("board: Undo re-opens a referral seen by mistake", re?.status === "open", re?.status);
   // a new referral arriving live is said out loud
-  await fetch(BASE + "/api/visits", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "newborn", record: { type: "newborn", name: "Kavita", day: 4, weight_g: 1500 }, said: ["Kavita ka baby, wajan 1500"], lang: "hi", via: "typed" }) });
+  await fetch(BASE + "/api/visits", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sid: SID, type: "newborn", record: { type: "newborn", name: "Kavita", day: 4, weight_g: 1500 }, said: ["Kavita ka baby, wajan 1500"], lang: "hi", via: "typed" }) });
   const live = await until(page, () => window.__spoken.some((x) => /नया (तुरंत )?रेफरल: Kavita का बच्चा/.test(x.text)), null, 8000);
   ok("board: a new live referral is spoken after the nurse has tapped", live, await lastSpoken(page));
   ok("board: no console errors", !page.errors.length, page.errors.join(" | "));
@@ -895,7 +992,7 @@ if (SHOTS) {
       await ctx.close();
     }
   }
-  const st = await (await fetch(BASE + "/api/state")).json();
+  const st = await (await fetch(BASE + "/api/state?sid=" + SID)).json();
   const rid = st.referrals[0]?.id;
   for (const [w, h] of [[1440, 900], [375, 812]]) {
     for (const [path, name] of [[`/slip/${rid}`, "slip"], ["/slip/doesnotexist", "slip-missing"], ["/", "home"]]) {

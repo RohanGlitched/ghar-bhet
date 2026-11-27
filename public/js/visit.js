@@ -5,8 +5,8 @@
 // her language.
 import * as U from "./understand.js";
 import * as R from "./rules.js";
-import { dictate, speak, hush, micMeter, support, LANGS, micState, micOpenTone, micCloseTone, tickTone, echoTone } from "./voice.js";
-import { mountChrome, store, esc, api, glossaryHTML, referHTML } from "./ui.js";
+import { dictate, speak, hush, micMeter, support, LANGS, micState, micOpenTone, micCloseTone, tickTone, echoTone, said as spokenNow } from "./voice.js";
+import { mountChrome, store, esc, api, glossaryHTML, referHTML, sessionId } from "./ui.js";
 import { reason, bigLine, groupAlerts } from "./ask.js";
 
 const { understand, romanize } = U;
@@ -44,6 +44,7 @@ let count = null;        // the timed breath count: { key, t0, timer, lastTick, 
 let hold = null;         // "ruko": the mic waits up to 2 minutes, then asks again
 let stopAsking = false, lastBas = 0; // a second "bas" stops the questions for this visit
 let shownRefer = new Set(); // refer codes already brought into view
+let lastEchoSay = 0;
 
 /* ---------- words the phone says, in her language ---------- */
 const L = (o) => (o && (o[LANG] || o.en)) || "";
@@ -70,6 +71,8 @@ const LINES = {
   noMic: { en: "No microphone found. Tap your keyboard's mic and speak, or type.", hi: "माइक नहीं मिला। कीबोर्ड का माइक दबाकर बोलिए, या टाइप कीजिए।", mr: "माइक सापडला नाही. कीबोर्डचा माइक दाबून बोला, किंवा टाइप करा." },
   skipped: { en: "Skipped.", hi: "छोड़ दिया।", mr: "सोडलं." },
   notChecked: { en: "Marked not checked.", hi: "नहीं देखा, लिख लिया।", mr: "तपासलं नाही, लिहून घेतलं." },
+  yesNo: { en: "Please say yes or no.", hi: "हाँ या नहीं बोलिए।", mr: "हो किंवा नाही सांगा." },
+  badName: { en: "That name doesn't look right. Say her name again.", hi: "यह नाम ठीक नहीं लगा। नाम फिर से बताइए।", mr: "हे नाव बरोबर वाटत नाही. नाव पुन्हा सांगा." },
   timeUp: { en: "Time up. How many breaths?", hi: "समय पूरा। कितनी साँसें?", mr: "वेळ संपली. किती श्वास?" },
   micOff: { en: "OK, mic off.", hi: "ठीक है, माइक बंद।", mr: "ठीक आहे, माइक बंद." },
   stopAsking: { en: "OK, no more questions for this visit.", hi: "ठीक है, इस विज़िट में अब और नहीं पूछूँगी।", mr: "ठीक आहे, या भेटीत आता आणखी विचारणार नाही." },
@@ -128,16 +131,16 @@ function strip(k) {
 }
 const W = (s) => new RegExp(`^(?:${s})$`);
 const CORE = {
-  save: W("save|save it|sev|seva|सेव|सेव्ह|जतन|jatan|visit save|विजिट सेव|सेव विजिट"),
-  stop: W("bas|बस|bas itna|बस इतना|bas itna hi|बस इतना ही|that's all|thats all|stop|stop listening|done|ho gaya|हो गया|झालं|jhala|zala|संपलं"),
-  read: W("padh ke sunao|padhke sunao|padh kar sunao|padhkar sunao|पढ के सुनाओ|पढकर सुनाओ|पढ के सुनाइए|पढकर सुनाइए|पढ के सुनाइये|वाचून दाखवा|वाचून दाखव|vachun dakhva|vaachun daakhva|read back|read it back|read the record|read it out|sunao|सुनाओ|सुनाइए|फिर से सुनाओ"),
+  save: W("save|save it|save the visit|sev|seva|सेव|सेव्ह|जतन|jatan|visit save|विजिट सेव|सेव विजिट|सेव द विजिट"),
+  stop: W("bas|बस|bas itna|बस इतना|bas itna hi|बस इतना ही|bas ho gaya|बस हो गया|that's all|thats all|stop|stop listening|done|ho gaya|हो गया|झालं|jhala|zala|संपलं|स्टॉप|डन"),
+  read: W("padh ke sunao|padhke sunao|padh kar sunao|padhkar sunao|पढ के सुनाओ|पढकर सुनाओ|पढ के सुनाइए|पढकर सुनाइए|पढ के सुनाइये|वाचून दाखवा|वाचून दाखव|vachun dakhva|vaachun daakhva|read back|read it back|read the record|read it out|sunao|सुनाओ|सुनाइए|फिर से सुनाओ|रीड बैक|रीड बॅक"),
   fresh: W("new visit|naya|nayi visit|naya visit|नया|नई विजिट|नया विजिट|नवीन|नवीन भेट|naveen|navin|next visit|अगली विजिट"),
   undo: W("undo|वापस|wapas|vapas|वापस लाओ|परत|parat|परत आणा|पूर्ववत"),
-  wait: W("ruko|ruk jao|ruko zara|zara ruko|thoda ruko|ek minute|ek min|ek second|ek sec|wait|wait a minute|one minute|just a minute|hold on|रुको|रुकिए|रुक जाओ|जरा रुको|थोडा रुको|एक मिनट|एक सेकंड|थांबा|थांब|एक मिनिट|thamba|thamb"),
-  skip: W("chhodo|chodo|chhod do|chod do|छोडो|छोड दो|छोडिए|छोड दीजिए|छोड|rehne do|rahne do|रहने दो|रहने दीजिए|baad mein|baad me|बाद में|aage|आगे|skip|next|agla|अगला|पुढे|pudhe|सोडा|soda|सोड|सोडून द्या|राहू दे|राहू द्या|rahu de|rahu dya|नंतर|nantar|later"),
+  wait: W("ruko|ruk jao|ruko zara|zara ruko|thoda ruko|ek minute|ek min|ek second|ek sec|wait|wait a minute|one minute|just a minute|hold on|रुको|रुकिए|रुक जाओ|जरा रुको|थोडा रुको|एक मिनट|एक सेकंड|थांबा|थांब|एक मिनिट|thamba|thamb|वेट|थोडं थांबा|थोडा थांबा"),
+  skip: W("chhodo|chodo|chhod do|chod do|छोडो|छोड दो|छोडिए|छोड दीजिए|छोड|rehne do|rahne do|रहने दो|रहने दीजिए|baad mein|baad me|बाद में|aage|आगे|skip|next|agla|अगला|पुढे|pudhe|सोडा|soda|सोड|सोडून द्या|राहू दे|राहू द्या|rahu de|rahu dya|नंतर|nantar|later|skip it|स्किप|स्किप करो|नेक्स्ट"),
   unchecked: W("pata nahi|pata nahin|nahi pata|nahin pata|पता नहीं|पता नही|नहीं पता|नही पता|maloom nahi|malum nahi|मालूम नहीं|नहीं मालूम|माहीत नाही|माहित नाही|नाही माहीत|mahit nahi|mahiti nahi|not checked|didn't check|did not check|nahi dekha|नहीं देखा|देखा नहीं|नहीं जांचा|जांचा नहीं|तपासलं नाही|तपासले नाही|नाही तपासलं|tapasla nahi|don't know|dont know|i don't know"),
-  yes: W("haan|han|haa|ha|haanji|haan ji|ji haan|ji|jee|हां|हा|हां जी|जी|जी हां|हो|होय|हो ना|ho|hoy|yes|yeah|yep|yes please|ok|okay|ठीक है|theek hai|thik hai|बरोबर|barobar|sahi|सही|सही है|हां सही है|हो बरोबर"),
-  no: W("nahi|nahin|nai|na|nahi ji|nahi hai|nahin hai|नहीं|नही|नहीं जी|नहीं है|ना|नाही|नाही आहे|नाय|no|nope|nothing|none|kuch nahi|kuchh nahi|कुछ नहीं|कुछ भी नहीं|koi nahi|कोई नहीं|kahi nahi|काही नाही|kahich nahi|काहीच नाही|कोणतंही नाही|nahi nahi|नहीं नहीं|नाही नाही|एकही नाही"),
+  yes: W("haan|han|haa|ha|haanji|haan ji|ji haan|ji|jee|हां|हा|हां जी|जी|जी हां|हो|होय|हो ना|ho|hoy|yes|yeah|yep|yes please|ok|okay|ok ji|okay ji|ओके|ओके जी|ठीक|ठीक है|theek|theek hai|thik hai|हां हां|haan haan|बरोबर|barobar|sahi|सही|सही है|हां सही है|हो बरोबर"),
+  no: W("nahi|nahin|nai|na|nahi ji|nahi hai|nahin hai|नहीं|नही|नहीं जी|नहीं है|ना|नाही|नाही आहे|नाय|no|nope|nothing|none|kuch nahi|kuchh nahi|कुछ नहीं|कुछ भी नहीं|koi nahi|कोई नहीं|kahi nahi|काही नाही|kahich nahi|काहीच नाही|कोणतंही नाही|nahi nahi|नहीं नहीं|नाही नाही|एकही नाही|cancel|कैंसल|कॅन्सल|रद्द|रद्द करो|रद्द करा|radd karo"),
 };
 const TYPE_CMD = {
   anc: W("(?:pregnancy|garbhavati|garbhvati|garbhwati|गर्भवती|गरोदर|anc)(?: visit| विजिट| भेट| wali visit)?"),
@@ -166,6 +169,8 @@ function command(text) {
 const CORRECTION = /^(nahi nahi|nahin nahin|नहीं नहीं|नही नही|नाही नाही|no no|sorry|सॉरी|maaf|galat|गलत|galti|चूक|chuk|चुकलं|chukla|wrong|not that|i mean)(?=\s|,|$)/i;
 // words that say which field a number belongs to
 const FIELD_WORD = /(wajan|vajan|vazan|weight|gram|kilo|\bkg\b|temp|taap|tap|bukhar|fever|degree|\bbp\b|saans|shwas|breath|\bhb\b|haemo|hemo|\bpad|\bdin\b|divas|\bday|hafte|week|mahin|month|वज|ग्राम|किलो|ताप|बुखार|डिग्री|बीपी|साँस|सांस|श्वास|हीमो|हिमो|पैड|पॅड|दिन|दिवस|हफ्त|आठवड|महिन|महीन)/i;
+// a name with brackets, '=', digits or more than 3 words is not a name
+const NAME_BAD = (v) => /[<>="'`{}\\/]|\d/.test(String(v)) || String(v).trim().split(/\s+/).length > 3;
 const NAME_BLOCK = /^(chhodo|chodo|chhod|chod|soda|sod|bas|haan|han|nahi|nahin|nahi|save|sev|jatan|naya|navin|wapas|vapas|parat|aage|pudhe|skip|hoy|ho|ji|ok|theek|thik|rahne|rehne|rahu|baad|nantar|pata|mahit|sorry|galat|chuk)$/i;
 
 /* ---------- icons (simple, so the screen reads without words) ---------- */
@@ -303,7 +308,7 @@ const ASK = {
     ["danger", "", { en: "Any fits, blurred vision, severe headache, or foul discharge?", hi: "कोई झटके, धुंधला दिखना, तेज़ सिरदर्द, या बदबूदार पानी?", mr: "झटके, धूसर दिसणे, खूप डोकेदुखी, किंवा दुर्गंधी स्राव?" }, ["convulsions", "blurred_vision", "severe_headache", "foul_discharge", "heavy_bleeding"], null, true],
   ],
 };
-const ANCHOR = { temp: "तापमान", bp: "बीपी", weight_g: "वजन", weight_kg: "वजन", temp_c: "तापमान", temp_f: "तापमान", resp_rate: "साँस", bp_sys: "बीपी", bp_dia: "बीपी", hb: "हीमोग्लोबिन", pads: "पैड" };
+const ANCHOR = { birth_weight_g: "janam ke samay wajan", temp: "तापमान", bp: "बीपी", weight_g: "वजन", weight_kg: "वजन", temp_c: "तापमान", temp_f: "तापमान", resp_rate: "साँस", bp_sys: "बीपी", bp_dia: "बीपी", hb: "हीमोग्लोबिन", pads: "पैड" };
 const SAY_FIELD = { temp: ["तापमान", "तापमान", "temperature"], bp: ["बीपी", "बीपी", "BP"], weight_g: ["वज़न", "वजन", "weight"], weight_kg: ["वज़न", "वजन", "weight"], temp_c: ["तापमान", "तापमान", "temperature"], temp_f: ["तापमान", "तापमान", "temperature"], resp_rate: ["साँस", "श्वास", "breaths"], bp_sys: ["बीपी", "बीपी", "BP"], bp_dia: ["बीपी", "बीपी", "BP"], hb: ["हीमोग्लोबिन", "हिमोग्लोबिन", "Hb"], pads: ["पैड", "पॅड", "pads"], day: ["दिन", "दिवस", "days"], weeks: ["हफ्ते", "आठवडे", "weeks"], month: ["महीना", "महिना", "month"] };
 const fieldsOf = (row) => row[4] || [row[0]];
 function missing() {
@@ -334,8 +339,15 @@ function nextQuestion() {
     return { key: "doubt:" + k, field: d.field, fields, prefix: ANCHOR[d.field] || "", q: { en, hi, mr }, doubt: d, yesno: /^(did|is|are|was)\b/i.test(en) };
   }
   const row = missing()[0];
-  if (!row) return null;
-  return { key: row[0], field: row[0], fields: fieldsOf(row), prefix: row[1], q: row[2], syms: row[3], yesno: !!row[5], timed: row[6] || 0 };
+  if (row) return { key: row[0], field: row[0], fields: fieldsOf(row), prefix: row[1], q: row[2], syms: row[3], yesno: !!row[5], timed: row[6] || 0 };
+  // then anything extra the rules want (for a newborn: the birth weight from the MCP card)
+  const e = extras()[0];
+  if (!e) return null;
+  return { key: "extra:" + e.field, field: e.field, fields: [e.field], prefix: ANCHOR[e.field] || "", q: { en: e.say_en, hi: e.say_hi || e.say_en, mr: e.say_mr || e.say_en }, roman: e.sayRoman || null, extra: true };
+}
+function extras() {
+  if (typeof R.askExtra !== "function") return [];
+  try { return (R.askExtra(record) || []).filter((e) => e && e.field && record[e.field] == null && !skipped.has(e.field) && !notChecked.has(e.field)); } catch { return []; }
 }
 
 /* ---------- examples (in Roman letters; the reader takes Devanagari too) ---------- */
@@ -407,12 +419,31 @@ function notedSigns() {
 // the one big line the alert leads with comes from the rule's own urgent field (bigLine, in ask.js)
 const stampHTML = (refer, press = true) => refer.some(isUrgent) ? `<span class="stamp urgent ${press ? "press" : ""}">GO NOW · 108</span>` : `<span class="stamp ${press ? "press" : ""}">REFER TODAY</span>`;
 const whyBox = (f) => `<details class="why"><summary>Why</summary><p>${esc(f.why)}${f.from === "transcript" ? " (heard in what was said; check it)" : ""} <span class="src">Source: ${esc(f.source)} · rule id: ${esc(f.code)}</span></p></details>`;
-const hearBtn = (what, label = "Hear it again") => `<button class="hear" type="button" data-hear="${what}" aria-label="${esc(label)}">${ICON.speaker}<span>${esc(label)}</span></button>`;
+const hearBtn = (what, label = "Hear it again", en = null) => `<button class="hear" type="button" data-hear="${what}" aria-label="${esc(label)}">${ICON.speaker}<span>${esc(label)}${en && en !== label ? `<small class="en-gloss">${esc(en)}</small>` : ""}</span></button>`;
+/** A screen word in her language with the English under it (hi/mr only). */
+const lab = (k) => `${esc(t(k))}${LANG !== "en" && UI.en[k] && UI.en[k] !== t(k) ? `<small class="en-gloss">${esc(UI.en[k])}</small>` : ""}`;
 const isPhone = () => matchMedia("(max-width: 980px)").matches;
 
+/** "6 mein se 2 baaki (2 of 6 still missing)" */
+function missingText(n, of) {
+  return LANG === "hi" ? `${of} mein se ${n} baaki (${n} of ${of} still missing)` : LANG === "mr" ? `${of} paiki ${n} baki (${n} of ${of} still missing)` : `${n} of ${of} still missing`;
+}
+/** The alert's main line in her language, in Roman letters (from the rule when it has one, else its spoken line). */
+function alertRoman(groups) {
+  if (LANG === "en" || !groups.length) return {};
+  const g = groups[0], f = [...g.flags].sort((a, b) => (isUrgent(b) ? 1 : 0) - (isUrgent(a) ? 1 : 0))[0] || {};
+  const pick = (o) => (o && typeof o === "object" ? o[LANG] : null);
+  const cap = (s) => String(s).replace(/(^|[.!?]\s+)([a-z])/g, (m, a, b) => a + b.toUpperCase());
+  const raw = pick(g.whereRoman) || pick(f.whereRoman) || pick(f.sayRoman) || pick(f.roman) || (f.say?.[LANG] ? romanize(f.say[LANG]) : null);
+  const main = raw ? cap(raw) : null;
+  const otwRaw = pick(g.onTheWayRoman) || pick(f.onTheWayRoman);
+  const otw = Array.isArray(otwRaw) ? otwRaw.map(cap) : otwRaw ? cap(otwRaw) : null;
+  return { main, otw };
+}
 function render() {
   // spoken words
-  $("#said").innerHTML = utter.length ? utter.map(highlightUtterance).join("") : `<p class="said faint">Nothing yet. Speak, type below, or try an example.</p>`;
+  $("#said").innerHTML = utter.length ? utter.map(highlightUtterance).join("") : `<p class="said faint">Nothing yet. Speak, <a href="#type-box" data-open-type>type below</a>, or <a href="#examples">try an example</a>.</p>`;
+  $("#said [data-open-type]")?.addEventListener("click", () => { $("#type-box").open = true; setTimeout(() => $("#typed").focus(), 30); });
   $("#said-note").textContent = utter.some((u) => /[ऀ-ॿ]/.test(u.text)) ? "Shown in Roman letters" : "";
   // tiles
   $("#record-title").textContent = t("titles")[TYPE];
@@ -457,7 +488,7 @@ function render() {
     // one action, said once; the signs as short lines under it (same component on the slip and the board)
     const groups = groupAlerts(flags, TYPE, R.groupFlags);
     html += `<div class="alert refer ${refer.some(isUrgent) ? "urgent" : ""}" id="alert-refer" tabindex="-1"><div class="alert-head"><h3>${esc(refer[0].title)}${refer.length > 1 ? `, and ${refer.length - 1} more` : ""}</h3>${stampHTML(refer)}</div>
-      ${referHTML(groups)}${hearBtn("refer", t("hearAgain"))}</div>`;
+      ${referHTML(groups, alertRoman(groups))}${hearBtn("refer", t("hearAgain"), LANG === "en" ? null : tEn("hearAgain"))}</div>`;
   }
   if (watch.length) {
     html += `<div class="alert watch"><h3>${refer.length ? "Also watch" : "No danger sign, but watch"}</h3><ul>${watch.map((f) => `<li><b>${esc(f.title)}.</b> ${esc(f.action)}${whyBox(f)}</li>`).join("")}</ul>${hearBtn("watch", t("hearAgain"))}</div>`;
@@ -478,7 +509,7 @@ function render() {
   }
   // the side list: what the rules found, compact, with its level and source
   const lvl = (f) => (isUrgent(f) ? "go now" : f.severity === "refer_now" ? "refer today" : "watch");
-  $("#fired").innerHTML = flags.length ? `<ul class="rules-found">${flags.map((f) => `<li><span class="lvl ${lvl(f).replace(" ", "-")}">${lvl(f)}</span> <b>${esc(f.title)}</b><details class="src-d"><summary>Source</summary><span class="faint">${esc(f.source)} · Rule: ${esc(f.code)}</span></details></li>`).join("")}</ul>` : `<p class="faint">None yet.</p>`;
+  $("#fired").innerHTML = flags.length ? `<ul class="rules-found">${flags.map((f) => `<li><span class="lvl ${lvl(f).replace(" ", "-")}">${lvl(f)}</span> <b>${esc(f.title)}</b> <span class="src-inline">${esc(String(f.source || "").split(/[;(]/)[0].trim())}</span></li>`).join("")}</ul>` : `<p class="faint">None yet.</p>`;
   // the question, or the confirm box
   const ask = $("#ask");
   const q = !saved && utter.length ? nextQuestion() : null;
@@ -500,8 +531,8 @@ function render() {
     const words = LANG === "en" ? [`"skip"`, `"not checked"`, `"wait"`] : LANG === "mr" ? [`"soda" (skip)`, `"mahit nahi" (not checked)`, `"thamba" (wait)`] : [`"chhodo" (skip)`, `"pata nahi" (not checked)`, `"ruko" (wait)`];
     const hint = q.yesno ? `Say "${LANG === "mr" ? "hoy" : LANG === "en" ? "yes" : "haan"}" or "${LANG === "mr" ? "nahi" : LANG === "en" ? "no" : "nahi"}". Or ${words[0]}${q.field === "danger" || q.field === "severity" ? "" : `, or ${words[1]}`}.` : `Say the answer, ${words[0]}, ${words[1]}, or ${words[2]}.`;
     const timer = count && count.key === q.key ? `<span class="count" id="count" role="timer">${ICON.timer}<span id="count-s">${countLeft()}</span></span>` : "";
-    ask.innerHTML = `<div class="v-ask-q"><span class="faint">${ICON.question}${q.doubt ? t("check") : `${t("missing")} ${left.length} ${t("of")} ${rows.length}: ${esc(left.map(missLabel).join(", "))}`}</span><b>${esc(followUp ? "Which one? Say the sign." : q.q.en)}</b>${timer}<span class="hint">${esc(hint)}</span></div>
-      <div class="v-ask-btns">${hearBtn("ask", t("hearQ"))}<button class="btn small voice" id="answer">${ICON.mic}${esc(t("answer"))}</button><button class="btn small ghost" id="skip">${ICON.skip}<span>${esc(t("skip"))}<small class="cmd">"${esc(t("skipCmd"))}"</small></span></button>${q.field !== "danger" && q.field !== "severity" ? `<button class="btn small ghost" id="unchecked"><span>${esc(t("unchecked"))}<small class="cmd">"${esc(t("uncheckedCmd"))}"</small></span></button>` : ""}</div>`;
+    ask.innerHTML = `<div class="v-ask-q"><span class="faint">${ICON.question}${q.doubt ? t("check") : q.extra ? (LANG === "hi" ? "Ek aur sawaal (one more question)" : LANG === "mr" ? "Aankhi ek prashna (one more question)" : "One more question") : `${esc(missingText(left.length, rows.length))}: ${esc(left.map(missLabel).join(", "))}`}</span><b>${esc(followUp ? "Which one? Say the sign." : q.q.en)}</b>${timer}<span class="hint">${esc(hint)}</span></div>
+      <div class="v-ask-btns">${hearBtn("ask", t("hearQ"), LANG === "en" ? null : tEn("hearQ"))}<button class="btn small voice" id="answer">${ICON.mic}<span>${lab("answer")}</span></button><button class="btn small ghost" id="skip">${ICON.skip}<span>${lab("skip")}<small class="cmd">or say "${esc(t("skipCmd"))}"</small></span></button>${q.field !== "danger" && q.field !== "severity" ? `<button class="btn small ghost" id="unchecked"><span>${lab("unchecked")}<small class="cmd">or say "${esc(t("uncheckedCmd"))}"</small></span></button>` : ""}</div>`;
     $("#answer").onclick = () => { asking = q; startListening("answer"); };
     $("#skip").onclick = () => skipQuestion(q, false);
     if ($("#unchecked")) $("#unchecked").onclick = () => skipQuestion(q, true);
@@ -519,6 +550,8 @@ function render() {
   $("#save").disabled = !utter.length || !!saved || saving;
   $("#readback").disabled = !utter.length;
   drawOutbox();
+  // the mic panel shows what the phone is waiting for right now
+  if (session && !spokenNow.speaking && !lastError) listeningStatus("listening");
 }
 /* a red bar under the header when a referral first appears, and a badge on the bottom bar */
 let referObserver = null, alertInView = false;
@@ -561,7 +594,7 @@ function notedLine(noted) {
 
 /* ---------- reading what was said ---------- */
 const check = () => { record.type = TYPE; try { return checkRecord(record); } catch { return []; } };
-const okName = (v) => v && !NAME_BLOCK.test(romanize(String(v)).toLowerCase().trim());
+const okName = (v) => v && !NAME_BAD(v) && !NAME_BLOCK.test(romanize(String(v)).toLowerCase().trim());
 /** Read one utterance into the record. Returns the fields it changed. */
 function apply(text, via, prefix = "", set = null, display = null) {
   const u = utter.length;
@@ -742,6 +775,8 @@ function take(text, via = "voice") {
       answerName(text, via); flags = check();
       if (record.name) { pending = null; return askSave(); }
     }
+    // an unclear reply keeps the yes/no question open once, and asks again
+    if (!cmd && !pending.reasked) { pending.reasked = true; say(L(LINES.yesNo), { now: true }).then(() => { if (pending) openAnswerMic(null); }); render(); return; }
     pending = null; // anything else: carry on with what she said
   }
   if (cmd === "undo") { if (banner?.kind === "switch") { const from = banner.from; banner = null; return switchType(from, { announce: false }); } return restoreCleared(); }
@@ -869,7 +904,7 @@ function holdOn() {
   say(L(LINES.waiting), { now: true });
   if (session) session.extend?.(T.hold + 5000);
   else if (micState.granted && !lastError) startListening("answer", { firstMs: T.hold + 5000 });
-  setStatus(t("holding"), "on");
+  setStatus(t("holding"), "on", LANG === "en" ? null : tEn("holding"));
   hold.timer = setInterval(() => {
     if (!hold) return;
     const ms = Date.now() - hold.t0;
@@ -887,7 +922,13 @@ function stopHold() { if (hold) clearInterval(hold.timer); hold = null; session?
 /* ---------- the microphone ---------- */
 const wave = $("#wave");
 wave.innerHTML = Array.from({ length: 24 }, () => "<i></i>").join("");
-function setStatus(t, kind = "") { const s = $("#status"); s.textContent = t; s.className = `v-status ${kind}`; }
+/** The mic panel's line, in her language (Roman letters) with English under it when she isn't using English. */
+function setStatus(text, kind = "", en = null) {
+  const s = $("#status");
+  s.innerHTML = `<span>${esc(text)}</span>${en && en !== text ? `<small class="en-gloss">${esc(en)}</small>` : ""}`;
+  s.className = `v-status ${kind}`;
+}
+const tEn = (k) => UI.en[k];
 const ERR = {
   "not-allowed": ["The microphone is blocked. Allow it in the address bar (the lock or camera icon), or type the visit below.", "blocked"],
   "service-not-allowed": ["This browser won't let the page use speech recognition. Type the visit below, or open the page in Chrome or Edge.", "blocked"],
@@ -901,7 +942,9 @@ function showError(e) {
   stopHold();
   lastError = e;
   const others = Object.keys(LANGS).filter((l) => l !== LANG && l !== "mr").map((l) => LANGS[l].label).join(" or ");
-  setStatus(e === "language-not-supported" ? `This browser can't listen in ${LANGS[LANG].label}. Try ${others}, or type the visit below.` : msg, "err");
+  const en = e === "language-not-supported" ? `This browser can't listen in ${LANGS[LANG].label}. Try ${others}, or type the visit below.` : msg;
+  const ro = ERR_RO[e]?.[LANG];
+  setStatus(ro || en, "err", ro ? en : null);
   $("#type-box").open = true;
   // every no-mic case points to the keyboard's own mic, the voice fallback
   if (["network", "not-allowed", "service-not-allowed", "audio-capture", "unsupported"].includes(e)) setTimeout(() => $("#typed").focus({ preventScroll: false }), 50);
@@ -909,10 +952,50 @@ function showError(e) {
 }
 function listeningStatus(state) {
   if (!session || state === "ended" || lastError) return;
-  if (state === "paused") return setStatus(t("paused"), "wait");
-  setStatus(count ? t("counting") : hold ? t("holding") : session.mode === "answer" ? t("answering") : t("listening")(LANGS[LANG].label), "on");
+  if (state === "paused") return setStatus(t("paused"), "wait", LANG === "en" ? null : tEn("paused"));
+  // what the phone is waiting for comes first: the save yes/no, then the question
+  if (pending) { const [line, en] = pendingLine(); return setStatus(line, "on", en); }
+  if (count) return setStatus(t("counting"), "on", LANG === "en" ? null : tEn("counting"));
+  if (hold) return setStatus(t("holding"), "on", LANG === "en" ? null : tEn("holding"));
+  const q = asking || (session.mode === "answer" ? nextQuestion() : null);
+  if (q) { const [line, en] = questionLine(q); return setStatus(line, "on", en); }
+  setStatus(session.mode === "answer" ? t("answering") : t("listening")(LANGS[LANG].label), "on", LANG === "en" ? null : session.mode === "answer" ? tEn("answering") : tEn("listening")(LANGS[LANG].label));
 }
-const closedStatus = () => saved ? t("savedClosed") : utter.length ? t("closed") : t("idle");
+/** The current question in Roman letters, plus what she can say: [line, English line]. */
+function questionLine(q) {
+  const en = `${followUp ? "Which one? Say the sign." : q.q.en} Say the answer${q.yesno ? ' ("yes" or "no")' : ""}, "skip", "not checked" or "wait".`;
+  if (LANG === "en") return [en, null];
+  const ro = followUp ? (LANG === "hi" ? "Kaun sa? Lakshan boliye." : "Konta? Lakshan sanga.") : (ROQ[`${TYPE}:${q.field}`]?.[LANG] || (q.roman?.[LANG] ? String(q.roman[LANG]).replace(/(^|[.!?]\s+)([a-z])/g, (m, a, b) => a + b.toUpperCase()) : null) || romanize(q.q[LANG] || "").replace(/^./, (c) => c.toUpperCase()));
+  const say = LANG === "hi" ? `Boliye: jawab${q.yesno ? ' ("haan" ya "nahi")' : ""}, "chhodo", "pata nahi" ya "ruko".` : `Sanga: uttar${q.yesno ? ' ("ho" kiva "nahi")' : ""}, "soda", "mahit nahi" kiva "thamba".`;
+  return [`${ro} ${say}`, en];
+}
+function pendingLine() {
+  const p = pending;
+  const en = p.kind === "save" ? (p.needName ? 'Say her name, or "yes" to save without it.' : 'Save? Say "yes" or "no".') : p.kind === "correct" ? `${FIELD[p.field]?.[0] || p.field} ${p.value}? Say "yes" or "no".` : 'Clear this visit? Say "yes" or "no".';
+  if (LANG === "en") return [en, null];
+  const hi = p.kind === "save" ? (p.needName ? 'Naam boliye, ya bina naam ke save karne ke liye "haan".' : 'Save karein? Boliye: "haan" ya "nahi".') : p.kind === "correct" ? `${p.value}? Boliye: "haan" ya "nahi".` : 'Yeh visit mita dein? Boliye: "haan" ya "nahi".';
+  const mr = p.kind === "save" ? (p.needName ? 'Naav sanga, kiva navashivay jatan karayla "ho".' : 'Jatan karu? Mhana: "ho" kiva "nahi".') : p.kind === "correct" ? `${p.value}? Mhana: "ho" kiva "nahi".` : 'Hi bhet pusu? Mhana: "ho" kiva "nahi".';
+  return [LANG === "hi" ? hi : mr, en];
+}
+// the phone's questions in Roman letters, for the screen
+const ROQ = {
+  "newborn:name": { hi: "Maa ka naam kya hai?", mr: "Aaiche naav kay aahe?" }, "newborn:weight_g": { hi: "Bachche ka wajan kitna hai?", mr: "Balache vajan kiti aahe?" }, "newborn:temp_c": { hi: "Bachche ka taapmaan kitna hai?", mr: "Balache taapmaan kiti aahe?" },
+  "newborn:resp_rate": { hi: "Ek minute bachche ki saansein giniye.", mr: "Ek minit balache shwas moja." }, "newborn:feeding": { hi: "Kya bachcha doodh theek se pee raha hai?", mr: "Bal doodh neet pita ka?" }, "newborn:danger": { hi: "Koi jhatke, pasli chalna, ya hatheli peeli?", mr: "Jhatke, chhati aat odhne, kiva talve pivle?" },
+  "anc:name": { hi: "Unka naam kya hai?", mr: "Tyancha naav kay aahe?" }, "anc:bp_sys": { hi: "BP kitna hai?", mr: "BP kiti aahe?" }, "anc:hb": { hi: "Hemoglobin kitna hai?", mr: "Hemoglobin kiti aahe?" }, "anc:weeks": { hi: "Kitne hafte, ya kaun sa mahina?", mr: "Kiti aathavde, kiva kitva mahina?" },
+  "anc:fetal_movement": { hi: "Pet mein bachcha theek hil raha hai?", mr: "Potatla bal neet halta ka?" }, "anc:danger": { hi: "Koi khoon jaana, tez sirdard, ya dhundhla dikhna?", mr: "Raktasrav, khup dokedukhi, kiva dhusar disne?" },
+  "pnc:name": { hi: "Unka naam kya hai?", mr: "Tyancha naav kay aahe?" }, "pnc:day": { hi: "Delivery ko kitne din hue?", mr: "Prasutila kiti divas zale?" }, "pnc:pads": { hi: "Din mein kitne pad?", mr: "Divasala kiti pad?" }, "pnc:temp_c": { hi: "Taapmaan kitna hai?", mr: "Taapmaan kiti aahe?" },
+  "pnc:bp_sys": { hi: "BP kitna hai?", mr: "BP kiti aahe?" }, "pnc:hb": { hi: "Hemoglobin kitna hai?", mr: "Hemoglobin kiti aahe?" }, "pnc:danger": { hi: "Koi jhatke, dhundhla dikhna, tez sirdard, ya badbudaar paani?", mr: "Jhatke, dhusar disne, khup dokedukhi, kiva durgandhi srav?" },
+};
+// the error lines in Roman letters (English stays under them)
+const ERR_RO = {
+  "not-allowed": { hi: "Mic band hai. Keyboard ka mic dabakar boliye, ya type kijiye.", mr: "Mic band aahe. Keyboardcha mic dabun bola, kiva type kara." },
+  "service-not-allowed": { hi: "Yeh browser sunne nahi de raha. Keyboard ka mic dabakar boliye, ya type kijiye.", mr: "Ha browser aikoo det nahi. Keyboardcha mic dabun bola, kiva type kara." },
+  network: { hi: "Internet nahi hai. Keyboard ka mic dabakar neeche ke box mein boliye; visit isi phone par save hogi.", mr: "Internet nahi. Keyboardcha mic dabun khalchya box madhye bola; bhet yach phone var jatan hoil." },
+  "audio-capture": { hi: "Mic nahi mila. Keyboard ka mic dabakar boliye, ya type kijiye.", mr: "Mic sapadla nahi. Keyboardcha mic dabun bola, kiva type kara." },
+  unsupported: { hi: "Yeh browser sun nahi sakta. Keyboard ka mic dabakar boliye, ya Chrome kholiye.", mr: "Ha browser aiku shakat nahi. Keyboardcha mic dabun bola, kiva Chrome ughda." },
+  "language-not-supported": { hi: "Yeh browser is bhasha mein nahi sun sakta. English chuniye, ya type kijiye.", mr: "Ha browser ya bhashet aiku shakat nahi. Hindi kiva English nivda." },
+};
+const closedStatus = (en) => { const k = saved ? "savedClosed" : utter.length ? "closed" : "idle"; return en ? tEn(k) : t(k); };
 async function startListening(mode = "visit", { firstMs } = {}) {
   if (session) {
     if (mode === "visit" && session.mode === "answer") { session.byUser = true; session.noFollow = true; session.stop(); await new Promise((r) => setTimeout(r, 30)); }
@@ -922,7 +1005,7 @@ async function startListening(mode = "visit", { firstMs } = {}) {
   lastError = null;
   if (mode === "visit") { quiet(); if (count) stopCount(); }
   $("#mic").classList.add("on"); $("#mic").setAttribute("aria-label", "Stop listening"); $("#mic").setAttribute("aria-pressed", "true"); wave.classList.add("on");
-  $("#mic-label").textContent = t("tapStop");
+  $("#mic-label").innerHTML = lab("tapStop");
   // the first time the mic ever opens: one spoken line on what to say (can be turned off)
   if (mode === "visit" && !store.get("gb-guided") && store.get("gb-tips") !== "off") { store.set("gb-guided", true); say(L(GUIDE[TYPE]), { now: true }); }
   micOpenTone();
@@ -933,7 +1016,8 @@ async function startListening(mode = "visit", { firstMs } = {}) {
     firstMs: firstMs || (mode === "answer" ? T.answerFirst : T.first), quietMs: T.quiet, pauseMs: mode === "visit" ? T.pause : null,
     onState: (s) => listeningStatus(s),
     onPause: () => maybeAsk(),
-    onEcho: () => echoTone(),
+    keep: (t) => !!command(t), // a command is never thrown away as an echo
+    onEcho: () => { echoTone(); if (Date.now() - lastEchoSay > 5000) { lastEchoSay = Date.now(); say(L(LINES.reprompt)); } },
     onInterim: (t) => {
       if (!t) return;
       if (!interimEl) { interimEl = document.createElement("p"); interimEl.className = "said interim"; $("#said").appendChild(interimEl); document.querySelector("#said .faint")?.remove(); }
@@ -955,19 +1039,19 @@ function stopListening(fromDone) {
   session = null;
   stopMeter && stopMeter(); stopMeter = null;
   $("#mic").classList.remove("on"); $("#mic").setAttribute("aria-label", "Start speaking the visit"); $("#mic").setAttribute("aria-pressed", "false"); wave.classList.remove("on");
-  $("#mic-label").textContent = t("tap");
+  $("#mic-label").innerHTML = lab("tap");
   if (me && hold) stopHold();
   [...wave.children].forEach((b) => (b.style.height = "4px"));
   if (me) micCloseTone();
   if (count && me && !me.heard) stopCount();
   if (lastError) { render(); return; } // keep the error on screen
   if (me && !me.heard && !me.byUser && !saved && !pending) {
-    if (me.mode === "visit") { setStatus(t("nothing"), "err"); say(L(LINES.nothing)); }
+    if (me.mode === "visit") { setStatus(t("nothing"), "err", LANG === "en" ? null : tEn("nothing")); say(L(LINES.nothing)); }
     else {
-      setStatus(t("answerClosed"));
+      setStatus(t("answerClosed"), "", LANG === "en" ? null : tEn("answerClosed"));
       if (!toldTapToAnswer) { toldTapToAnswer = true; say(L(LINES.tapToAnswer)); }
     }
-  } else if (!pending) setStatus(closedStatus());
+  } else if (!pending) setStatus(closedStatus(), "", LANG === "en" ? null : closedStatus("en"));
   render();
   // she is done talking: ask for whatever is still missing
   if (me && me.heard && !me.noFollow) afterTurn();
@@ -1109,6 +1193,16 @@ async function save() {
   record.type = TYPE;
   const body = { type: TYPE, record: JSON.parse(JSON.stringify(record)), said: utter.map((u) => u.text), lang: LANG, via: utter.every((u) => u.via !== "voice") ? "typed" : "voice" };
   if (personId) body.personId = personId;
+  delete body.record.prev_weight_g; // the server sets the previous weight itself
+  body.sid = sessionId(); // the demo board shows the sample village plus this browser's own saves
+  if (record.name && NAME_BAD(record.name)) {
+    // never send something that isn't a name to the board
+    delete record.name; delete body.record.name;
+    saving = false; $("#save [data-ui]").textContent = t("save");
+    $("#saved").innerHTML = `<p class="alert watch" style="margin:0">That name doesn't look like a name (no brackets, signs or numbers, at most 3 words). Say or type her name again.</p>`;
+    say(L(LINES.badName), { now: true });
+    return askSave();
+  }
   if (notChecked.size) body.notChecked = [...notChecked];
   const tail = () => { const w = watchTail(); return w ? " " + w : ""; };
   const queue = () => {
@@ -1134,7 +1228,10 @@ async function save() {
       loadVillage();
     }
   } catch (e) {
-    if (e.status && e.status < 500) { $("#saved").innerHTML = `<p class="alert watch" style="margin:0">${esc(e.message)} The visit is still on this screen; nothing was lost.</p>`; }
+    if (e.status && e.status < 500) {
+      $("#saved").innerHTML = `<p class="alert watch" style="margin:0">${esc(e.message)} The visit is still on this screen; nothing was lost.</p>`;
+      if (/name/i.test(e.message)) { say(L(LINES.badName), { now: true }); delete record.name; }
+    }
     else queue();
   } finally {
     saving = false;
@@ -1205,10 +1302,12 @@ function switchType(t, { announce }) {
 function speakNewDangersQuiet() { flags = check(); const fresh = flags.filter((f) => f.severity === "refer_now"); for (const f of fresh) spoken.add(f.code); if (fresh.length) say(fresh.map((f) => L(f.say) || f.title).join(" ")); }
 function paintUI() {
   document.documentElement.dataset.uilang = LANG;
-  document.querySelectorAll("[data-ui]").forEach((el) => { const v = t(el.dataset.ui); if (typeof v === "string") el.textContent = v; });
-  document.querySelectorAll("[data-cmd]").forEach((el) => { const v = t(el.dataset.cmd); el.textContent = v ? `"${v}"` : ""; });
-  if (!session) $("#mic-label").textContent = t("tap");
-  if (!session && !lastError && !saved && !pending) setStatus(closedStatus());
+  // her language first, the English under it, so anyone can operate the screen
+  document.querySelectorAll("[data-ui]").forEach((el) => { const v = t(el.dataset.ui); if (typeof v === "string") el.innerHTML = lab(el.dataset.ui); });
+  document.querySelectorAll("[data-cmd]").forEach((el) => { const v = t(el.dataset.cmd); el.textContent = v ? `or say "${v}"` : ""; });
+  const hs = document.querySelector(".how-to > summary"); if (hs) hs.setAttribute("aria-label", `${t("howTo")} (${UI.en.howTo})`);
+  if (!session) $("#mic-label").innerHTML = lab("tap");
+  if (!session && !lastError && !saved && !pending) setStatus(closedStatus(), "", LANG === "en" ? null : closedStatus("en"));
 }
 function setLang(l) {
   LANG = l; store.set("gb-lang", l);
@@ -1239,12 +1338,12 @@ async function playExample(t) {
 /* ---------- the village panel ---------- */
 async function loadVillage() {
   try {
-    const s = await api("/api/state");
+    const s = await api(`/api/state?sid=${encodeURIComponent(sessionId())}`);
     const due = s.people.filter((p) => p.dueToday);
     $("#village").innerHTML = `<div class="vil">
       <div><span>Open referrals</span><b>${s.totals.openReferrals}</b></div>
       <div><span>Visits due today</span><b>${s.totals.dueToday}</b></div>
-      ${due.slice(0, 5).map((p) => `<div><a href="/visit?type=${p.kind === "baby" ? "newborn" : p.kind === "pregnant" ? "anc" : "pnc"}&person=${encodeURIComponent(p.id)}">${esc(p.name)}${p.kind === "baby" ? "'s baby" : ""}</a><span class="faint">${p.kind === "baby" ? `day ${p.dayOfLife}${p.atRisk ? ", 9-visit plan" : ""}` : p.kind === "pregnant" ? `${p.weeks} weeks` : `day ${p.dayAfter} after birth`}</span></div>`).join("")}
+      ${due.slice(0, 5).map((p) => `<div><a href="/visit?type=${p.kind === "baby" ? "newborn" : p.kind === "pregnant" ? "anc" : "pnc"}&person=${encodeURIComponent(p.id)}">${esc(p.name)}${p.kind === "baby" ? "'s baby" : ""}</a><span class="faint">${p.kind === "baby" ? `day ${p.dayOfLife}${p.atRisk ? ", 9-visit plan" : ""}` : p.kind === "pregnant" ? `${p.weeks} weeks pregnant` : `day ${p.dayAfter} after birth`}</span></div>`).join("")}
       <p class="faint" style="margin:6px 0 0">${esc(s.village.name)}, ${esc(s.village.block)}${s.village.sample ? " (made-up sample data)" : ""}</p></div>`;
     if (personId && !personLabel) {
       const p = s.people.find((x) => x.id === personId);

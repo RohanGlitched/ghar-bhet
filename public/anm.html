@@ -23,7 +23,7 @@
   .stat { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
   .stat b { display: block; font-family: var(--mono); font-weight: 500; font-size: 34px; line-height: 1.05; }
   .stat span { font-size: 14px; color: var(--ink-2); }
-  .stat small { display: block; font-size: 13px; color: var(--ink-3); margin-top: 4px; line-height: 1.35; }
+  .stat small { display: block; font-size: 14px; color: var(--ink-3); margin-top: 4px; line-height: 1.35; }
   .stat.hot b { color: var(--refer-text); }
   .b-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; align-items: start; }
   @media (max-width: 960px) { .b-grid { grid-template-columns: 1fr; } }
@@ -44,7 +44,7 @@
   .due-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
   .due-top b { font-size: 17px; }
   .plan { display: flex; gap: 4px; flex-wrap: wrap; }
-  .plan span, .legend i { font-family: var(--mono); font-size: 12px; padding: 2px 7px; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); font-style: normal; }
+  .plan span, .legend i { font-family: var(--mono); font-size: 14px; padding: 2px 7px; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); font-style: normal; }
   .plan span.done, .legend i.done { background: var(--ok-soft); color: var(--ok); }
   .plan span.due, .legend i.due { background: var(--voice); color: var(--voice-ink); font-weight: 600; }
   .plan span.over, .legend i.over { background: var(--refer-soft); color: var(--refer-text); }
@@ -106,6 +106,7 @@
   .seen-line > summary { cursor: pointer; min-height: 48px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .seen-line > summary span { color: var(--ink-3); font-size: 14px; }
   .seen-line[open] { padding-bottom: 12px; }
+  @media (max-width: 620px) { .ask-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; } .ask-chips button { flex: none; } }
   .reg-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
   .reg-top h2 { margin: 0 !important; }
   .gloss-card { margin-top: 24px; }
@@ -142,7 +143,7 @@
       <div class="col" id="due"></div></section>
   </div>
   <section class="reg-wrap" aria-label="Village register">
-    <div class="reg-top"><h2>Village register</h2><a class="btn small ghost" href="/api/export.csv" download="ghar-bhet-register.csv">Export for the register (CSV)</a></div>
+    <div class="reg-top"><h2>Village register</h2><a class="btn small ghost" id="csv" href="/api/export.csv" download="ghar-bhet-register.csv">Export for the register (CSV)</a></div>
     <div class="register"><div class="reg-head"><span id="reg-title">Register</span><span>Last visit and result</span></div>
       <table><thead><tr><th style="width:auto">Name</th><th style="width:auto">Who</th><th style="width:auto">Last visit</th><th style="width:auto">Result</th><th style="width:auto">Visits</th></tr></thead><tbody id="reg"></tbody></table>
       <ul class="reg-cards" id="reg-cards"></ul></div>
@@ -151,7 +152,7 @@
 </main>
 <footer id="foot"></footer>
 <script type="module">
-import { mountChrome, api, esc, ago, glossaryHTML, referHTML } from "/js/ui.js";
+import { mountChrome, api, esc, ago, glossaryHTML, referHTML, sessionId } from "/js/ui.js";
 import * as R from "/js/rules.js";
 import { answer, findPerson, toWatch, statusEn, reason, isUrgentRef, OUTCOME_LABEL, groupAlerts } from "/js/ask.js";
 import { dictate, speak, hush, support } from "/js/voice.js";
@@ -168,8 +169,9 @@ const SPK = `<svg class="ic" width="20" height="20" viewBox="0 0 24 24" aria-hid
 addEventListener("pointerdown", () => (interacted = true), { once: true, capture: true });
 addEventListener("keydown", () => (interacted = true), { once: true, capture: true });
 $("#glossary").innerHTML = glossaryHTML({ open: false });
+$("#csv").href = `/api/export.csv?sid=${encodeURIComponent(sessionId())}`;
 
-const OUTCOMES = [["reached", "Reached"], ["admitted", "Admitted"], ["refused", "Refused"], ["not_reachable", "Not reachable"]];
+const OUTCOMES = [["reached", "Reached hospital"], ["admitted", "Admitted"], ["refused", "Family refused"], ["not_reachable", "Could not reach family"]];
 const typeName = (t) => (t === "newborn" ? "Newborn visit" : t === "anc" ? "Pregnancy visit" : "Mother after birth");
 function refCard(r) {
   const open = r.status === "open", urgent = isUrgentRef(r);
@@ -183,7 +185,7 @@ function refCard(r) {
     <p class="ref-do">${esc(groups[0]?.where || "")}</p>
     <p class="ref-signs">${esc(flags.map((f) => f.title).join(" · "))}</p>
     ${heard.length ? `<p class="faint" style="margin:0 0 8px">Heard in what the health worker said${heard.some((f) => f.conflict) ? ", and the record disagrees" : ""}: ${esc(heard.map((f) => f.title).join(", "))}. Check with her.</p>` : ""}
-    <details class="show-all"><summary>Show all</summary><div class="ref-body">${referHTML(groups)}</div></details>
+    <details class="show-all"><summary>Show all signs</summary><div class="ref-body">${referHTML(groups)}</div></details>
     <div class="row"><a class="btn small" href="/slip/${esc(r.id)}">Referral slip</a>${open ? `<button class="btn small ghost" data-seen="${esc(r.id)}">Mark as seen</button>` : `<span class="pill ok">Seen ${r.seenAt ? ago(r.seenAt) : ""}${byWhom(r.seenBy)}</span><button class="btn small ghost" data-open="${esc(r.id)}">Undo</button>`}</div>
     <div class="outcome" role="group" aria-label="What happened after the referral"><span class="faint">After the referral:</span>${OUTCOMES.map(([k, l]) => `<button class="${out === k ? "on" : ""}" aria-pressed="${out === k}" data-outcome="${k}" data-id="${esc(r.id)}">${l}</button>`).join("")}</div>
   </article>`;
@@ -210,7 +212,7 @@ function paint() {
   const nUrgent = open.filter(isUrgentRef).length;
   const watchNames = watch.map((p) => (p.kind === "baby" ? `${p.name}'s baby` : p.name));
   const nRef = watch.filter((p) => p.last.refer).length;
-  $("#stats").innerHTML = [[open.length, `new referral${open.length === 1 ? "" : "s"} not yet read${nUrgent ? `, ${nUrgent} urgent` : ""}`, open.length ? "hot" : "", ""], [watch.length, `to keep an eye on (${nRef} referred, ${watch.length - nRef} to watch)`, "", watchNames.join(", ")], [t.dueToday, "visits due today", "", ""], [t.visitsThisWeek, "visits this week", "", ""]]
+  $("#stats").innerHTML = [[open.length, `new referral${open.length === 1 ? "" : "s"} not yet read${nUrgent ? `, ${nUrgent} go now` : ""}`, open.length ? "hot" : "", ""], [watch.length, `to keep an eye on (${nRef} referred, ${watch.length - nRef} to watch)`, "", watchNames.join(", ")], [t.dueToday, "visits due today", "", ""], [t.visitsThisWeek, "visits this week", "", ""]]
     .map(([n, l, c, names]) => `<div class="stat ${c}"><b>${n}</b><span>${l}</span>${names ? `<small>${esc(names)}</small>` : ""}</div>`).join("");
   $("#open-h").textContent = `Open referrals (${open.length})`;
   $("#refs").innerHTML = open.length ? open.map(refCard).join("") : `<p class="empty">No open referrals. When a health worker's visit finds a danger sign, it appears here at once.</p>`;
@@ -221,7 +223,7 @@ function paint() {
   const fu = (S.followups || []).filter((f) => f.isDue !== false && (!f.due || f.due <= Date.now()));
   $("#fu-wrap").hidden = !fu.length;
   $("#fu-h").textContent = `Referrals stuck: visit again today (${fu.length})`;
-  $("#followups").innerHTML = fu.map((f) => `<div class="due fu"><div class="due-top"><b>${esc(f.type === "newborn" ? `${f.name}'s baby` : f.name || "")}${f.urgent ? " · urgent" : ""}</b></div><p class="faint" style="margin:0">${esc(f.reason || "")}</p><div></div>${f.referralId ? `<a class="btn small ghost" href="/slip/${esc(f.referralId)}" style="justify-self:start">Referral slip</a>` : ""}</div>`).join("");
+  $("#followups").innerHTML = fu.map((f) => `<div class="due fu"><div class="due-top"><b>${esc(f.type === "newborn" ? `${f.name}'s baby` : f.name || "")}${f.urgent ? " · go now" : ""}</b></div><p class="faint" style="margin:0">${esc(f.reason || "")}</p><div></div>${f.referralId ? `<a class="btn small ghost" href="/slip/${esc(f.referralId)}" style="justify-self:start">Referral slip</a>` : ""}</div>`).join("");
   S.referrals.forEach((r) => seenIds.add(r.id));
   document.querySelectorAll("[data-seen]").forEach((b) => b.addEventListener("click", () => mark(b, b.dataset.seen, "seen")));
   document.querySelectorAll("[data-open]").forEach((b) => b.addEventListener("click", () => mark(b, b.dataset.open, "open")));
@@ -257,21 +259,21 @@ function paint() {
 }
 async function mark(btn, id, to) {
   btn.disabled = true; btn.textContent = "Saving…";
-  try { await api(`/api/referrals/${encodeURIComponent(id)}/${to}`, { by: "Nurse" }); await refresh(); }
+  try { await api(`/api/referrals/${encodeURIComponent(id)}/${to}`, { by: "Nurse", sid: sessionId() }); await refresh(); }
   catch (e) { btn.disabled = false; btn.textContent = e.status === 404 && to === "open" ? "Can't undo here" : e.message; }
 }
 async function setOutcome(btn, id, outcome) {
   const row = btn.closest(".outcome"); row.querySelectorAll("button").forEach((b) => (b.disabled = true));
-  try { await api(`/api/referrals/${encodeURIComponent(id)}/outcome`, { outcome, by: "Nurse" }); await refresh(); }
+  try { await api(`/api/referrals/${encodeURIComponent(id)}/outcome`, { outcome, by: "Nurse", sid: sessionId() }); await refresh(); }
   catch (e) { row.querySelectorAll("button").forEach((b) => (b.disabled = false)); row.querySelector(".faint").textContent = e.status === 404 ? "This server can't record outcomes yet." : e.message; }
 }
-async function refresh() { try { S = await api("/api/state"); paint(); } catch (e) { $("#vmeta").textContent = e.message; } }
+async function refresh() { try { S = await api(`/api/state?sid=${encodeURIComponent(sessionId())}`); paint(); } catch (e) { $("#vmeta").textContent = e.message; } }
 
 let poll = null;
 async function start() {
   await refresh();
   if (!window.EventSource) { poll = setInterval(refresh, 30000); return; }
-  const es = new EventSource("/api/stream");
+  const es = new EventSource(`/api/stream?sid=${encodeURIComponent(sessionId())}`);
   es.addEventListener("open", () => { $("#live-pill").className = "pill live"; $("#live-pill").textContent = "Live"; clearInterval(poll); poll = null; });
   es.addEventListener("error", () => {
     if (es.readyState === EventSource.CLOSED) {
@@ -302,12 +304,12 @@ function chipsFor(l) {
     : sncu ? [`${sncu.name} ka baby SNCU pahuncha`, `${sncu.name}'s baby reached the newborn unit`, `${sncu.name}'s baby reached the newborn unit`]
     : [`${n} hospital pahunchi`, `${n} reached the hospital`, `${n} reached the hospital`];
   return {
-    hi: [["Aaj kaun kaun refer hua?", "Who was referred today?"], ["Aaj kiske ghar jaana hai?", "Whose homes to visit today?"], ["Kis par dhyan rakhna hai?", "Who to keep an eye on?"], ["Meena ka BP kitna tha?", "What was Meena's BP?"], [`${n} dekh liya`, `Mark ${n}'s referral seen`], [out[0], out[1]]],
-    mr: [["Aaj konala refer kela?", "Who was referred today?"], ["Aaj konachi bhet baaki aahe?", "Whose visits are due today?"], ["Konakade laksh dyayche?", "Who to keep an eye on?"], [`${n} pahila`, `Mark ${n}'s referral seen`]],
-    en: [["Who was referred today?"], ["Whose visits are due today?"], ["Who is at risk?"], ["What was Meena's BP?"], [`${n} seen`, `Mark ${n}'s referral seen`], [out[2]]],
+    hi: [["Aaj kaun kaun refer hua?", "Who has an open referral?"], ["Aaj kiske ghar jaana hai?", "Whose homes to visit today?"], ["Kis par dhyan rakhna hai?", "Who to keep an eye on?"], ["Meena ka BP kitna tha?", "What was Meena's BP?"], [`${n} dekh liya`, `Mark ${n}'s referral seen`], [out[0], out[1]]],
+    mr: [["Aaj konala refer kela?", "Who has an open referral?"], ["Aaj konachi bhet baaki aahe?", "Whose visits are due today?"], ["Konakade laksh dyayche?", "Who to keep an eye on?"], [`${n} pahila`, `Mark ${n}'s referral seen`]],
+    en: [["Who was referred today?", "Who has an open referral?"], ["Whose visits are due today?"], ["Who is at risk?"], ["What was Meena's BP?"], [`${n} seen`, `Mark ${n}'s referral seen`], [out[2]]],
   }[l];
 }
-const HINT = { hi: 'Tap the mic and ask, for example "Aaj kaun kaun refer hua?" (Who was referred today?)', mr: 'Tap the mic and ask, for example "Aaj konala refer kela?" (Who was referred today?)', en: 'Tap the mic and ask, for example "Who was referred today?"' };
+const HINT = { hi: 'Tap the mic and ask, for example "Aaj kaun kaun refer hua?" (Who has an open referral?)', mr: 'Tap the mic and ask, for example "Aaj konala refer kela?" (Who has an open referral?)', en: 'Tap the mic and ask, for example "Who was referred today?"' };
 let chipKey = "";
 function drawChips() {
   const chips = chipsFor(ALANG), k = ALANG + JSON.stringify(chips);
@@ -332,22 +334,22 @@ async function respond(q) {
   let state = S;
   const p = findPerson(q, S.people || []);
   if (p?.last?.id && !p.last.record) {
-    try { const v = await api(`/api/visits/${encodeURIComponent(p.last.id)}`); state = { ...S, people: S.people.map((x) => x.id === p.id ? { ...x, last: { ...x.last, record: v.record } } : x) }; } catch {}
+    try { const v = await api(`/api/visits/${encodeURIComponent(p.last.id)}?sid=${encodeURIComponent(sessionId())}`); state = { ...S, people: S.people.map((x) => x.id === p.id ? { ...x, last: { ...x.last, record: v.record } } : x) }; } catch {}
   }
   const a = answer(q, state);
   let extra = "";
   try {
     if (a.intent === "seen" && a.id) {
-      await api(`/api/referrals/${encodeURIComponent(a.id)}/seen`, { by: "Nurse" });
+      await api(`/api/referrals/${encodeURIComponent(a.id)}/seen`, { by: "Nurse", sid: sessionId() });
       lastSeen = { id: a.id, at: Date.now() };
       a.hi += " गलत हो तो 'वापस' बोलिए।"; a.mr += " चुकलं असेल तर 'परत' म्हणा."; a.en += " Say \"wapas\" to undo.";
       extra = `<button class="btn small ghost" id="undo-seen">Undo</button>`;
       await refresh();
     } else if (a.intent === "undo") {
-      if (lastSeen && Date.now() - lastSeen.at < 60000) { await api(`/api/referrals/${encodeURIComponent(lastSeen.id)}/open`, { by: "Nurse" }); lastSeen = null; await refresh(); }
+      if (lastSeen && Date.now() - lastSeen.at < 60000) { await api(`/api/referrals/${encodeURIComponent(lastSeen.id)}/open`, { by: "Nurse", sid: sessionId() }); lastSeen = null; await refresh(); }
       else { a.en = "Nothing to undo."; a.hi = "वापस करने को कुछ नहीं है।"; a.mr = "परत करण्यासारखं काही नाही."; }
     } else if (a.intent === "outcome" && a.id) {
-      await api(`/api/referrals/${encodeURIComponent(a.id)}/outcome`, { outcome: a.outcome, by: "Nurse" });
+      await api(`/api/referrals/${encodeURIComponent(a.id)}/outcome`, { outcome: a.outcome, by: "Nurse", sid: sessionId() });
       await refresh();
     }
   } catch (e) { out.innerHTML = `<p>${esc(e.status === 404 && a.intent === "outcome" ? "This server can't record outcomes yet." : e.message)}</p>`; return; }

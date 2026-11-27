@@ -76,7 +76,7 @@ flowchart LR
   I --> J[Nurse's board, live + referral slip]
 ```
 
-- `public/js/understand.js`: the reader. Number words in Hindi, Marathi and English (डेढ़ सौ = 150, साढ़े आठ = 8.5, दीडशे = 150, "one forty" = 140, "ek kilo saat sau gram" = 1700 g), Fahrenheit to Celsius, negation ("सूजन नहीं है", "ताप नाही", "no fits"), self-corrections, months vs weeks, Roman letters for display.
+- `public/js/understand.js`: the reader. Number words in Hindi, Marathi and English (dedh sau = 150, saadhe aath = 8.5, deedshe = 150, "one forty" = 140, "ek kilo saat sau gram" = 1700 g), Fahrenheit to Celsius, negation ("sujan nahin hai", "taap naahi", "no fits"), self-corrections, months vs weeks, Roman letters for display.
 - `public/js/rules.js`: 37 danger rules, each naming its source.
 - `server/`: a zero-dependency Node server. It keeps the village register, re-checks every saved visit with the same rules (a client can't send its own flags), and streams referrals to the nurse's board with server-sent events.
 - `eval/`: the record spec, the test sets, the checker that re-computes every right answer from the rules, and `run.js`.

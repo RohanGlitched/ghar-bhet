@@ -346,7 +346,7 @@ async function loadVillage() {
 setLang(LANG);
 document.querySelectorAll("[data-type]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.type === TYPE)));
 drawExamples(); render(); loadVillage();
-if (!support().stt) setStatus("This browser can't listen for speech. Type the visit below, or open this page in Chrome or Edge.");
+if (!support().stt) { setStatus("This browser can't listen for speech. Type the visit below, or open this page in Chrome or Edge."); $("#type-box").open = true; }
 if (params.get("example") === "1") setTimeout(() => $("#examples .ex")?.click(), 500);
 // Read-only view for automated checks
 window.__gb = () => ({ TYPE, LANG, record, flags: flags.map((f) => f.code), utter: utter.length, session: !!session });

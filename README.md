@@ -19,6 +19,7 @@
 - **Final sealed test, run once:** 60 visits written after all the fixes and kept unopened until the end: 91.1% of fields, 36 of 37 danger visits flagged, 1 of 23 normal visits wrongly flagged.
 - **Real speech (12 visits read aloud through Wispr Flow):** 8 of 8 danger visits flagged, 70.2% of fields read right.
 - **Run it in one command:** `docker compose up`, then open http://localhost:8080. No API keys, no accounts, no AI model of our own.
+- **Demo video (2:49):** https://youtu.be/vGSeAeO3o6s
 - **Live demo:** https://ghar-bhet-194851097912.us-central1.run.app (no login). Without a microphone: https://ghar-bhet-194851097912.us-central1.run.app/visit?example=1
 
 **Theme:** Healthcare access · **State:** Maharashtra · **Built for:** Scaler × Wispr Flow "India Runs on Voice", Round 2 · **Builder:** Rohan Borade (solo)

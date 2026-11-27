@@ -1,16 +1,16 @@
 {
  "set": "adversarial",
- "run_at": "2026-11-27T09:46:16.954Z",
- "ruleset": "mohfw-2026.3",
+ "run_at": "2026-11-27T10:31:22.047Z",
+ "ruleset": "mohfw-2026.4",
  "typed": {
   "mode": "typed",
   "items": 100,
   "fields": {
    "gold": 514,
-   "predicted": 514,
+   "predicted": 516,
    "correct": 514,
    "recall": 100,
-   "precision": 100
+   "precision": 99.6
   },
   "type_detected": 100,
   "danger": {
@@ -22,14 +22,14 @@
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 121,
-   "predicted": 121,
-   "correct": 121,
+   "gold": 123,
+   "predicted": 125,
+   "correct": 123,
    "recall": 100,
-   "precision": 100,
+   "precision": 98.4,
    "refer_now_recall": 100
   },
-  "exact_visits": 100,
+  "exact_visits": 98,
   "by_field": {
    "name": {
     "gold": 100,
@@ -48,9 +48,9 @@
    "symptoms": {
     "gold": 142,
     "hit": 142,
-    "pred": 142,
+    "pred": 144,
     "recall": 100,
-    "precision": 100
+    "precision": 98.6
    },
    "weight_g": {
     "gold": 22,
@@ -217,8 +217,8 @@
   "by_tag": {
    "colloquial-danger": {
     "n": 25,
-    "ok": 25,
-    "pct": 100
+    "ok": 24,
+    "pct": 96
    },
    "filler": {
     "n": 2,
@@ -246,8 +246,8 @@
     "pct": 100
    },
    "normal-visit": {
-    "n": 27,
-    "ok": 27,
+    "n": 26,
+    "ok": 26,
     "pct": 100
    },
    "wrong-subject": {
@@ -262,8 +262,8 @@
    },
    "clinical-english": {
     "n": 14,
-    "ok": 14,
-    "pct": 100
+    "ok": 13,
+    "pct": 92.9
    },
    "fahrenheit": {
     "n": 8,
@@ -276,8 +276,8 @@
     "pct": 100
    },
    "watch-only": {
-    "n": 14,
-    "ok": 14,
+    "n": 15,
+    "ok": 15,
     "pct": 100
    },
    "name-like-word": {
@@ -292,8 +292,8 @@
    },
    "boundary": {
     "n": 20,
-    "ok": 20,
-    "pct": 100
+    "ok": 19,
+    "pct": 95
    },
    "fractions": {
     "n": 11,
@@ -312,8 +312,8 @@
    },
    "not-in-spec": {
     "n": 4,
-    "ok": 4,
-    "pct": 100
+    "ok": 3,
+    "pct": 75
    },
    "negated-list": {
     "n": 6,
@@ -484,8 +484,8 @@
   "by_lang": {
    "hi/roman": {
     "n": 30,
-    "ok": 30,
-    "pct": 100
+    "ok": 29,
+    "pct": 96.7
    },
    "mr/devanagari": {
     "n": 12,
@@ -499,8 +499,8 @@
    },
    "en/roman": {
     "n": 21,
-    "ok": 21,
-    "pct": 100
+    "ok": 20,
+    "pct": 95.2
    },
    "mr/roman": {
     "n": 10,
@@ -518,17 +518,61 @@
     "pct": 100
    }
   },
-  "misses": []
+  "misses": [
+   {
+    "id": "adv-009",
+    "said": "Baby of Swati, day 14. I counted breaths for one full minute, it was exactly 60. No grunting, chest is not going in. Feeding okay, weight 3.2 kg.",
+    "wrong": [
+     "symptoms.difficulty_breathing: extra false"
+    ],
+    "flags_want": [
+     "nb_fast_breathing"
+    ],
+    "flags_got": [
+     "nb_fast_breathing"
+    ]
+   },
+   {
+    "id": "adv-016",
+    "said": "Didi jaldi, Laxmi ka bachcha chhathe din ka hai, subah se bilkul nahi hil raha, doodh bhi nahi pee raha bilkul, honth neele se lag rahe.",
+    "wrong": [],
+    "flags_want": [
+     "nb_lethargy",
+     "nb_not_feeding",
+     "nb_sepsis_signs"
+    ],
+    "flags_got": [
+     "nb_not_feeding",
+     "nb_cyanosis",
+     "nb_lethargy",
+     "nb_sepsis_signs"
+    ]
+   },
+   {
+    "id": "adv-086",
+    "said": "Didi, Sushila ko delivery ke doosre din aankhen upar chadh gayi aur haath pair akad gaye, do minute tak, ab behosh si hai.",
+    "wrong": [
+     "symptoms.dizziness: extra true"
+    ],
+    "flags_want": [
+     "pnc_convulsions"
+    ],
+    "flags_got": [
+     "pnc_convulsions",
+     "pnc_anaemia_signs"
+    ]
+   }
+  ]
  },
  "auto": {
   "mode": "auto",
   "items": 100,
   "fields": {
    "gold": 514,
-   "predicted": 497,
+   "predicted": 499,
    "correct": 496,
    "recall": 96.5,
-   "precision": 99.8
+   "precision": 99.4
   },
   "type_detected": 91,
   "danger": {
@@ -540,14 +584,14 @@
    "false_alarm_pct": 2.4
   },
   "flags": {
-   "gold": 121,
-   "predicted": 112,
-   "correct": 106,
-   "recall": 87.6,
-   "precision": 94.6,
+   "gold": 123,
+   "predicted": 115,
+   "correct": 107,
+   "recall": 87,
+   "precision": 93,
    "refer_now_recall": 84.1
   },
-  "exact_visits": 91,
+  "exact_visits": 89,
   "by_field": {
    "name": {
     "gold": 100,
@@ -566,9 +610,9 @@
    "symptoms": {
     "gold": 142,
     "hit": 133,
-    "pred": 134,
+    "pred": 136,
     "recall": 93.7,
-    "precision": 99.3
+    "precision": 97.8
    },
    "weight_g": {
     "gold": 22,
@@ -735,8 +779,8 @@
   "by_tag": {
    "colloquial-danger": {
     "n": 25,
-    "ok": 22,
-    "pct": 88
+    "ok": 21,
+    "pct": 84
    },
    "filler": {
     "n": 2,
@@ -764,8 +808,8 @@
     "pct": 88.5
    },
    "normal-visit": {
-    "n": 27,
-    "ok": 27,
+    "n": 26,
+    "ok": 26,
     "pct": 100
    },
    "wrong-subject": {
@@ -780,8 +824,8 @@
    },
    "clinical-english": {
     "n": 14,
-    "ok": 13,
-    "pct": 92.9
+    "ok": 12,
+    "pct": 85.7
    },
    "fahrenheit": {
     "n": 8,
@@ -794,9 +838,9 @@
     "pct": 100
    },
    "watch-only": {
-    "n": 14,
-    "ok": 13,
-    "pct": 92.9
+    "n": 15,
+    "ok": 14,
+    "pct": 93.3
    },
    "name-like-word": {
     "n": 14,
@@ -810,8 +854,8 @@
    },
    "boundary": {
     "n": 20,
-    "ok": 18,
-    "pct": 90
+    "ok": 17,
+    "pct": 85
    },
    "fractions": {
     "n": 11,
@@ -830,8 +874,8 @@
    },
    "not-in-spec": {
     "n": 4,
-    "ok": 4,
-    "pct": 100
+    "ok": 3,
+    "pct": 75
    },
    "negated-list": {
     "n": 6,
@@ -1002,8 +1046,8 @@
   "by_lang": {
    "hi/roman": {
     "n": 30,
-    "ok": 29,
-    "pct": 96.7
+    "ok": 28,
+    "pct": 93.3
    },
    "mr/devanagari": {
     "n": 12,
@@ -1017,8 +1061,8 @@
    },
    "en/roman": {
     "n": 21,
-    "ok": 18,
-    "pct": 85.7
+    "ok": 17,
+    "pct": 81
    },
    "mr/roman": {
     "n": 10,
@@ -1037,6 +1081,35 @@
    }
   },
   "misses": [
+   {
+    "id": "adv-009",
+    "said": "Baby of Swati, day 14. I counted breaths for one full minute, it was exactly 60. No grunting, chest is not going in. Feeding okay, weight 3.2 kg.",
+    "wrong": [
+     "symptoms.difficulty_breathing: extra false"
+    ],
+    "flags_want": [
+     "nb_fast_breathing"
+    ],
+    "flags_got": [
+     "nb_fast_breathing"
+    ]
+   },
+   {
+    "id": "adv-016",
+    "said": "Didi jaldi, Laxmi ka bachcha chhathe din ka hai, subah se bilkul nahi hil raha, doodh bhi nahi pee raha bilkul, honth neele se lag rahe.",
+    "wrong": [],
+    "flags_want": [
+     "nb_lethargy",
+     "nb_not_feeding",
+     "nb_sepsis_signs"
+    ],
+    "flags_got": [
+     "nb_not_feeding",
+     "nb_cyanosis",
+     "nb_lethargy",
+     "nb_sepsis_signs"
+    ]
+   },
    {
     "id": "adv-037",
     "said": "सुषमाच्या बाळाचा बारावा दिवस. अंग खूप गरम आहे, बाळ सुस्त पडलंय, हलवलं तरच थोडी हालचाल करतं. वजन दीड किलो.",
@@ -1126,6 +1199,20 @@
     ]
    },
    {
+    "id": "adv-086",
+    "said": "Didi, Sushila ko delivery ke doosre din aankhen upar chadh gayi aur haath pair akad gaye, do minute tak, ab behosh si hai.",
+    "wrong": [
+     "symptoms.dizziness: extra true"
+    ],
+    "flags_want": [
+     "pnc_convulsions"
+    ],
+    "flags_got": [
+     "pnc_convulsions",
+     "pnc_anaemia_signs"
+    ]
+   },
+   {
     "id": "adv-090",
     "said": "Kamal tai, bali zalyavar vis divas, laghvi thambavta yet nahi, kapde ole hotat. Taap nahi.",
     "wrong": [
@@ -1159,7 +1246,8 @@
      "symptoms.heavy_bleeding: want true got undefined"
     ],
     "flags_want": [
-     "pnc_heavy_bleeding"
+     "pnc_heavy_bleeding",
+     "pnc_moderate_anaemia"
     ],
     "flags_got": []
    }

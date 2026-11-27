@@ -58,7 +58,7 @@ test("thresholds sit exactly where the manuals put them", () => {
 });
 
 test("every rule names its source", () => {
-  assert.equal(RULE_TABLE.length, 75);
+  assert.equal(RULE_TABLE.length, 82);
   for (const r of RULE_TABLE) {
     assert.ok(r.source && r.source.length > 10, r.code);
     assert.ok(r.threshold && r.threshold.length > 3, r.code + " has a threshold");
@@ -76,7 +76,7 @@ test("romanize never leaves Devanagari, on every sentence of the dev sets", asyn
   const { readFileSync } = await import("node:fs");
   assert.equal(romanize("तिसऱ्या"), "tisarya"); // eyelash ra
   const DEVANAGARI = new RegExp("[" + String.fromCharCode(0x900) + "-" + String.fromCharCode(0x97f) + "]");
-  for (const set of ["dev", "dev2", "dev3", "dev4"]) {
+  for (const set of ["dev", "dev2", "dev3", "dev4", "dev5"]) {
     const lines = readFileSync(new URL(`../eval/${set}.jsonl`, import.meta.url), "utf8").split(String.fromCharCode(10)).filter((l) => l.trim());
     for (const line of lines) {
       const { id, said } = JSON.parse(line);

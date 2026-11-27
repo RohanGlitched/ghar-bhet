@@ -1,14 +1,14 @@
 {
  "set": "dev3",
- "run_at": "2026-11-27T09:46:16.261Z",
- "ruleset": "mohfw-2026.3",
+ "run_at": "2026-11-27T10:31:21.113Z",
+ "ruleset": "mohfw-2026.4",
  "typed": {
   "mode": "typed",
   "items": 76,
   "fields": {
-   "gold": 328,
-   "predicted": 328,
-   "correct": 328,
+   "gold": 330,
+   "predicted": 330,
+   "correct": 330,
    "recall": 100,
    "precision": 100
   },
@@ -22,9 +22,9 @@
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 73,
-   "predicted": 73,
-   "correct": 73,
+   "gold": 72,
+   "predicted": 72,
+   "correct": 72,
    "recall": 100,
    "precision": 100,
    "refer_now_recall": 100
@@ -60,9 +60,9 @@
     "precision": 100
    },
    "symptoms": {
-    "gold": 57,
-    "hit": 57,
-    "pred": 57,
+    "gold": 59,
+    "hit": 59,
+    "pred": 59,
     "recall": 100,
     "precision": 100
    },
@@ -355,9 +355,9 @@
   "mode": "auto",
   "items": 76,
   "fields": {
-   "gold": 328,
-   "predicted": 327,
-   "correct": 327,
+   "gold": 330,
+   "predicted": 329,
+   "correct": 329,
    "recall": 99.7,
    "precision": 100
   },
@@ -371,11 +371,11 @@
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 73,
-   "predicted": 73,
-   "correct": 70,
-   "recall": 95.9,
-   "precision": 95.9,
+   "gold": 72,
+   "predicted": 72,
+   "correct": 69,
+   "recall": 95.8,
+   "precision": 95.8,
    "refer_now_recall": 94.3
   },
   "exact_visits": 98.7,
@@ -409,9 +409,9 @@
     "precision": 100
    },
    "symptoms": {
-    "gold": 57,
-    "hit": 57,
-    "pred": 57,
+    "gold": 59,
+    "hit": 59,
+    "pred": 59,
     "recall": 100,
     "precision": 100
    },

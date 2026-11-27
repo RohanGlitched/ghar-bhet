@@ -1,4 +1,4 @@
-# Ghar Bhet: record and rule spec (v3, rule set `mohfw-2026.3`, 27 Nov 2026)
+# Ghar Bhet: record and rule spec (v4, rule set `mohfw-2026.4`, 27 Nov 2026)
 
 This is the contract between the product and the test sets. The product fills a **record** from what the ASHA says, and a fixed **rule table** turns the record into **flags**. A test item gives, for each spoken visit, the record and flags a careful human would write. Gold flags are always recomputed from the gold record by `check_gold.py`, which implements the rule table below without importing product code.
 
@@ -7,6 +7,8 @@ Sources for every threshold are in `../docs/RESEARCH.md` (MoHFW CHO manuals 2021
 v2 changes (from `mohfw-2026.1`): pnc BP and Hb; pregnancy risk items; labour hours; birth weight; `temp_f`; new symptom codes; 27 new rules; newborn cold line moved to 36 °C (official SSBSK), fast breathing to 60 or more; cord, skin and eye signs refer (SSBSK Form 3); after-birth fever refers (SSBSK Form 4).
 
 v3 changes (from `mohfw-2026.2`): pregnancy temperature, high fever and a raised-temperature watch; labour pains and preterm labour; breech near term; more high-risk items (stillbirth, preterm or small baby before, diabetes, heart disease, Rh negative, HIV/syphilis, 4 or more births); newborn preterm, place of birth, swollen belly; after-birth fever line at 100 °F, infected stitches, calf pain, low mood; after-birth headache, blurred vision and breathlessness are urgent; breast problems refer (SSBSK Form 3).
+
+v4 changes (from `mohfw-2026.3`): a fever said with a reading stays `fever: true`; after-birth anaemia split (Hb under 7 urgent, 7-7.9 refer to FRU/DH, 8-11.9 watch, giddiness or paleness alone refer for an Hb test); low mood refers; thoughts of self-harm urgent; pallor in pregnancy (with breathlessness urgent); blue lips or tongue in the newborn urgent; new symptom codes `pallor` (anc), `self_harm` (pnc), `cyanosis` (newborn).
 
 ## Visit types
 
@@ -23,6 +25,10 @@ All fields are optional. Leave a field out when it was not said. A record never 
 **Subject.** Symptoms and readings said about someone else are left out: relatives (saas, sasur, pati, devar, behen, dadi, nani) in every visit; the mother in a newborn visit ("baby ki maa ko bukhar hai"); the baby in a pregnancy or after-birth visit ("bachche ko bukhar hai", "baby ka temperature 38").
 
 **Denials and mild pain.** "denies X", "no complaints of X or Y" mark every listed sign absent. "khoon ki jaanch / kami / chadhaya" (a test, a level, a transfusion) is not bleeding. A headache or (in pregnancy) stomach pain said as mild ("halka", "thoda", "mild") is not recorded as severe; leave it out of the gold record (the app asks "Is it severe?").
+
+**Fever with a reading (v4).** When she says she has a fever ("bukhar hai", "ताप आहे", "fever") the record holds `fever: true` as well as the reading, for pregnancy and after birth. For a newborn the reading decides: a normal reading with "garam" is not `hot_to_touch`.
+
+**Speech without punctuation.** A person word not owned by the word before it ("baby", "mother", "maa", "saas", not "Sunita ka baby") starts a new clause. A negation applies to the sign just before it (up to four words) or, in English, to what follows "no", "denies", "no h/o", "no complaints of".
 
 ### Common
 | field | type | notes |
@@ -60,7 +66,7 @@ All fields are optional. Leave a field out when it was not said. A record never 
 | `malpresentation` | boolean | baby breech or lying across ("bachcha ulta hai") (v3) |
 | `td_doses` | integer 0-3 | Td/TT injections taken ("dono teeke" → 2) (v3) |
 
-Symptom codes (`anc`): `bleeding`, `leaking_fluid` (water leaking / bag burst), `convulsions`, `severe_headache`, `blurred_vision`, `swelling_face_hands` (face, hands or whole body), `swelling_feet` (feet/legs only), `fever`, `breathless`, `abdominal_pain` (severe), `vomiting`, `dizziness` (giddiness, weakness, darkness before eyes), `burning_urine`, `foul_discharge` (foul or abnormal discharge), and in v3 `high_fever` ("tez bukhar", "high fever"; also mark `fever`), `labour_pain` (labour pains said).
+Symptom codes (`anc`): `bleeding`, `leaking_fluid` (water leaking / bag burst), `convulsions`, `severe_headache`, `blurred_vision`, `swelling_face_hands` (face, hands or whole body), `swelling_feet` (feet/legs only), `fever`, `breathless`, `abdominal_pain` (severe), `vomiting`, `dizziness` (giddiness, weakness, darkness before eyes), `burning_urine`, `foul_discharge` (foul or abnormal discharge), and in v3 `high_fever` ("tez bukhar", "high fever"; also mark `fever`), `labour_pain` (labour pains said), and in v4 `pallor` (pale eyelids, palms or nails; "palak safed").
 
 ### `pnc`
 | field | type | notes |
@@ -72,7 +78,7 @@ Symptom codes (`anc`): `bleeding`, `leaking_fluid` (water leaking / bag burst), 
 | `bp_sys`, `bp_dia` | integers | as for `anc` (v2) |
 | `hb` | number | as for `anc` (v2) |
 
-Symptom codes (`pnc`): `heavy_bleeding`, `fever`, `foul_discharge`, `convulsions`, `blurred_vision`, `abnormal_speech`, `breathless`, `abdominal_pain`, `burning_urine`, `swelling_face_hands`, `breast_problem`, `dizziness`, and in v2 `severe_headache`, `jaundice` (her eyes or skin yellow), `incontinence` (urine or stool she cannot hold), `pallor` (pale, white), and in v3 `wound_infection` (pus, redness or smell at the stitches), `calf_pain` (calf pain or swelling), `low_mood` (sad, hopeless, no interest).
+Symptom codes (`pnc`): `heavy_bleeding`, `fever`, `foul_discharge`, `convulsions`, `blurred_vision`, `abnormal_speech`, `breathless`, `abdominal_pain`, `burning_urine`, `swelling_face_hands`, `breast_problem`, `dizziness`, and in v2 `severe_headache`, `jaundice` (her eyes or skin yellow), `incontinence` (urine or stool she cannot hold), `pallor` (pale, white), and in v3 `wound_infection` (pus, redness or smell at the stitches), `calf_pain` (calf pain or swelling), `low_mood` (sad, hopeless, no interest), and in v4 `self_harm` (thoughts of harming herself or the baby).
 
 ### `newborn`
 | field | type | notes |
@@ -88,7 +94,7 @@ Symptom codes (`pnc`): `heavy_bleeding`, `fever`, `foul_discharge`, `convulsions
 | `preterm` | boolean | born before 37 weeks, or "samay se pehle" said (v3) |
 | `birth_place` | `home` / `facility` | where the baby was born (v3) |
 
-Symptom codes (`newborn`): `convulsions`, `chest_indrawing` ("pasli chal rahi", "chest andar ja raha"), `lethargy`, `jaundice` (any yellowness), `jaundice_palms_soles`, `blood_stool`, `cord_pus` (pus, redness or bleeding at the cord), `skin_pustules`, `eye_discharge`, `cold_to_touch`, `hot_to_touch`, `weak_cry`, `vomiting`, `diarrhoea`, and in v2 `difficulty_breathing` ("saans lene mein takleef", "श्वास घ्यायला त्रास"), and in v3 `abdominal_distension` ("pet phula", swollen belly).
+Symptom codes (`newborn`): `convulsions`, `chest_indrawing` ("pasli chal rahi", "chest andar ja raha"), `lethargy`, `jaundice` (any yellowness), `jaundice_palms_soles`, `blood_stool`, `cord_pus` (pus, redness or bleeding at the cord), `skin_pustules`, `eye_discharge`, `cold_to_touch`, `hot_to_touch`, `weak_cry`, `vomiting`, `diarrhoea`, and in v2 `difficulty_breathing` ("saans lene mein takleef", "श्वास घ्यायला त्रास"), and in v3 `abdominal_distension` ("pet phula", swollen belly), and in v4 `cyanosis` (blue lips or tongue).
 
 Never both `hot_to_touch` and `cold_to_touch` true. A temperature word alone ("taapmaan", "tapman") is not `hot_to_touch`.
 
@@ -126,6 +132,8 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 | `anc_multiple_pregnancy` | `twins` | refer_now |
 | `anc_vomiting` | `vomiting` | watch |
 | `anc_dizziness` | `dizziness` | watch |
+| `anc_anaemia_breathless` | `pallor` and `breathless` | refer_now, urgent |
+| `anc_pallor` | `pallor`, not `breathless` | refer_now |
 | `anc_high_risk` | `age` < 18 or > 35, `height_cm` < 145, `previous_births` ≥ 4, or any of `prev_caesarean`, `prev_pph`, `prev_aph`, `prev_eclampsia`, `prev_stillbirth`, `prev_preterm`, `diabetes`, `heart_disease`, `rh_negative`, `hiv_syphilis` true | watch |
 
 ### `pnc`
@@ -134,7 +142,10 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 | `pnc_heavy_bleeding` | `pads` ≥ 5, or `heavy_bleeding` | refer_now, urgent |
 | `pnc_severe_hypertension` | `bp_sys` ≥ 160 or `bp_dia` ≥ 110 | refer_now, urgent |
 | `pnc_hypertension` | (`bp_sys` ≥ 140 or `bp_dia` ≥ 90), not severe range | refer_now |
-| `pnc_severe_anaemia` | `hb` < 7, or `dizziness`, or `pallor` | refer_now |
+| `pnc_severe_anaemia` | `hb` < 7 | refer_now, urgent |
+| `pnc_low_hb` | 7 ≤ `hb` < 8 | refer_now |
+| `pnc_moderate_anaemia` | 8 ≤ `hb` < 12 | watch |
+| `pnc_anaemia_signs` | `dizziness` or `pallor`, and not `hb` < 8 | refer_now |
 | `pnc_high_fever` | temperature above 102 °F | refer_now, urgent |
 | `pnc_uti` | `burning_urine` | refer_now |
 | `pnc_infection` | `foul_discharge` | refer_now |
@@ -150,7 +161,8 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 | `pnc_incontinence` | `incontinence` | refer_now |
 | `pnc_wound_infection` | `wound_infection` | refer_now |
 | `pnc_calf_pain` | `calf_pain` | refer_now |
-| `pnc_low_mood` | `low_mood` | watch |
+| `pnc_low_mood` | `low_mood` | refer_now |
+| `pnc_self_harm` | `self_harm` | refer_now, urgent |
 | `pnc_breast` | `breast_problem` | refer_now |
 
 ### `newborn` (SSBSK 2026: any single danger sign means immediate referral)
@@ -161,6 +173,7 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 | `nb_convulsions` | `convulsions` | refer_now, urgent |
 | `nb_fast_breathing` | `resp_rate` ≥ 60 | refer_now, urgent |
 | `nb_difficulty_breathing` | `difficulty_breathing` | refer_now, urgent |
+| `nb_cyanosis` | `cyanosis` | refer_now, urgent |
 | `nb_chest_indrawing` | `chest_indrawing` | refer_now, urgent |
 | `nb_lethargy` | `lethargy` | refer_now, urgent |
 | `nb_fever` | temperature ≥ 37.5 °C, or `hot_to_touch` | refer_now, urgent |
@@ -185,7 +198,7 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 
 ### Never silent
 
-`noted(record, flags)` in rules.js lists every symptom marked `true` that no fired flag covers (for example jaundice on day 5, or swelling of the feet in pregnancy). The app shows these as "Noted: tell the nurse" and never shows "No danger signs" while the list is not empty. The reader also returns `unread`: clauses that name a body part or complaint but filled nothing, so the app can show "Noted: words not understood".
+`noted(record, flags)` in rules.js lists every symptom marked `true` that no fired flag covers (for example jaundice on day 5, or swelling of the feet in pregnancy). The app shows these as "Noted: tell the nurse" and never shows "No danger signs" while the list is not empty. The reader also returns `unread`: clauses that name a body part or complaint but filled nothing, so the app can show "Noted: words not understood". Each flag also carries `where` (a few words: where to go and when) and `onTheWay` (or null); `groupFlags(flags)` returns one group per destination, most urgent first, with every lower-level flag folded under the top destination when anything refers.
 
 ## Test item format (JSONL, one object per line)
 
@@ -193,7 +206,7 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 {"id":"nb-017","lang":"hi","script":"devanagari","said":"सुनीता का बच्चा सात दिन का है, वजन एक किलो सात सौ ग्राम, बुखार नहीं है, दूध कम पी रहा है","record":{"type":"newborn","name":"Sunita","day":7,"weight_g":1700,"feeding":"poor","symptoms":{"hot_to_touch":false}},"flags":["nb_poor_feeding","nb_very_low_weight"],"tags":["numbers-in-words","negation"]}
 ```
 
-Ids: `nb-`, `anc-`, `pnc-` in dev; `d2-`, `d3-` and `d4-` prefixes in dev2, dev3 and dev4; `h-` in the held-out sets.
+Ids: `nb-`, `anc-`, `pnc-` in dev; `d2-` to `d5-` prefixes in dev2 to dev5; `h-` in the held-out sets; `adv-` and `adv2-` in the two independent adversarial sets.
 
 Notes for labellers: `fever` is not a newborn symptom code; for a newborn "बुखार नहीं" means `hot_to_touch: false`. For newborn and pnc, "bukhar hai" with no number means `hot_to_touch: true` (newborn) or `fever: true` (pnc). Use these exact codes.
 

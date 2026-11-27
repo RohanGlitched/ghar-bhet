@@ -13,7 +13,7 @@ Usage: python check_gold.py dev.jsonl heldout.jsonl
        python check_gold.py --fix dev.jsonl dev2.jsonl   (rewrite flags from the
        gold records with the current rule table, then check)
 Exit code 0 when no problems.
-Rule set: mohfw-2026.3 (SPEC.md v3).
+Rule set: mohfw-2026.4 (SPEC.md v4).
 """
 import json
 import sys
@@ -50,17 +50,20 @@ SYMPTOMS = {
     "anc": {"bleeding", "leaking_fluid", "convulsions", "severe_headache", "blurred_vision",
             "swelling_face_hands", "swelling_feet", "fever", "breathless", "abdominal_pain",
             "vomiting", "dizziness", "burning_urine", "foul_discharge",
-            "high_fever", "labour_pain"},                                          # v3
+            "high_fever", "labour_pain",                                           # v3
+            "pallor"},                                                             # v4
     "pnc": {"heavy_bleeding", "fever", "foul_discharge", "convulsions", "blurred_vision",
             "abnormal_speech", "breathless", "abdominal_pain", "burning_urine",
             "swelling_face_hands", "breast_problem", "dizziness",
             "severe_headache", "jaundice", "incontinence", "pallor",               # v2
-            "wound_infection", "calf_pain", "low_mood"},                           # v3
+            "wound_infection", "calf_pain", "low_mood",                            # v3
+            "self_harm"},                                                          # v4
     "newborn": {"convulsions", "chest_indrawing", "lethargy", "jaundice",
                 "jaundice_palms_soles", "blood_stool", "cord_pus", "skin_pustules",
                 "eye_discharge", "cold_to_touch", "hot_to_touch", "weak_cry", "vomiting",
                 "diarrhoea", "difficulty_breathing",                                # v2
-                "abdominal_distension"},                                            # v3
+                "abdominal_distension",                                             # v3
+                "cyanosis"},                                                        # v4
 }
 ALBUMIN = {"nil", "trace", "1", "2", "3", "4"}
 FETAL = {"normal", "reduced", "absent"}
@@ -77,20 +80,21 @@ SEVERITY = {
     "anc_labour_prolonged": R, "anc_multiple_pregnancy": R, "anc_vomiting": W,
     "anc_dizziness": W, "anc_high_risk": W,
     "anc_high_fever": R, "anc_low_fever": W, "anc_preterm_labour": R, "anc_labour": R,
-    "anc_malpresentation": R,
+    "anc_malpresentation": R, "anc_anaemia_breathless": R, "anc_pallor": R,
     "pnc_heavy_bleeding": R, "pnc_severe_hypertension": R, "pnc_hypertension": R,
     "pnc_severe_anaemia": R, "pnc_high_fever": R, "pnc_uti": R, "pnc_infection": R,
     "pnc_fever": R, "pnc_convulsions": R, "pnc_neuro": R, "pnc_headache": R,
     "pnc_breathless": R, "pnc_abdominal_pain": R, "pnc_swelling": R, "pnc_jaundice": R,
     "pnc_incontinence": R, "pnc_breast": R,
-    "pnc_low_fever": W, "pnc_wound_infection": R, "pnc_calf_pain": R, "pnc_low_mood": W,
+    "pnc_low_fever": W, "pnc_wound_infection": R, "pnc_calf_pain": R, "pnc_low_mood": R,
+    "pnc_low_hb": R, "pnc_anaemia_signs": R, "pnc_moderate_anaemia": W, "pnc_self_harm": R,
     "nb_not_feeding": R, "nb_poor_feeding": W, "nb_convulsions": R, "nb_fast_breathing": R,
     "nb_difficulty_breathing": R, "nb_chest_indrawing": R, "nb_lethargy": R, "nb_fever": R,
     "nb_hypothermia": R, "nb_cool": W, "nb_jaundice_palms": R, "nb_jaundice_early": R,
     "nb_jaundice_late": R, "nb_blood_stool": R, "nb_very_low_weight": R, "nb_low_weight": W,
     "nb_at_risk_birth_weight": W, "nb_cord_infection": R, "nb_skin_pustules": R,
     "nb_eye_discharge": R, "nb_sepsis_signs": R, "nb_weak_cry": W, "nb_vomiting": W,
-    "nb_diarrhoea": W, "nb_preterm": W, "nb_abdominal_distension": W,
+    "nb_diarrhoea": W, "nb_preterm": W, "nb_abdominal_distension": W, "nb_cyanosis": R,
 }
 
 TAGS = {
@@ -105,18 +109,22 @@ TAGS = {
     "mild", "list-negation", "high-risk-history",
 }
 
-# Tag vocabulary of eval/adversarial.jsonl (written by a separate author from SPEC.md). Accepted
-# only for that file; every record, flag and severity check still applies to it.
+# Tag vocabulary of eval/adversarial.jsonl and eval/adversarial2.jsonl (each written by a separate
+# author from SPEC.md). Accepted only for those files; every record, flag and severity check still applies to it.
 ADV_TAGS = {
-    "albumin-plus-plus", "boundary", "bp-bata", "bp-par", "bp-slash", "bp-upar-neeche",
-    "bp-words-over", "celsius", "clinical-english", "colloquial-danger", "comma-number", "day-boundary",
-    "denies-list", "duration-not-day", "english-in-devanagari", "fahrenheit", "feet-vs-face", "fever-exclusion",
-    "filler", "fractions", "hinglish", "implausible-weight", "indian-english", "khoon-not-hb",
-    "kilo-gram", "long-rambling", "marathi-english", "marathi-she-hundreds", "mild-still-danger", "mild-vs-severe",
-    "months-vs-weeks", "name-like-word", "negated-list", "negation", "negation-is-danger", "normal",
-    "normal-visit", "not-in-spec", "noted-not-flag", "numbers-in-words", "past-value", "question-answer-negation",
-    "range", "risk-items", "rule-overlap", "self-correction", "sepsis-count", "subject-both",
-    "temp-word-not-hot", "unitless-temp", "watch-only", "weeks-vs-day", "wrong-subject",
+    "abbreviation", "albumin-plus-plus", "birth-vs-now", "boundary", "bp-bata", "bp-par",
+    "bp-slash", "bp-upar-neeche", "bp-words-over", "celsius", "clinical-english", "colloquial",
+    "colloquial-danger", "comma-number", "day-boundary", "denial", "denial-list", "denies-list",
+    "distractor-numbers", "duration-not-day", "duration-trap", "english-in-devanagari", "fahrenheit", "feet-vs-face",
+    "fever-exclusion", "filler", "fractions", "glued-units", "hinglish", "implausible-weight",
+    "indian-english", "khoon-not-bleeding", "khoon-not-hb", "kilo-gram", "long-rambling", "marathi-english",
+    "marathi-roman", "marathi-she-hundreds", "mild-pain", "mild-still-danger", "mild-vs-severe", "months-vs-weeks",
+    "name-like-word", "negated-list", "negation", "negation-is-danger", "negation-trap", "no-punctuation",
+    "normal", "normal-visit", "not-in-spec", "noted-not-flag", "numbers-in-words", "ordinal",
+    "paraphrase", "past-present", "past-value", "question-answer-negation", "range", "risk-items",
+    "rule-overlap", "self-correction", "sepsis-count", "smell-not-discharge", "subject-baby", "subject-both",
+    "subject-mother", "subject-relative", "temp-word-not-hot", "threshold-edge", "typo", "unitless-temp",
+    "watch-only", "weeks-vs-day", "wrong-subject",
 }
 
 EPS = 1e-9
@@ -203,6 +211,10 @@ def compute_flags(r):
                 out.add(flag)
         if g("fetal_movement") in {"reduced", "absent"}:
             out.add("anc_fetal_movement")
+        if yes("pallor") and yes("breathless"):
+            out.add("anc_anaemia_breathless")
+        elif yes("pallor"):
+            out.add("anc_pallor")
         if g("labour_hours") is not None and g("labour_hours") > 12:
             out.add("anc_labour_prolonged")
         if g("twins") is True:
@@ -222,8 +234,17 @@ def compute_flags(r):
             out.add("pnc_severe_hypertension")
         elif high_bp:
             out.add("pnc_hypertension")
-        if (g("hb") is not None and g("hb") < 7) or yes("dizziness") or yes("pallor"):
+        hb = g("hb")
+        if hb is not None and hb < 7:
             out.add("pnc_severe_anaemia")
+        elif hb is not None and hb < 8:
+            out.add("pnc_low_hb")
+        elif hb is not None and hb < 12:
+            out.add("pnc_moderate_anaemia")
+        if (yes("dizziness") or yes("pallor")) and not (hb is not None and hb < 8):
+            out.add("pnc_anaemia_signs")
+        if yes("self_harm"):
+            out.add("pnc_self_harm")
         high = above_f(r, 102)
         if high:
             out.add("pnc_high_fever")
@@ -277,7 +298,8 @@ def compute_flags(r):
                            ("blood_stool", "nb_blood_stool"), ("cord_pus", "nb_cord_infection"),
                            ("skin_pustules", "nb_skin_pustules"), ("eye_discharge", "nb_eye_discharge"),
                            ("weak_cry", "nb_weak_cry"), ("vomiting", "nb_vomiting"),
-                           ("diarrhoea", "nb_diarrhoea"), ("abdominal_distension", "nb_abdominal_distension")]:
+                           ("diarrhoea", "nb_diarrhoea"), ("abdominal_distension", "nb_abdominal_distension"),
+                           ("cyanosis", "nb_cyanosis")]:
             if yes(code):
                 out.add(flag)
         # HBNC 2014 sepsis checklist: two or more signs
@@ -410,10 +432,11 @@ def check_file(path, seen_ids, seen_said):
         t = it["record"]["type"]
         fname = Path(path).name
         adversarial = "adversarial" in fname
-        prefix = "adv-" if adversarial else ("h-" if heldout else "d2-" if "dev2" in fname else "d3-" if "dev3" in fname else "d4-" if "dev4" in fname else "") + ID_PREFIX[t]
-        if adversarial:  # adv-NNN for every visit type
-            if not (it["id"].startswith("adv-") and it["id"][4:].isdigit()):
-                problems.append(f"{where}: id should look like adv-NNN")
+        prefix = "adv-" if adversarial else ("h-" if heldout else "d2-" if "dev2" in fname else "d3-" if "dev3" in fname else "d4-" if "dev4" in fname else "d5-" if "dev5" in fname else "") + ID_PREFIX[t]
+        if adversarial:  # adv-NNN (adversarial.jsonl) or adv2-NNN (adversarial2.jsonl) for every visit type
+            ap = "adv2-" if "adversarial2" in fname else "adv-"
+            if not (it["id"].startswith(ap) and it["id"][len(ap):].isdigit()):
+                problems.append(f"{where}: id should look like {ap}NNN")
         elif not (it["id"].startswith(prefix) and it["id"][len(prefix):].isdigit()):
             problems.append(f"{where}: id should look like {prefix}NNN")
         flags = it["flags"]
@@ -446,7 +469,7 @@ def check_file(path, seen_ids, seen_said):
             problems.append(f"{where}: 'code-mix' tag must be set exactly when lang is mix")
         if not adversarial and ("numbers-digits" in tags) != any(ch.isascii() and ch.isdigit() for ch in it["said"]):
             problems.append(f"{where}: 'numbers-digits' tag must be set exactly when the sentence has digits")
-        if ("no-name" in tags) == ("name" in it["record"]):
+        if not adversarial and ("no-name" in tags) == ("name" in it["record"]):
             problems.append(f"{where}: 'no-name' tag must be set exactly when no name in record")
         items.append(it)
     return items, problems
@@ -497,6 +520,12 @@ def fix_file(path):
 
 
 def main(argv):
+    if "--help" in argv or "-h" in argv:
+        print(__doc__)
+        return 0
+    here = Path(__file__).parent
+    # bare names ("dev.jsonl") resolve against eval/ when run from elsewhere
+    argv = [argv[0]] + [a if a.startswith("-") or Path(a).exists() else str(here / a) for a in argv[1:]]
     if "--fix" in argv:
         # python check_gold.py --fix dev.jsonl dev2.jsonl heldout.jsonl
         for p in [a for a in argv[1:] if a != "--fix"]:

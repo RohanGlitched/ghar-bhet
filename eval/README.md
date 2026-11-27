@@ -10,12 +10,14 @@ Everything here runs with plain Node 20 and no dependencies. `python eval/check_
 | `dev2.jsonl` | 80 | Second tuning set, written after the first reader worked. |
 | `dev3.jsonl` | 76 | **Tuning set, written on 27 Nov 2026 by the same author as the reader fixes.** It holds the round-1 review's failure sentences and a case for every rule added in `mohfw-2026.2`, in Hindi, Marathi and English, Devanagari and Roman, with normal visits. It is not held out and its numbers are not evidence of accuracy on new speech. |
 | `dev4.jsonl` | 51 | **Tuning set, written on 27 Nov 2026 (second review round) by the same author as the reader fixes.** It holds the second review's failure sentences (everyday phrasings, whose complaint it is, denials, mild pain, inverted BP) and a case for every rule added in `mohfw-2026.3`. Not held out. |
+| `dev5.jsonl` | 26 | **Tuning set, written on 27 Nov 2026 (fourth review round) by the same author as the reader fixes**: English negation, sleepy babies, a fever said with a reading, Fahrenheit corrections, general jaundice/swelling/vision/breathing patterns, blue lips, self-harm, anaemia after birth, pallor in pregnancy, unpunctuated clinical English. Not held out. |
 | `heldout.jsonl` | 60 | First held-out set, written from `SPEC.md` only by a separate AI writing pass that never saw the code. It has been run twice (run 1 and run 2 below) and tuned on since, so it is **no longer unseen**. |
 | `adversarial.jsonl` | 100 | Independent adversarial set, written from `SPEC.md` (v3) by a separate agent that never saw the code: colloquial danger phrasings, wrong subject, negated lists, boundaries, clinical English, Devanagari-English. Run once as run 1 (below), then tuned on, so it is **no longer unseen**. |
+| `adversarial2.jsonl` | 60 | Second independent adversarial set (English and clinical-shorthand heavy, many without punctuation), written from `SPEC.md` by another separate agent that never saw the code. Run once as run 1 against the committed reader `0ed097e`, then tuned on, so it is **no longer unseen**. |
 | `heldout2.jsonl` | 60 | Second held-out set, sealed. It is run once, at the end (see below). |
 | `vignettes.jsonl` | 40 | Clinical vignettes (30 from the first round, 10 added in the second). Each is labelled only `should_refer` and `urgent`, from the guideline text quoted in its `basis` field, not from `rules.js`. |
 
-Expected flags in every set are recomputed from the gold records by `check_gold.py`, which implements the rule table in `SPEC.md` without importing product code. When the rules change, run `python eval/check_gold.py --fix dev.jsonl dev2.jsonl dev3.jsonl dev4.jsonl heldout.jsonl` (and `adversarial.jsonl`): it rewrites only the `flags` and the two flag-derived tags (`normal-visit`, `watch-only`). Sentences and gold records are never changed by it.
+Expected flags in every set are recomputed from the gold records by `check_gold.py`, which implements the rule table in `SPEC.md` without importing product code. When the rules change, run `python eval/check_gold.py --fix dev.jsonl dev2.jsonl dev3.jsonl dev4.jsonl dev5.jsonl heldout.jsonl adversarial.jsonl adversarial2.jsonl` (bare names resolve against `eval/`; `--help` prints usage): it rewrites only the `flags` and the two flag-derived tags (`normal-visit`, `watch-only`). Sentences and gold records are never changed by it.
 
 ## Which command gives which number
 
@@ -23,10 +25,12 @@ Expected flags in every set are recomputed from the gold records by `check_gold.
 |---|---|---|
 | Held-out run 1: 96.6% of fields, 37 of 38 danger visits, 1 of 22 false alarms (rule set `mohfw-2026.1`) | none can rebuild it exactly, see below | The record is `heldout-run1.json`, `heldout-run1.log` and `heldout-run1.sha256`. |
 | Held-out run 2: 99.3% of fields, 38 of 38, 0 of 22 (`mohfw-2026.1`) | `git checkout f34bdd4 -- public/js/understand.js public/js/rules.js eval/run.js eval/heldout.jsonl` then `node eval/run.js heldout` | Every commit from `166ed9f` to `f34bdd4` has the same reader, rules and set (checked 27 Nov 2026). Recorded in `heldout-run2.json`. Run 2 was also made shortly before the first commit; the committed files reproduce its numbers exactly. |
-| Held-out now (`mohfw-2026.3`) | `node eval/run.js heldout` | 99.3% of fields, 45 of 45 danger visits, 0 of 15 false alarms. Rule set `2026.2` changed the expected flags of 17 items; 7 visits that were normal under `2026.1` now refer (newborn below 36 °C, breathing exactly 60, cord or skin signs and after-birth fever refer under SSBSK 2026 Forms 3 and 4, foul discharge alone). `2026.3` changed no held-out flags. |
+| Held-out now (`mohfw-2026.4`) | `node eval/run.js heldout` | 99.3% of fields, 45 of 45 danger visits, 0 of 15 false alarms. Rule set `2026.2` changed the expected flags of 17 items; 7 visits that were normal under `2026.1` now refer (newborn below 36 °C, breathing exactly 60, cord or skin signs and after-birth fever refer under SSBSK 2026 Forms 3 and 4, foul discharge alone). `2026.3` changed no held-out flags; `2026.4` changed one (h-pnc-002: giddiness after birth is now "signs of anaemia", Hb test today). Two held-out items (h-pnc-001, h-pnc-007) now read `fever: true` where the old gold has only the reading (SPEC v4, below); this costs field precision only. |
 | Adversarial run 1: 88.3% of fields (96% precision), 50 of 59 danger visits, 7 of 41 false alarms (`mohfw-2026.3`, 27 Nov 2026 09:39 UTC) | frozen | The record is `adversarial-run1.json`, `adversarial-run1.log` (every miss) and `adversarial-run1.sha256`, plus `public/data/eval-adversarial-run1.json`. These files are never modified. |
 | Adversarial run 2 (after fixes) | `node eval/run.js adversarial` | 100% of fields (100% precision), 59 of 59, 0 of 41. Tuned on the set's misses, so this is not an independent number; run 1 is the honest one. |
-| dev / dev2 / dev3 / dev4 | `node eval/run.js dev` (or `dev2`, `dev3`, `dev4`) | Add `--misses` to print every miss. |
+| Adversarial set 2, run 1: 80.3% of fields (91.6% precision), 36 of 39 danger visits, 9 of 21 false alarms (committed reader `0ed097e`, rule set `mohfw-2026.3`) | frozen | `adversarial2-run1.json`, `adversarial2-run1.log`, `adversarial2-run1.sha256`, `public/data/eval-adversarial2-run1.json`. Never modified. |
+| Adversarial set 2, run 2 (after fixes, `mohfw-2026.4`) | `node eval/run.js adversarial2` | 100% of fields (99.7% precision), 40 of 40 danger visits, 0 of 20 false alarms. Tuned on the set; run 1 is the honest number. |
+| dev / dev2 / dev3 / dev4 / dev5 | `node eval/run.js dev` (or `dev2` … `dev5`) | Add `--misses` to print every miss. |
 | Vignettes | `node eval/run.js vignettes` | Sensitivity and specificity of "should refer", and how many urgent vignettes got an urgent flag. |
 | Real speech (dictation page) | `node eval/run.js realspeech <results.json>` | Results file from `public/dictation.html`: `{engine, results:[{id, lang, heard}]}`. Scores the reader on what the speech engine heard and, for the same items, on the written sentence. Writes `public/data/eval-realspeech-<engine>.json`. |
 
@@ -34,7 +38,7 @@ Add `--publish` to write `public/data/eval-<set>.json` for the site. Without it 
 
 ### Fields added after a set was written
 
-Rule set `mohfw-2026.2` added fields (pnc BP and Hb, pregnancy risk items, labour hours, birth weight, `temp_f`) and symptom codes; `mohfw-2026.3` added more (pregnancy temperature, further high-risk items, weeks at birth, place of birth, Td doses, and new symptom codes). Older sets have no gold for them, even where a sentence says such a value. `run.js` therefore counts a predicted field only when that set's gold records use the same field for the same visit type somewhere, or the item's own gold has it. Every gold field always counts for recall. Flags are not filtered.
+Rule set `mohfw-2026.2` added fields (pnc BP and Hb, pregnancy risk items, labour hours, birth weight, `temp_f`) and symptom codes; `mohfw-2026.3` added more (pregnancy temperature, further high-risk items, weeks at birth, place of birth, Td doses, and new symptom codes); `mohfw-2026.4` added the symptom codes `cyanosis` (newborn), `self_harm` (after birth) and `pallor` in pregnancy. Older sets have no gold for them, even where a sentence says such a value. `run.js` therefore counts a predicted field only when that set's gold records use the same field for the same visit type somewhere, or the item's own gold has it. Every gold field always counts for recall. Flags are not filtered.
 
 ## Adversarial set: run 1, what was fixed, run 2
 
@@ -54,6 +58,26 @@ What the misses showed, and the general fixes (no item is special-cased; each fi
 - Iron tablets counted when the iron word was said earlier in the visit.
 
 Run 2 (after the fixes, same set, rule set `mohfw-2026.3`): typed 100% of fields, 100% precision, 59 of 59 danger visits, 0 of 41 false alarms. dev, dev2, dev3, dev4, heldout and the vignettes did not regress.
+
+## Rule set mohfw-2026.4 and the second independent set
+
+**Gold relabelling for SPEC v4 (one convention change, listed in full).** SPEC v3 said a temperature said with "bukhar/taap" is only a reading. SPEC v4 says a fever she says she has stays `fever: true` even with a reading, so "bukhar hai, 100 degree" refers instead of only "watch". In our own tuning sets the gold records were updated to the new convention: dev pnc-002, pnc-005, pnc-006, pnc-009, pnc-015, pnc-019; dev2 d2-pnc-003, d2-pnc-006, d2-pnc-013; dev3 d3-pnc-008, d3-pnc-010; dev4 d4-anc-003 (each adds `symptoms.fever: true`; nothing else changed). The held-out and both adversarial sets were **not** relabelled; where their sentences say a fever with a reading, the reader's `fever: true` shows as an extra field.
+
+**Flags regenerated, records untouched.** Rule set 2026.4 (after-birth anaemia split, low mood refers) changed the expected flags of adversarial adv-076, adv-096, adv-099 and adversarial2 adv2-045, adv2-059 (and the flag-derived `normal-visit`/`watch-only` tags of adversarial2). These were rewritten by `check_gold.py --fix`; sentences and gold records are unchanged. So `adversarial.jsonl` and `adversarial2.jsonl` no longer have the byte hash pinned in their run-1 `.sha256` files; the pinned versions differ only in those `flags`/tags.
+
+**Adversarial set 2, run 1 (honest):** typed 80.3% of fields, 91.6% precision, 36 of 39 danger visits, 9 of 21 false alarms, flags 74.2% recall (committed reader `0ed097e`, rule set `mohfw-2026.3`). Before run 1 the coordinator only normalised formatting (script "latin" to "roman", one empty symptoms map removed). After run 1 no gold record was changed.
+
+What its misses showed, and the general fixes (each has a test in `test/review-cases.test.js`):
+- Speech with no punctuation: one person's words spilled onto the next ("mother has fever 101F baby temp 36.2C"), and a "no" or "not" anywhere in the long clause denied everything. Now a person word that is not owned by the word before it ("Sunita ka baby", "Meena's baby" stay joined) starts a new clause; a negation reaches only four words after a sign and stops at the next sign word ("labour pains since 15 hrs water not broken" keeps the pains; "jhatke ya bukhar nahi" still denies both); English "no X" negates what follows it; "denies" negates what follows it and stops at "but", "complains", "c/o"; "cant keep food down" describes the sign.
+- Feeding, foetal movement, past values, birth weight, history and Td/age/diabetes are read from the words around them instead of the whole clause ("FM good no h/o fits in previous pregnancy no bleeding PV").
+- Shorthand: wt, temp, RR, wks, kgs, tabs, h/o, c/o, "abd pain", "9va din" / "42va din" / "8th month", "38 yrs", "known diabetic on insulin", "both TT done", "kavitas baby"; English "she" is no longer Marathi "she" (hundred).
+- Phrases: "patli potty", "dheela pad", "khup zopte / uthat nahi", "passing clots", "delivery wale dard", "stan bhaari, nipple fat gaye", "feels low, crying all the time, no interest", "laghvila jalajal", "pot phuglay", "32 aathavdyat janmala", "pehla bacha" (no births before).
+- In a mother's visit a clause that only mentions the baby at its end ("no interest in the baby") is still about her.
+
+Remaining differences on adversarial set 2 after the fixes are SPEC v4 additions the v3 gold could not have: adv2-004 (blue lips, now `cyanosis`, an urgent rule) and adv2-058 (fever said with a reading).
+
+**Adversarial set 2, run 2:** typed 100% of fields, 99.7% precision, 40 of 40 danger visits, 0 of 20 false alarms. dev to dev5, heldout, adversarial (run-2 level kept: 59 of 59, 0 of 41) and the vignettes did not regress.
+
 
 ## Vignettes: the first run and the three label corrections
 

@@ -1,0 +1,472 @@
+{
+ "set": "dev5",
+ "run_at": "2026-11-27T10:31:21.463Z",
+ "ruleset": "mohfw-2026.4",
+ "typed": {
+  "mode": "typed",
+  "items": 26,
+  "fields": {
+   "gold": 104,
+   "predicted": 104,
+   "correct": 104,
+   "recall": 100,
+   "precision": 100
+  },
+  "type_detected": 100,
+  "danger": {
+   "visits": 19,
+   "caught": 19,
+   "caught_pct": 100,
+   "normal_visits": 7,
+   "false_alarms": 0,
+   "false_alarm_pct": 0
+  },
+  "flags": {
+   "gold": 28,
+   "predicted": 28,
+   "correct": 28,
+   "recall": 100,
+   "precision": 100,
+   "refer_now_recall": 100
+  },
+  "exact_visits": 100,
+  "by_field": {
+   "name": {
+    "gold": 23,
+    "hit": 23,
+    "pred": 23,
+    "recall": 100,
+    "precision": 100
+   },
+   "day": {
+    "gold": 19,
+    "hit": 19,
+    "pred": 19,
+    "recall": 100,
+    "precision": 100
+   },
+   "feeding": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 23,
+    "hit": 23,
+    "pred": 23,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_c": {
+    "gold": 8,
+    "hit": 8,
+    "pred": 8,
+    "recall": 100,
+    "precision": 100
+   },
+   "weight_g": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "birth_weight_g": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "month": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_f": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "diabetes": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   }
+  },
+  "by_tag": {
+   "new-rule": {
+    "n": 13,
+    "ok": 13,
+    "pct": 100
+   },
+   "numbers-digits": {
+    "n": 23,
+    "ok": 23,
+    "pct": 100
+   },
+   "negation": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "celsius": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "watch-only": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "local-idiom": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "borderline": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "normal-visit": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "past-value": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "wrong-subject": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "no-name": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "fahrenheit": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "self-correction": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "multi-sign": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   }
+  },
+  "by_lang": {
+   "en/roman": {
+    "n": 13,
+    "ok": 13,
+    "pct": 100
+   },
+   "hi/roman": {
+    "n": 13,
+    "ok": 13,
+    "pct": 100
+   }
+  },
+  "misses": []
+ },
+ "auto": {
+  "mode": "auto",
+  "items": 26,
+  "fields": {
+   "gold": 104,
+   "predicted": 101,
+   "correct": 101,
+   "recall": 97.1,
+   "precision": 100
+  },
+  "type_detected": 92.3,
+  "danger": {
+   "visits": 19,
+   "caught": 19,
+   "caught_pct": 100,
+   "normal_visits": 7,
+   "false_alarms": 0,
+   "false_alarm_pct": 0
+  },
+  "flags": {
+   "gold": 28,
+   "predicted": 27,
+   "correct": 26,
+   "recall": 92.9,
+   "precision": 96.3,
+   "refer_now_recall": 100
+  },
+  "exact_visits": 92.3,
+  "by_field": {
+   "name": {
+    "gold": 23,
+    "hit": 23,
+    "pred": 23,
+    "recall": 100,
+    "precision": 100
+   },
+   "day": {
+    "gold": 19,
+    "hit": 18,
+    "pred": 18,
+    "recall": 94.7,
+    "precision": 100
+   },
+   "feeding": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 23,
+    "hit": 23,
+    "pred": 23,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_c": {
+    "gold": 8,
+    "hit": 8,
+    "pred": 8,
+    "recall": 100,
+    "precision": 100
+   },
+   "weight_g": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "birth_weight_g": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "month": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_f": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 4,
+    "hit": 3,
+    "pred": 3,
+    "recall": 75,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "diabetes": {
+    "gold": 1,
+    "hit": 0,
+    "pred": 0,
+    "recall": 0,
+    "precision": null
+   },
+   "hb": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   }
+  },
+  "by_tag": {
+   "new-rule": {
+    "n": 13,
+    "ok": 12,
+    "pct": 92.3
+   },
+   "numbers-digits": {
+    "n": 23,
+    "ok": 21,
+    "pct": 91.3
+   },
+   "negation": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "celsius": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "watch-only": {
+    "n": 4,
+    "ok": 3,
+    "pct": 75
+   },
+   "local-idiom": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "borderline": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "normal-visit": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "past-value": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "wrong-subject": {
+    "n": 2,
+    "ok": 1,
+    "pct": 50
+   },
+   "no-name": {
+    "n": 3,
+    "ok": 1,
+    "pct": 33.3
+   },
+   "fahrenheit": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "self-correction": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "multi-sign": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   }
+  },
+  "by_lang": {
+   "en/roman": {
+    "n": 13,
+    "ok": 12,
+    "pct": 92.3
+   },
+   "hi/roman": {
+    "n": 13,
+    "ok": 12,
+    "pct": 92.3
+   }
+  },
+  "misses": [
+   {
+    "id": "d5-anc-007",
+    "said": "20 wks known diabetic on insulin vomiting 4-5 times daily cant keep food down",
+    "wrong": [
+     "weeks: want 20 got undefined",
+     "diabetes: want true got undefined"
+    ],
+    "flags_want": [
+     "anc_high_risk",
+     "anc_vomiting"
+    ],
+    "flags_got": [
+     "nb_vomiting"
+    ]
+   },
+   {
+    "id": "d5-pnc-009",
+    "said": "bachhe ko 38.2 bukhar hai maa ko koi taklif nahi maa ka BP 120/80 12va din",
+    "wrong": [
+     "day: want 12 got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   }
+  ]
+ }
+}

@@ -1,16 +1,16 @@
 {
  "set": "heldout",
- "run_at": "2026-11-27T09:46:16.658Z",
- "ruleset": "mohfw-2026.3",
+ "run_at": "2026-11-27T10:31:21.721Z",
+ "ruleset": "mohfw-2026.4",
  "typed": {
   "mode": "typed",
   "items": 60,
   "fields": {
    "gold": 291,
-   "predicted": 291,
+   "predicted": 294,
    "correct": 289,
    "recall": 99.3,
-   "precision": 99.3
+   "precision": 98.3
   },
   "type_detected": 100,
   "danger": {
@@ -29,7 +29,7 @@
    "precision": 100,
    "refer_now_recall": 100
   },
-  "exact_visits": 96.7,
+  "exact_visits": 91.7,
   "by_field": {
    "name": {
     "gold": 59,
@@ -69,9 +69,9 @@
    "symptoms": {
     "gold": 73,
     "hit": 73,
-    "pred": 73,
+    "pred": 76,
     "recall": 100,
-    "precision": 100
+    "precision": 96.1
    },
    "temp_c": {
     "gold": 15,
@@ -154,8 +154,8 @@
   "by_tag": {
    "numbers-in-words": {
     "n": 26,
-    "ok": 26,
-    "pct": 100
+    "ok": 25,
+    "pct": 96.2
    },
    "filler": {
     "n": 8,
@@ -164,18 +164,18 @@
    },
    "local-idiom": {
     "n": 20,
-    "ok": 18,
-    "pct": 90
+    "ok": 17,
+    "pct": 85
    },
    "negation": {
     "n": 24,
-    "ok": 23,
-    "pct": 95.8
+    "ok": 22,
+    "pct": 91.7
    },
    "fahrenheit": {
     "n": 8,
-    "ok": 8,
-    "pct": 100
+    "ok": 5,
+    "pct": 62.5
    },
    "fraction-words": {
     "n": 7,
@@ -189,8 +189,8 @@
    },
    "numbers-digits": {
     "n": 21,
-    "ok": 21,
-    "pct": 100
+    "ok": 19,
+    "pct": 90.5
    },
    "multi-sign": {
     "n": 21,
@@ -256,8 +256,8 @@
   "by_lang": {
    "hi/devanagari": {
     "n": 21,
-    "ok": 20,
-    "pct": 95.2
+    "ok": 19,
+    "pct": 90.5
    },
    "hi/roman": {
     "n": 9,
@@ -266,13 +266,13 @@
    },
    "mr/devanagari": {
     "n": 15,
-    "ok": 14,
-    "pct": 93.3
+    "ok": 13,
+    "pct": 86.7
    },
    "mr/roman": {
     "n": 3,
-    "ok": 3,
-    "pct": 100
+    "ok": 2,
+    "pct": 66.7
    },
    "en/roman": {
     "n": 6,
@@ -324,6 +324,45 @@
      "nb_very_low_weight",
      "nb_sepsis_signs"
     ]
+   },
+   {
+    "id": "h-pnc-001",
+    "said": "डिलीवरी को चार दिन हुए, बुखार 101 है, नीचे से बदबू नहीं आ रही। रामप्यारी।",
+    "wrong": [
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_fever"
+    ],
+    "flags_got": [
+     "pnc_fever"
+    ]
+   },
+   {
+    "id": "h-pnc-007",
+    "said": "बाळंतपणानंतर पाचवा दिवस, ताप एकशे तीन, थंडी वाजते. रंजना.",
+    "wrong": [
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_high_fever"
+    ],
+    "flags_got": [
+     "pnc_high_fever"
+    ]
+   },
+   {
+    "id": "h-pnc-010",
+    "said": "Shalan tai, chautha divas, taap 99 degree, srav la vas yeto",
+    "wrong": [
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_infection"
+    ],
+    "flags_got": [
+     "pnc_infection"
+    ]
    }
   ]
  },
@@ -332,29 +371,29 @@
   "items": 60,
   "fields": {
    "gold": 291,
-   "predicted": 282,
+   "predicted": 284,
    "correct": 280,
    "recall": 96.2,
-   "precision": 99.3
+   "precision": 98.6
   },
   "type_detected": 91.7,
   "danger": {
    "visits": 45,
-   "caught": 42,
-   "caught_pct": 93.3,
+   "caught": 43,
+   "caught_pct": 95.6,
    "normal_visits": 15,
    "false_alarms": 0,
    "false_alarm_pct": 0
   },
   "flags": {
    "gold": 92,
-   "predicted": 90,
+   "predicted": 91,
    "correct": 87,
    "recall": 94.6,
-   "precision": 96.7,
+   "precision": 95.6,
    "refer_now_recall": 93.2
   },
-  "exact_visits": 88.3,
+  "exact_visits": 85,
   "by_field": {
    "name": {
     "gold": 59,
@@ -394,9 +433,9 @@
    "symptoms": {
     "gold": 73,
     "hit": 65,
-    "pred": 65,
+    "pred": 67,
     "recall": 89,
-    "precision": 100
+    "precision": 97
    },
    "temp_c": {
     "gold": 15,
@@ -479,8 +518,8 @@
   "by_tag": {
    "numbers-in-words": {
     "n": 26,
-    "ok": 26,
-    "pct": 100
+    "ok": 25,
+    "pct": 96.2
    },
    "filler": {
     "n": 8,
@@ -494,13 +533,13 @@
    },
    "negation": {
     "n": 24,
-    "ok": 21,
-    "pct": 87.5
+    "ok": 20,
+    "pct": 83.3
    },
    "fahrenheit": {
     "n": 8,
-    "ok": 7,
-    "pct": 87.5
+    "ok": 5,
+    "pct": 62.5
    },
    "fraction-words": {
     "n": 7,
@@ -514,8 +553,8 @@
    },
    "numbers-digits": {
     "n": 21,
-    "ok": 19,
-    "pct": 90.5
+    "ok": 18,
+    "pct": 85.7
    },
    "multi-sign": {
     "n": 21,
@@ -581,8 +620,8 @@
   "by_lang": {
    "hi/devanagari": {
     "n": 21,
-    "ok": 19,
-    "pct": 90.5
+    "ok": 18,
+    "pct": 85.7
    },
    "hi/roman": {
     "n": 9,
@@ -591,8 +630,8 @@
    },
    "mr/devanagari": {
     "n": 15,
-    "ok": 13,
-    "pct": 86.7
+    "ok": 12,
+    "pct": 80
    },
    "mr/roman": {
     "n": 3,
@@ -651,6 +690,19 @@
     ]
    },
    {
+    "id": "h-pnc-001",
+    "said": "डिलीवरी को चार दिन हुए, बुखार 101 है, नीचे से बदबू नहीं आ रही। रामप्यारी।",
+    "wrong": [
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_fever"
+    ],
+    "flags_got": [
+     "pnc_fever"
+    ]
+   },
+   {
     "id": "h-pnc-003",
     "said": "बुखार है, कंपकंपी है, और नीचे से बदबूदार स्राव आ रहा है। छठा दिन, मुन्नी।",
     "wrong": [
@@ -674,7 +726,22 @@
     "flags_want": [
      "pnc_breathless"
     ],
-    "flags_got": []
+    "flags_got": [
+     "nb_difficulty_breathing"
+    ]
+   },
+   {
+    "id": "h-pnc-007",
+    "said": "बाळंतपणानंतर पाचवा दिवस, ताप एकशे तीन, थंडी वाजते. रंजना.",
+    "wrong": [
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_high_fever"
+    ],
+    "flags_got": [
+     "pnc_high_fever"
+    ]
    },
    {
     "id": "h-pnc-008",

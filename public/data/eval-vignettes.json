@@ -1,7 +1,7 @@
 {
- "run_at": "2026-11-27T09:46:17.096Z",
+ "run_at": "2026-11-27T10:31:23.245Z",
  "set": "vignettes",
- "ruleset": "mohfw-2026.3",
+ "ruleset": "mohfw-2026.4",
  "items": 40,
  "refer": {
   "positives": 33,
@@ -17,8 +17,8 @@
   "gold": 18,
   "caught": 18,
   "recall": 100,
-  "predicted": 20,
-  "precision": 90
+  "predicted": 21,
+  "precision": 85.7
  },
  "rows": [
   {
@@ -213,9 +213,9 @@
     "type": "newborn",
     "day": 7,
     "symptoms": {
+     "diarrhoea": true,
      "weak_cry": true,
-     "vomiting": true,
-     "diarrhoea": true
+     "vomiting": true
     }
    },
    "agree": true
@@ -550,7 +550,8 @@
     "temp_f": 101,
     "day": 5,
     "symptoms": {
-     "burning_urine": true
+     "burning_urine": true,
+     "fever": true
     }
    },
    "agree": true
@@ -565,7 +566,7 @@
    "got_urgent": true,
    "flags": [
     "pnc_heavy_bleeding",
-    "pnc_severe_anaemia"
+    "pnc_anaemia_signs"
    ],
    "record": {
     "type": "pnc",
@@ -668,7 +669,7 @@
    "should_refer": true,
    "urgent": false,
    "got_refer": true,
-   "got_urgent": false,
+   "got_urgent": true,
    "flags": [
     "pnc_severe_anaemia"
    ],
@@ -681,7 +682,7 @@
      "dizziness": true
     }
    },
-   "agree": true
+   "agree": false
   },
   {
    "id": "v-31",

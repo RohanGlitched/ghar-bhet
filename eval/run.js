@@ -1,10 +1,10 @@
 // Score the reader (understand.js) and the rules (rules.js) against labelled sets.
 //
-//   node eval/run.js dev|dev2|dev3|heldout [--misses] [--publish]
+//   node eval/run.js dev|dev2|dev3|dev4|dev5|heldout|adversarial|adversarial2 [--misses] [--publish]
 //       Field recall/precision, danger visits caught, false alarms, flag recall.
 //       "typed" = the visit type is given (the ASHA picked it); "auto" = guessed.
 //   node eval/run.js vignettes [--misses] [--publish]
-//       30 clinical vignettes labelled only should_refer / urgent from the
+//       40 clinical vignettes labelled only should_refer / urgent from the
 //       guideline texts (not from rules.js). Reports sensitivity and specificity.
 //   node eval/run.js realspeech <results.json> [--misses] [--out=DIR]
 //       Results from public/dictation.html: {engine, results:[{id, lang, heard}]}.
@@ -17,7 +17,9 @@
 // (eval/heldout-run*.json, public/data/eval-heldout-run*.json) are history and
 // are never written by this script.
 //
-// FIELD COUNTING RULE (ruleset mohfw-2026.2). Some record fields were added after
+// The rule set id is printed with every result (now mohfw-2026.4; RULESET in public/js/rules.js).
+//
+// FIELD COUNTING RULE (since ruleset mohfw-2026.2). Some record fields were added after
 // a set was written (pnc BP and Hb, pregnancy risk items, new symptom codes). A
 // sentence in an old set may say such a value, but its gold record cannot hold
 // it. So a predicted field counts (towards precision, or as "extra") only when

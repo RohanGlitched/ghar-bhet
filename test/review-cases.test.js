@@ -4,7 +4,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { understand } from "../public/js/understand.js";
-import { flagCodes, checkRecord, noted, RULE_TABLE } from "../public/js/rules.js";
+import { flagCodes, checkRecord, noted, RULE_TABLE, groupFlags } from "../public/js/rules.js";
 
 const read = (s, t) => understand(s, t);
 const rec = (s, t) => understand(s, t).record;
@@ -453,4 +453,112 @@ test("adv-set: names from cue phrases", () => {
   assert.equal(rec("Called from home: Neha, full term", "anc").name, "Neha");
   assert.equal(rec("Baby of Archana, day 5. Mother says baby is struggling to breathe", "newborn").name, "Archana");
   assert.equal(rec("तारा को अभी दौरा पड़ा, मुँह से झाग, नौवाँ महीना है", "anc").name, "Tara");
+});
+
+/* ---------------- fourth review round and the second independent set ---------------- */
+
+test("r4 P0: English negation before feeding, and sleepy babies", () => {
+  const r = rec("baby doesn't feed well and is very sleepy", "newborn");
+  assert.equal(r.feeding, "poor"); assert.equal(r.symptoms.lethargy, true);
+  assert.equal(rec("baby doesnt feed well", "newborn").feeding, "poor");
+  assert.equal(rec("baby does not feed at all", "newborn").feeding, "none");
+  assert.equal(rec("baby can't suck", "newborn").feeding, "none");
+  assert.equal(rec("baby is not feeding well", "newborn").feeding, "poor");
+  assert.equal(rec("baby feeding theek nahi hai", "newborn").feeding, "poor");
+  for (const s of ["baby unconscious hai", "now sleeping a lot", "baby uthta nahi", "hard to wake", "बच्चा बेहोश है"]) assert.equal(rec(s, "newborn").symptoms?.lethargy, true, s);
+});
+
+test("r4: a fever said with a reading still refers", () => {
+  for (const [s, t, code] of [["bukhar hai, 100 degree", "pnc", "pnc_fever"], ["ताप आहे, शंभर डिग्री", "pnc", "pnc_fever"], ["bukhar hai, 100 degree", "anc", "anc_fever"], ["bukhar hai 99", "anc", "anc_fever"], ["she has fever of 100 F", "pnc", "pnc_fever"]]) {
+    const f = flags(s, t);
+    assert.ok(f.includes(code), `${s} -> ${f}`); assert.ok(!f.some((x) => x.endsWith("low_fever")), s);
+  }
+  // for the baby a normal reading beats "garam"
+  assert.deepEqual(flags("baby garam hai lekin temperature 36.8", "newborn"), []);
+});
+
+test("r4: Fahrenheit corrections keep the unit; a correction is not a denial", () => {
+  const a = rec("temperature 99 F, nahi 101", "pnc"); assert.deepEqual([a.temp_f, a.temp_c], [101, 38.3]);
+  const b = rec("temperature 98.6 F nahi nahi 100.6 F", "pnc"); assert.deepEqual([b.temp_f, b.temp_c], [100.6, 38.1]);
+  const c = rec("bukhar 100, nahi nahi 101.4", "anc"); assert.equal(c.temp_f, 101.4); assert.ok(flagCodes(c).includes("anc_high_fever"));
+  const d = rec("bukhar 101 nahi nahi 102.4", "pnc"); assert.equal(d.symptoms.fever, true); assert.ok(flagCodes(d).includes("pnc_high_fever"));
+});
+
+test("r4: general patterns", () => {
+  assert.equal(rec("bachcha peela pad gaya hai, haath pair tak", "newborn").symptoms.jaundice_palms_soles, true);
+  assert.equal(rec("yellow upto the palms n soles", "newborn").symptoms.jaundice_palms_soles, true);
+  const sw = rec("legs swollen, sees spots", "anc"); assert.equal(sw.symptoms.swelling_feet, true); assert.equal(sw.symptoms.blurred_vision, true);
+  assert.equal(rec("baby has fast breathing and grunting", "newborn").symptoms.difficulty_breathing, true);
+  assert.equal(rec("saans tez chal rahi hai", "newborn").symptoms.difficulty_breathing, true);
+  assert.equal(rec("breathing fast counted 72 in one min", "newborn").symptoms?.difficulty_breathing, undefined, "a count is the sign");
+  assert.equal(rec("baby ki naabhi se khoon aa raha hai", "newborn").symptoms.cord_pus, true);
+  assert.equal(rec("khoon ke thakke aa rahe hain", "pnc").symptoms.heavy_bleeding, true);
+  assert.equal(rec("she fainted twice", "pnc").symptoms.dizziness, true);
+  assert.equal(rec("baby's lips are blue", "newborn").symptoms.cyanosis, true);
+  assert.equal(rec("honth neele se lag rahe", "newborn").symptoms.cyanosis, true);
+  assert.equal(rec("उसे बोलने में दिक्कत है", "pnc").symptoms.abnormal_speech, true);
+  assert.equal(rec("zubaan ladkhadaa rahi", "pnc").symptoms.abnormal_speech, true);
+  assert.equal(rec("badbudaar safed paani aa raha hai", "pnc").symptoms.foul_discharge, true);
+});
+
+test("r4: never silent - a clause that filled nothing is unread", () => {
+  assert.deepEqual(read("baby ki dhadkan nahi mil rahi", "anc").unread.map((u) => u.text), ["baby ki dhadkan nahi mil rahi"]);
+  assert.deepEqual(read("Rekha ke ghar gayi thi, sab theek hai", "newborn").unread, []);
+  for (const [s, t] of [["baby's lips are blue", "newborn"], ["baby is grunting", "newborn"], ["badbudaar safed paani aa raha hai", "pnc"]]) {
+    const r = read(s, t);
+    assert.ok(checkRecord(r.record).length + noted(r.record).length + r.unread.length > 0, s);
+  }
+});
+
+test("r4 clinical: anaemia after birth, mood, self-harm, pallor in pregnancy, blue lips", () => {
+  const sev = checkRecord({ type: "pnc", hb: 5 })[0]; assert.equal(sev.code, "pnc_severe_anaemia"); assert.equal(sev.urgent, true);
+  assert.deepEqual(flagCodes({ type: "pnc", hb: 7.5 }), ["pnc_low_hb"]);
+  assert.deepEqual(flagCodes({ type: "pnc", hb: 8 }), ["pnc_moderate_anaemia"]);
+  assert.deepEqual(flagCodes({ type: "pnc", hb: 12 }), []);
+  assert.deepEqual(flagCodes({ type: "pnc", symptoms: { dizziness: true } }), ["pnc_anaemia_signs"]);
+  assert.equal(checkRecord({ type: "pnc", symptoms: { low_mood: true } })[0].severity, "refer_now");
+  const sh = checkRecord(rec("khud ko nuksan pahunchane ki baat karti hai", "pnc"))[0];
+  assert.equal(sh.code, "pnc_self_harm"); assert.equal(sh.urgent, true); assert.match(sh.action, /14416/);
+  assert.equal(rec("jeena nahi chahti", "pnc").symptoms.self_harm, true);
+  assert.equal(rec("baby ko nuksan pahuncha degi aisa bolti hai", "pnc").symptoms.self_harm, true, "about the baby, still her own words");
+  assert.deepEqual(flagCodes({ type: "anc", symptoms: { pallor: true } }), ["anc_pallor"]);
+  const pb = checkRecord(rec("aankhon ki palak safed hai, saans phoolti hai", "anc"))[0]; assert.equal(pb.code, "anc_anaemia_breathless"); assert.equal(pb.urgent, true);
+  assert.equal(checkRecord({ type: "newborn", symptoms: { cyanosis: true } })[0].urgent, true);
+});
+
+test("r4: where / onTheWay / groupFlags", () => {
+  for (const r of RULE_TABLE) { assert.ok(r.where && r.where.length > 3, r.code); assert.ok(r.onTheWay === null || r.onTheWay.length > 10, r.code); assert.ok(!/\bANM\b(?! )/.test(r.action.replace(/nurse \(ANM\)/g, "")), `${r.code}: say "nurse (ANM)"`); }
+  const g = groupFlags(checkRecord({ type: "newborn", weight_g: 1700, feeding: "poor", symptoms: { chest_indrawing: true } }));
+  assert.equal(g.length, 1); assert.equal(g[0].where, "Newborn unit (SNCU) now, call 108"); assert.equal(g[0].urgent, true);
+  assert.match(g[0].onTheWay, /mother-and-child card \(MCP card\)/);
+  assert.deepEqual(g[0].flags.map((f) => f.code), ["nb_chest_indrawing", "nb_very_low_weight", "nb_sepsis_signs", "nb_poor_feeding"]);
+  const w = groupFlags(checkRecord({ type: "anc", hb: 9, symptoms: { vomiting: true } }));
+  assert.deepEqual(w.map((x) => [x.where, x.urgent, x.flags.length]), [["Iron tablets; tell the nurse (ANM)", false, 1], ["Tell the nurse (ANM) today", false, 1]]);
+  assert.deepEqual(groupFlags([]), []);
+});
+
+test("adv2 set: unpunctuated clinical English", () => {
+  const a = rec("day 3 visit kavitas baby wt 2.1kg today birth wt was 2.4kg baby doesnt feed well sucks for a minute and lets go temp 36.9C no chest indrawing", "newborn");
+  assert.deepEqual([a.name, a.weight_g, a.birth_weight_g, a.feeding, a.temp_c, a.symptoms.chest_indrawing], ["Kavita", 2100, 2400, "poor", 36.9, false]);
+  const b = rec("day 1 baby born at PHC premature at 34 wks birth weight 1.75kg mother has fever 101F baby temp 36.2C", "newborn");
+  assert.equal(b.temp_c, 36.2, "the mother's 101F is not the baby's");
+  assert.equal(rec("baby day 10 no complaints of loose motions or vomiting no blood in stool sucking well temp 37.1", "newborn").feeding, "good");
+  const c = rec("Lakshmi 32 wks c/o severe headache x 2 days denies blurring of vision", "anc");
+  assert.equal(c.symptoms.severe_headache, true); assert.equal(c.symptoms.blurred_vision, false);
+  assert.equal(rec("8th month, patient denies headache but complains of blurring of vision", "anc").symptoms.blurred_vision, true);
+  assert.equal(rec("39 wks labour pains since 15 hrs water not broken yet", "anc").symptoms.labour_pain, true);
+  assert.equal(rec("35 weeks c/o clear watery fluid leaking PV since morning wetting her clothes no pains", "anc").symptoms.leaking_fluid, true);
+  const d = rec("20 wks known diabetic on insulin Rh negative vomiting 4-5 times daily cant keep food down", "anc");
+  assert.equal(d.diabetes, true); assert.equal(d.symptoms.vomiting, true);
+  const e = rec("ANC visit Shabana 24 weeks BP 110/70 Hb 11.6 wt 61kg FM good no h/o fits in previous pregnancy no bleeding PV IFA 30 tabs given both TT done", "anc");
+  assert.deepEqual([e.fetal_movement, e.ifa_tablets, e.td_doses, e.symptoms.bleeding, e.symptoms.convulsions], ["normal", 30, 2, false, false]);
+  assert.equal(rec("Saroj 28 hafte khoon ki jaanch mein Hb 11.2 baby ki halchal theek pairon me sujan nahi", "anc").fetal_movement, "normal");
+  const f = rec("bachhe ko 38.2 bukhar hai maa ko koi taklif nahi maa ka BP 130/84 15va din", "pnc");
+  assert.equal(f.temp_c, undefined); assert.equal(f.day, 15); assert.deepEqual(flagCodes(f), []);
+  assert.equal(rec("day 20 she feels low crying all the time no interest in the baby. baby has jaundice", "pnc").symptoms.low_mood, true);
+  assert.equal(rec("Geeta 38 yrs G5 with 4 children already 36 weeks breech", "anc").age, 38);
+  assert.equal(rec("Pinki 17 saal ki hai pehla bacha paanchva mahina", "anc").previous_births, 0);
+  assert.equal(rec("9va mahina dard shuru ho gaye 5 ghante se bachha ulta hai", "anc").month, 9);
+  assert.equal(rec("Sushma baalantpanache 14 divas Hb 11.4 divsatun 2 pad", "pnc").day, 14);
+  assert.equal(rec("day 10 she fainted twice", "pnc").day, 10, "English 'she' is not Marathi 'she' (hundred)");
 });

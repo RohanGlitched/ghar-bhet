@@ -1,23 +1,23 @@
 {
  "set": "dev4",
- "run_at": "2026-11-27T09:46:16.447Z",
- "ruleset": "mohfw-2026.3",
+ "run_at": "2026-11-27T10:31:21.305Z",
+ "ruleset": "mohfw-2026.4",
  "typed": {
   "mode": "typed",
   "items": 51,
   "fields": {
-   "gold": 176,
-   "predicted": 176,
-   "correct": 176,
+   "gold": 177,
+   "predicted": 177,
+   "correct": 177,
    "recall": 100,
    "precision": 100
   },
   "type_detected": 100,
   "danger": {
-   "visits": 22,
-   "caught": 22,
+   "visits": 23,
+   "caught": 23,
    "caught_pct": 100,
-   "normal_visits": 29,
+   "normal_visits": 28,
    "false_alarms": 0,
    "false_alarm_pct": 0
   },
@@ -46,9 +46,9 @@
     "precision": 100
    },
    "symptoms": {
-    "gold": 25,
-    "hit": 25,
-    "pred": 25,
+    "gold": 26,
+    "hit": 26,
+    "pred": 26,
     "recall": 100,
     "precision": 100
    },
@@ -253,8 +253,8 @@
     "pct": 100
    },
    "watch-only": {
-    "n": 13,
-    "ok": 13,
+    "n": 12,
+    "ok": 12,
     "pct": 100
    },
    "multi-sign": {
@@ -351,18 +351,18 @@
   "mode": "auto",
   "items": 51,
   "fields": {
-   "gold": 176,
-   "predicted": 170,
-   "correct": 170,
+   "gold": 177,
+   "predicted": 171,
+   "correct": 171,
    "recall": 96.6,
    "precision": 100
   },
   "type_detected": 94.1,
   "danger": {
-   "visits": 22,
-   "caught": 22,
+   "visits": 23,
+   "caught": 23,
    "caught_pct": 100,
-   "normal_visits": 29,
+   "normal_visits": 28,
    "false_alarms": 0,
    "false_alarm_pct": 0
   },
@@ -372,7 +372,7 @@
    "correct": 35,
    "recall": 94.6,
    "precision": 97.2,
-   "refer_now_recall": 95.5
+   "refer_now_recall": 95.7
   },
   "exact_visits": 94.1,
   "by_field": {
@@ -391,9 +391,9 @@
     "precision": 100
    },
    "symptoms": {
-    "gold": 25,
-    "hit": 25,
-    "pred": 25,
+    "gold": 26,
+    "hit": 26,
+    "pred": 26,
     "recall": 100,
     "precision": 100
    },
@@ -598,9 +598,9 @@
     "pct": 93.8
    },
    "watch-only": {
-    "n": 13,
-    "ok": 12,
-    "pct": 92.3
+    "n": 12,
+    "ok": 11,
+    "pct": 91.7
    },
    "multi-sign": {
     "n": 1,

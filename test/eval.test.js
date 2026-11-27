@@ -11,7 +11,7 @@ const tmp = mkdtempSync(join(tmpdir(), "gharbhet-eval-"));
 const run = (...a) => execFileSync(process.execPath, ["eval/run.js", ...a, `--out=${tmp}`], { encoding: "utf8" });
 const result = (name) => JSON.parse(readFileSync(join(tmp, `${name}.json`), "utf8"));
 
-for (const set of ["dev", "dev2", "dev3", "dev4"]) {
+for (const set of ["dev", "dev2", "dev3", "dev4", "dev5"]) {
   test(`no regression on the ${set} set`, () => {
     run(set, "--publish");
     const { typed } = result(`eval-${set}`);
@@ -29,9 +29,9 @@ test("held-out set stays at or above run 2 (99.3% fields, every danger visit, no
   assert.equal(typed.danger.false_alarms, 0);
 });
 
-test("adversarial set stays at or above its run 2 (every danger visit, no false alarm)", () => {
-  run("adversarial", "--publish");
-  const { typed } = result("eval-adversarial");
+for (const set of ["adversarial", "adversarial2"]) test(`${set} set stays at or above its run 2 (every danger visit, no false alarm)`, () => {
+  run(set, "--publish");
+  const { typed } = result(`eval-${set}`);
   assert.ok(typed.fields.recall >= 98, `field recall ${typed.fields.recall}%`);
   assert.equal(typed.danger.caught, typed.danger.visits);
   assert.equal(typed.danger.false_alarms, 0);

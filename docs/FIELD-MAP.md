@@ -1,6 +1,6 @@
 # Field map: official visit forms vs the Ghar Bhet record
 
-Ghar Bhet fills the **danger-sign and vital fields** of a home visit from what the ASHA says. It does not yet fill every item of the official forms. This table lists the items on the forms, the record field that holds each one, and whether the reader captures it today (rule set `mohfw-2026.3`, 27 Nov 2026).
+Ghar Bhet fills the **danger-sign and vital fields** of a home visit from what the ASHA says. It does not yet fill every item of the official forms. This table lists the items on the forms, the record field that holds each one, and whether the reader captures it today (rule set `mohfw-2026.4`, 27 Nov 2026).
 
 Sources: Mother and Child Protection (MCP) card, NHM-hosted English card (see `RESEARCH.md` section 3); SSBSK Operational Guidelines 2026, official final of 06-08-2026: Form 2B and Form 3 (newborn, ASHA) pp.112-114, Form 4 (mother after birth) p.115; RCH register PW-2 (pregnancy visit). Page numbers are the printed ones.
 
@@ -25,7 +25,7 @@ Legend: **yes** = read from speech and checked by the rules where a rule exists;
 | Height | `height_cm` | yes (cm, or feet and inches; under 145 cm is high risk) |
 | Pulse rate | — | not yet |
 | Blood pressure | `bp_sys`, `bp_dia` | yes |
-| Pallor, oedema | `symptoms.swelling_face_hands`, `symptoms.swelling_feet` | oedema yes; pallor not yet in pregnancy |
+| Pallor, oedema | `symptoms.pallor`, `symptoms.swelling_face_hands`, `symptoms.swelling_feet` | yes (pale eyelids, palms or nails refer for an Hb test; with breathlessness, urgent) |
 | Temperature (fever) | `temp_c`, `temp_f`, `symptoms.fever`, `symptoms.high_fever` | yes |
 | Fundal height, lie/presentation | `malpresentation` | breech or transverse yes (refers at 36 weeks or later); fundal height not yet |
 | Foetal movements | `fetal_movement` | yes |
@@ -65,6 +65,7 @@ Legend: **yes** = read from speech and checked by the rules where a rule exists;
 | Skin pustules | `symptoms.skin_pustules` | yes |
 | Yellow discolouration / discharge from eyes | `symptoms.eye_discharge`, `symptoms.jaundice` | yes |
 | Pus or bleeding from umbilicus | `symptoms.cord_pus` | yes |
+| Central cyanosis, blue lips or tongue (SBA 2010 p.64) | `symptoms.cyanosis` | yes (urgent) |
 | HBNC 2014 sepsis checklist extras: weak cry, vomiting, distended abdomen | `symptoms.weak_cry`, `symptoms.vomiting`, `symptoms.abdominal_distension` | yes |
 | Diarrhoea (SSBSK CHO/ANM sick-newborn form) | `symptoms.diarrhoea` | yes |
 | Household profile, domestic violence, indoor pollution, heat counselling | — | not yet |
@@ -85,7 +86,7 @@ Legend: **yes** = read from speech and checked by the rules where a rule exists;
 | Difficulty in breathing | `symptoms.breathless` | yes |
 | Jaundice | `symptoms.jaundice` | yes |
 | Incontinence of stool and urine | `symptoms.incontinence` | yes |
-| Psychological distress (two questions) | `symptoms.low_mood` | yes as "low mood said"; the rule tells the ASHA to ask the two questions |
+| Psychological distress (two questions) | `symptoms.low_mood`, `symptoms.self_harm` | yes: low mood refers to the CHO/MO this week and tells the ASHA to ask the two questions; thoughts of harming herself or the baby are urgent (Tele-MANAS 14416) |
 | BP (MCP postpartum table; CHO manual: every postnatal visit) | `bp_sys`, `bp_dia` | yes |
 | Breasts engorged, nipples cracked (Form 3, MCP table) | `symptoms.breast_problem` | yes |
 | Episiotomy / tear | `symptoms.wound_infection` | infected stitches yes |

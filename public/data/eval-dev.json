@@ -1,16 +1,16 @@
 {
  "set": "dev",
- "run_at": "2026-11-27T09:46:15.739Z",
- "ruleset": "mohfw-2026.3",
+ "run_at": "2026-11-27T10:31:19.833Z",
+ "ruleset": "mohfw-2026.4",
  "typed": {
   "mode": "typed",
   "items": 120,
   "fields": {
-   "gold": 577,
-   "predicted": 577,
-   "correct": 577,
+   "gold": 583,
+   "predicted": 584,
+   "correct": 583,
    "recall": 100,
-   "precision": 100
+   "precision": 99.8
   },
   "type_detected": 100,
   "danger": {
@@ -22,14 +22,14 @@
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 174,
-   "predicted": 175,
-   "correct": 172,
+   "gold": 175,
+   "predicted": 177,
+   "correct": 173,
    "recall": 98.9,
-   "precision": 98.3,
-   "refer_now_recall": 98.5
+   "precision": 97.7,
+   "refer_now_recall": 98.6
   },
-  "exact_visits": 100,
+  "exact_visits": 99.2,
   "by_field": {
    "name": {
     "gold": 119,
@@ -60,11 +60,11 @@
     "precision": 100
    },
    "symptoms": {
-    "gold": 144,
-    "hit": 144,
-    "pred": 144,
+    "gold": 150,
+    "hit": 150,
+    "pred": 151,
     "recall": 100,
-    "precision": 100
+    "precision": 99.3
    },
    "resp_rate": {
     "gold": 10,
@@ -154,8 +154,8 @@
   "by_tag": {
    "filler": {
     "n": 16,
-    "ok": 16,
-    "pct": 100
+    "ok": 15,
+    "pct": 93.8
    },
    "numbers-in-words": {
     "n": 49,
@@ -174,18 +174,18 @@
    },
    "local-idiom": {
     "n": 47,
-    "ok": 47,
-    "pct": 100
+    "ok": 46,
+    "pct": 97.9
    },
    "multi-sign": {
     "n": 40,
-    "ok": 40,
-    "pct": 100
+    "ok": 39,
+    "pct": 97.5
    },
    "numbers-digits": {
     "n": 60,
-    "ok": 60,
-    "pct": 100
+    "ok": 59,
+    "pct": 98.3
    },
    "fahrenheit": {
     "n": 17,
@@ -199,8 +199,8 @@
    },
    "borderline": {
     "n": 29,
-    "ok": 29,
-    "pct": 100
+    "ok": 28,
+    "pct": 96.6
    },
    "normal-visit": {
     "n": 18,
@@ -256,8 +256,8 @@
   "by_lang": {
    "hi/devanagari": {
     "n": 42,
-    "ok": 42,
-    "pct": 100
+    "ok": 41,
+    "pct": 97.6
    },
    "hi/roman": {
     "n": 18,
@@ -304,6 +304,22 @@
     ]
    },
    {
+    "id": "anc-013",
+    "said": "दीदी, शांति को सुबह झटके आए थे, अभी बेहोश जैसी है। बीपी 160 बाय 110।",
+    "wrong": [
+     "symptoms.dizziness: extra true"
+    ],
+    "flags_want": [
+     "anc_convulsions",
+     "anc_severe_hypertension"
+    ],
+    "flags_got": [
+     "anc_severe_hypertension",
+     "anc_convulsions",
+     "anc_dizziness"
+    ]
+   },
+   {
     "id": "anc-019",
     "said": "Sonu ko tez bukhar hai, kaanp rahi hai, pet mein bahut dard bhi. 33 hafte.",
     "wrong": [],
@@ -335,30 +351,30 @@
   "mode": "auto",
   "items": 120,
   "fields": {
-   "gold": 577,
-   "predicted": 555,
-   "correct": 555,
-   "recall": 96.2,
-   "precision": 100
+   "gold": 583,
+   "predicted": 559,
+   "correct": 558,
+   "recall": 95.7,
+   "precision": 99.8
   },
   "type_detected": 89.2,
   "danger": {
    "visits": 90,
-   "caught": 86,
-   "caught_pct": 95.6,
+   "caught": 87,
+   "caught_pct": 96.7,
    "normal_visits": 30,
    "false_alarms": 1,
    "false_alarm_pct": 3.3
   },
   "flags": {
-   "gold": 174,
-   "predicted": 168,
-   "correct": 156,
+   "gold": 175,
+   "predicted": 171,
+   "correct": 157,
    "recall": 89.7,
-   "precision": 92.9,
-   "refer_now_recall": 88.1
+   "precision": 91.8,
+   "refer_now_recall": 87.7
   },
-  "exact_visits": 90,
+  "exact_visits": 89.2,
   "by_field": {
    "name": {
     "gold": 119,
@@ -389,11 +405,11 @@
     "precision": 100
    },
    "symptoms": {
-    "gold": 144,
-    "hit": 128,
-    "pred": 128,
-    "recall": 88.9,
-    "precision": 100
+    "gold": 150,
+    "hit": 131,
+    "pred": 132,
+    "recall": 87.3,
+    "precision": 99.2
    },
    "resp_rate": {
     "gold": 10,
@@ -483,8 +499,8 @@
   "by_tag": {
    "filler": {
     "n": 16,
-    "ok": 15,
-    "pct": 93.8
+    "ok": 14,
+    "pct": 87.5
    },
    "numbers-in-words": {
     "n": 49,
@@ -503,18 +519,18 @@
    },
    "local-idiom": {
     "n": 47,
-    "ok": 40,
-    "pct": 85.1
+    "ok": 39,
+    "pct": 83
    },
    "multi-sign": {
     "n": 40,
-    "ok": 37,
-    "pct": 92.5
+    "ok": 36,
+    "pct": 90
    },
    "numbers-digits": {
     "n": 60,
-    "ok": 53,
-    "pct": 88.3
+    "ok": 52,
+    "pct": 86.7
    },
    "fahrenheit": {
     "n": 17,
@@ -528,8 +544,8 @@
    },
    "borderline": {
     "n": 29,
-    "ok": 26,
-    "pct": 89.7
+    "ok": 25,
+    "pct": 86.2
    },
    "normal-visit": {
     "n": 18,
@@ -585,8 +601,8 @@
   "by_lang": {
    "hi/devanagari": {
     "n": 42,
-    "ok": 39,
-    "pct": 92.9
+    "ok": 38,
+    "pct": 90.5
    },
    "hi/roman": {
     "n": 18,
@@ -647,6 +663,22 @@
     ]
    },
    {
+    "id": "anc-013",
+    "said": "दीदी, शांति को सुबह झटके आए थे, अभी बेहोश जैसी है। बीपी 160 बाय 110।",
+    "wrong": [
+     "symptoms.dizziness: extra true"
+    ],
+    "flags_want": [
+     "anc_convulsions",
+     "anc_severe_hypertension"
+    ],
+    "flags_got": [
+     "anc_severe_hypertension",
+     "anc_convulsions",
+     "anc_dizziness"
+    ]
+   },
+   {
     "id": "anc-019",
     "said": "Sonu ko tez bukhar hai, kaanp rahi hai, pet mein bahut dard bhi. 33 hafte.",
     "wrong": [],
@@ -690,7 +722,8 @@
     "said": "बबली को 102 बुखार है, नीचे से बदबूदार पानी आ रहा है, सातवाँ दिन।",
     "wrong": [
      "temp_c: want 38.9 got undefined",
-     "symptoms.foul_discharge: want true got undefined"
+     "symptoms.foul_discharge: want true got undefined",
+     "symptoms.fever: want true got undefined"
     ],
     "flags_want": [
      "pnc_infection"
@@ -701,11 +734,12 @@
     "id": "pnc-006",
     "said": "स्तन में गांठ है और दर्द है, बुखार 100 डिग्री। सीमा, दसवाँ दिन।",
     "wrong": [
-     "symptoms.breast_problem: want true got undefined"
+     "symptoms.breast_problem: want true got undefined",
+     "symptoms.fever: want true got undefined"
     ],
     "flags_want": [
      "pnc_breast",
-     "pnc_low_fever"
+     "pnc_fever"
     ],
     "flags_got": [
      "nb_fever"
@@ -722,7 +756,9 @@
      "pnc_breathless",
      "pnc_swelling"
     ],
-    "flags_got": []
+    "flags_got": [
+     "nb_difficulty_breathing"
+    ]
    },
    {
     "id": "pnc-010",
@@ -767,7 +803,8 @@
     "id": "pnc-015",
     "said": "अंगात ताप आहे एकशे एक, आणि वास येणारा स्राव. पाचवा दिवस. माधवी.",
     "wrong": [
-     "symptoms.foul_discharge: want true got undefined"
+     "symptoms.foul_discharge: want true got undefined",
+     "symptoms.fever: want true got undefined"
     ],
     "flags_want": [
      "pnc_infection"

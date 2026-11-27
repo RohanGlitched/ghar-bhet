@@ -1,0 +1,179 @@
+adversarial2: 60 items (ruleset mohfw-2026.3)
+typed fields 80.3% recall / 91.6% precision · danger visits caught 36/39 (92.3%) · false alarms 9/21 · flags 74.2% recall, 87.8% precision · exact visits 38.3% · type 100%
+auto  fields 72.7% recall / 91.2% precision · danger visits caught 30/39 (76.9%) · false alarms 9/21 · flags 53.6% recall, 74.3% precision · exact visits 30% · type 71.7%
+
+adv2-001  day 3 visit kavitas baby wt 2.1kg today birth wt was 2.4kg baby doesnt feed well sucks for a minute and lets go temp 36.9C no chest indrawing
+   name: want "Kavita" got undefined
+   weight_g: want 2100 got 2400
+   birth_weight_g: want 2400 got undefined
+   feeding: want "poor" got "good"
+   flags want nb_at_risk_birth_weight,nb_low_weight,nb_poor_feeding got nb_low_weight
+
+adv2-002  Meena's baby 5 days old very sleepy hard to wake not taking the breast at all since morning cry is feeble RR 64/min temp 35.7C
+   feeding: want "none" got undefined
+   symptoms.lethargy: want true got undefined
+   symptoms.weak_cry: want true got false
+   flags want nb_fast_breathing,nb_hypothermia,nb_lethargy,nb_not_feeding,nb_sepsis_signs,nb_weak_cry got nb_fast_breathing,nb_hypothermia,nb_sepsis_signs
+
+adv2-003  Rekha's baby day 7, grunting with every breath, breathing looks like hard work and the chest is pulling in. RR 58. feeding ok
+   symptoms.difficulty_breathing: want true got undefined
+   flags want nb_chest_indrawing,nb_difficulty_breathing got nb_chest_indrawing
+
+adv2-005  Sunita's baby day 14 wt 3.05 kgs feeding well 10-12 times a day temp 36.8 cord fallen off no pus no jaundice no discharge from eyes passing urine 6-7 times
+   feeding: want "good" got "none"
+   symptoms.jaundice: want false got undefined
+   flags want - got nb_not_feeding
+
+adv2-006  baby day 10 no complaints of loose motions or vomiting no blood in stool sucking well temp 37.1
+   feeding: want "good" got "none"
+   flags want - got nb_not_feeding
+
+adv2-007  day 1 baby born at PHC premature at 34 wks birth weight 1.75kg mother has fever 101F baby temp 36.2C
+   temp_c: want 36.2 got 38.3
+   temp_f: extra 101
+   flags want nb_at_risk_birth_weight,nb_cool,nb_preterm got nb_fever,nb_at_risk_birth_weight,nb_preterm
+
+adv2-013  aaj baby ka 9va din hai vajan 1.65kg pet phula hua hai aur har feed ke baad ulti kar raha
+   day: want 9 got undefined
+   flags want nb_abdominal_distension,nb_very_low_weight,nb_vomiting got nb_very_low_weight,nb_abdominal_distension,nb_vomiting
+
+adv2-016  Rani ki beti 42va din wt 4.1 kg achhe se doodh pee rahi jhatke nahi saans 44 per minute potty me khoon nahi
+   day: want 42 got undefined
+   feeding: want "good" got "none"
+   flags want - got nb_not_feeding
+
+adv2-017  baby chhoone pe thanda lag raha haath pair thande taapman 35.4 doodh kam kheench raha dheela pad gaya hai
+   symptoms.lethargy: want true got undefined
+   flags want nb_hypothermia,nb_lethargy,nb_poor_feeding,nb_sepsis_signs got nb_hypothermia,nb_sepsis_signs,nb_poor_feeding
+
+adv2-018  bachhe ki nani ko piliya hai bachhe mein peelapan nahi 5va din janam pe vajan 2.6 kilo tha ab 2.55
+   day: want 5 got undefined
+   birth_weight_g: want 2600 got undefined
+   symptoms.jaundice: want false got undefined
+   flags want - got -
+
+adv2-019  shishu 2 din ka ghar pe hua tha patli potty mein khoon ki dhaar rona kamzor
+   symptoms.diarrhoea: want true got undefined
+   flags want nb_blood_stool,nb_diarrhoea,nb_weak_cry got nb_blood_stool,nb_weak_cry
+
+adv2-021  balache vajan 2.65 kilo aaj sahava divas dudh changla pito taap nahi
+   feeding: want "good" got "none"
+   flags want - got nb_not_feeding
+
+adv2-022  baal 3 divasache dudh ajibat pit nahi khup zopte uthavla tari uthat nahi ang garam lagte
+   symptoms.lethargy: want true got undefined
+   flags want nb_fever,nb_lethargy,nb_not_feeding,nb_sepsis_signs got nb_not_feeding,nb_fever,nb_sepsis_signs
+
+adv2-023  Swatiche baal 28 va divas vajan 3.6kg aakdi nahi kavil nahi dudh vyavasthit pito taapman 36.6
+   day: want 28 got undefined
+   feeding: want "good" got "none"
+   flags want - got nb_not_feeding
+
+adv2-024  baal 10 divsache 32 aathavdyat janmala shwas ghyayla tras hoto pot phuglay
+   weeks_at_birth: want 32 got undefined
+   preterm: want true got undefined
+   symptoms.abdominal_distension: want true got undefined
+   resp_rate: extra 32
+   flags want nb_abdominal_distension,nb_difficulty_breathing,nb_preterm got nb_difficulty_breathing
+
+adv2-025  Lakshmi 32 wks BP today one sixty over one ten Hb 9.2 albumin trace wt 58 kgs c/o severe headache x 2 days denies blurring of vision
+   symptoms.severe_headache: want true got false
+   flags want anc_headache_vision,anc_moderate_anaemia,anc_severe_hypertension got anc_severe_hypertension,anc_moderate_anaemia
+
+adv2-026  8th month, patient denies headache but complains of blurring of vision since morning, BP 146/94, urine albumin ++
+   month: want 8 got undefined
+   symptoms.blurred_vision: want true got false
+   flags want anc_headache_vision,anc_preeclampsia got anc_preeclampsia
+
+adv2-028  around 30 wks passing clots since last night with severe lower abdominal pain
+   symptoms.bleeding: want true got undefined
+   flags want anc_abdominal_pain,anc_bleeding got anc_abdominal_pain
+
+adv2-029  ANC visit Shabana 24 weeks BP 110/70 Hb 11.6 wt 61kg FM good no h/o fits in previous pregnancy no bleeding PV IFA 30 tabs given both TT done
+   fetal_movement: want "normal" got undefined
+   ifa_tablets: want 30 got undefined
+   td_doses: want 2 got undefined
+   symptoms.bleeding: want false got undefined
+   flags want - got -
+
+adv2-030  7th month temp 101.4 F with chills no burning while passing urine
+   month: want 7 got undefined
+   flags want anc_high_fever got anc_high_fever
+
+adv2-031  Geeta 38 yrs G5 with 4 children already 36 weeks breech on USG BP 124/80
+   age: want 38 got undefined
+   flags want anc_high_risk,anc_malpresentation got anc_malpresentation,anc_high_risk
+
+adv2-032  39 wks labour pains since 15 hrs water not broken yet
+   symptoms.labour_pain: want true got false
+   flags want anc_labour_prolonged got anc_labour_prolonged
+
+adv2-034  35 weeks c/o clear watery fluid leaking PV since morning wetting her clothes no pains
+   symptoms.leaking_fluid: want true got false
+   symptoms.labour_pain: want false got undefined
+   symptoms.abdominal_pain: extra false
+   flags want anc_leaking got -
+
+adv2-036  Pinki 17 saal ki hai pehla bacha paanchva mahina Hb 10.4 chehra aur haath sooje hue
+   previous_births: want 0 got undefined
+   flags want anc_high_risk,anc_mild_anaemia,anc_swelling got anc_swelling,anc_mild_anaemia,anc_high_risk
+
+adv2-038  Saroj 28 hafte BP 118/76 khoon ki jaanch mein Hb 11.2 baby ki halchal theek pairon me sujan nahi IFA 60 goli di
+   fetal_movement: want "normal" got "absent"
+   flags want - got anc_fetal_movement
+
+adv2-040  9va mahina dard shuru ho gaye 5 ghante se bachha ulta hai pichli baar operation se hua tha
+   month: want 9 got undefined
+   malpresentation: want true got undefined
+   symptoms.labour_pain: want true got undefined
+   flags want anc_high_risk,anc_labour,anc_malpresentation got anc_high_risk
+
+adv2-041  judwa bachhe hain saatva mahina peshab me jalan safed paani badbu wala saas ko bhi bukhar hai
+   symptoms.burning_urine: want true got undefined
+   symptoms.foul_discharge: want true got undefined
+   flags want anc_burning_urine,anc_discharge,anc_multiple_pregnancy got anc_multiple_pregnancy
+
+adv2-042  28 hafte me hi delivery wale dard uth rahe kamar se pet tak har 10 minute pe
+   symptoms.labour_pain: want true got undefined
+   symptoms.abdominal_pain: extra true
+   flags want anc_preterm_labour got anc_abdominal_pain
+
+adv2-044  garodar aahe 22 aathavde BP 112/72 vajan 54 kilo taap nahi raktasrav nahi balachi halchal changli
+   fetal_movement: want "normal" got "absent"
+   flags want - got anc_fetal_movement
+
+adv2-046  day 5 temp 38.6C foul smelling lochia lower abd pain
+   symptoms.abdominal_pain: want true got undefined
+   flags want pnc_abdominal_pain,pnc_infection got pnc_infection
+
+adv2-049  day 10 she fainted twice in the bathroom looks very pale Hb 6.4
+   day: want 10 got undefined
+   symptoms.dizziness: want true got undefined
+   flags want pnc_severe_anaemia got pnc_severe_anaemia
+
+adv2-052  day 20 she feels low crying all the time no interest in the baby. baby has jaundice
+   day: want 20 got undefined
+   symptoms.low_mood: want true got undefined
+   flags want pnc_low_mood got -
+
+adv2-053  delivery ko 4 din hue doodh utarne se stan bhaari aur dard nipple fat gaye temp 99.6F
+   symptoms.breast_problem: want true got undefined
+   flags want pnc_breast,pnc_low_fever got pnc_low_fever
+
+adv2-055  aaj 8va din peshab rok nahi paati apne aap nikal jaata hai aankhein peeli si lag rahi
+   day: want 8 got undefined
+   flags want pnc_incontinence,pnc_jaundice got pnc_jaundice,pnc_incontinence
+
+adv2-056  bachhe ko 38.2 bukhar hai maa ko koi taklif nahi maa ka BP 130/84 15va din
+   day: want 15 got undefined
+   temp_c: extra 38.2
+   symptoms.fever: extra false
+   flags want - got pnc_fever
+
+adv2-058  baalantpanantar pachva divas taap 102.6 F laghvila jalajal hote
+   symptoms.burning_urine: want true got undefined
+   flags want pnc_high_fever,pnc_uti got pnc_high_fever
+
+adv2-059  Sushma baalantpanache 14 divas BP 120/80 Hb 11.4 divsatun 2 pad taap nahi
+   day: want 14 got 11
+   flags want - got -

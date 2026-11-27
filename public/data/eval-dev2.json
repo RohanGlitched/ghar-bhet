@@ -1,14 +1,14 @@
 {
  "set": "dev2",
- "run_at": "2026-11-27T09:46:15.973Z",
- "ruleset": "mohfw-2026.3",
+ "run_at": "2026-11-27T10:31:20.840Z",
+ "ruleset": "mohfw-2026.4",
  "typed": {
   "mode": "typed",
   "items": 80,
   "fields": {
-   "gold": 389,
-   "predicted": 385,
-   "correct": 385,
+   "gold": 392,
+   "predicted": 388,
+   "correct": 388,
    "recall": 99,
    "precision": 100
   },
@@ -60,10 +60,10 @@
     "precision": 100
    },
    "symptoms": {
-    "gold": 106,
-    "hit": 102,
-    "pred": 102,
-    "recall": 96.2,
+    "gold": 109,
+    "hit": 105,
+    "pred": 105,
+    "recall": 96.3,
     "precision": 100
    },
    "resp_rate": {
@@ -342,10 +342,10 @@
   "mode": "auto",
   "items": 80,
   "fields": {
-   "gold": 389,
-   "predicted": 373,
-   "correct": 373,
-   "recall": 95.9,
+   "gold": 392,
+   "predicted": 375,
+   "correct": 375,
+   "recall": 95.7,
    "precision": 100
   },
   "type_detected": 91.3,
@@ -396,10 +396,10 @@
     "precision": 100
    },
    "symptoms": {
-    "gold": 106,
-    "hit": 95,
-    "pred": 95,
-    "recall": 89.6,
+    "gold": 109,
+    "hit": 97,
+    "pred": 97,
+    "recall": 89,
     "precision": 100
    },
    "resp_rate": {
@@ -731,7 +731,8 @@
     "id": "d2-pnc-013",
     "said": "Savitri, bara divas, taap 39 degree, pot khup dukhta",
     "wrong": [
-     "symptoms.abdominal_pain: want true got undefined"
+     "symptoms.abdominal_pain: want true got undefined",
+     "symptoms.fever: want true got undefined"
     ],
     "flags_want": [
      "pnc_abdominal_pain",

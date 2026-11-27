@@ -1,0 +1,219 @@
+adversarial: 100 items (ruleset mohfw-2026.3)
+typed fields 88.3% recall / 96% precision · danger visits caught 50/59 (84.7%) · false alarms 7/41 · flags 81.8% recall, 89.2% precision · exact visits 51% · type 100%
+auto  fields 85.2% recall / 95.8% precision · danger visits caught 48/59 (81.4%) · false alarms 7/41 · flags 71.9% recall, 84.5% precision · exact visits 47% · type 91%
+
+adv-001  haan didi, Rekha ka baby hai, paanchva din. Subah se do baar aisa hua ki poora badan akad jaata hai aur aankhen upar chadh jaati hain, ek do minute. Doodh theek pee raha tha kal tak.
+   feeding: extra "good"
+   flags want nb_convulsions got nb_convulsions
+
+adv-003  मीना के बच्चे का तीसरा दिन है जी। मीना को कल रात से बुखार है, बच्चा ठीक है, दूध अच्छे से पी रहा है, वजन दो किलो नौ सौ।
+   symptoms.hot_to_touch: extra true
+   flags want - got nb_fever
+
+adv-004  Sunaina ki beti, das din ki. Rona bahut dheema hai, doodh thoda sa peeke chhod deti hai, aur badan garam lag raha hai chhoone mein.
+   symptoms.weak_cry: want true got undefined
+   flags want nb_fever,nb_poor_feeding,nb_sepsis_signs,nb_weak_cry got nb_fever,nb_sepsis_signs,nb_poor_feeding
+
+adv-007  Ashwini chi mulgi kaal janmali, aaj pahila divas. Tichya dolyat ani angavar pivlepana disto. Baki dudh nit pitey.
+   symptoms.jaundice: want true got undefined
+   flags want nb_jaundice_early got -
+
+adv-010  Champa ka ladka, chautha din. Pasli chal rahi hai bahut, ginti ki toh ek minute mein chhiyasath saans. Bachcha sust pada hai, uthaane pe bhi aankh nahi kholta.
+   resp_rate: want 66 got undefined
+   flags want nb_chest_indrawing,nb_fast_breathing,nb_lethargy,nb_sepsis_signs got nb_chest_indrawing,nb_lethargy,nb_sepsis_signs
+
+adv-015  Pallavi chya balacha tisra divas, vajan paune don kilo, dudh kami pitay, radna halu ahe.
+   symptoms.weak_cry: want true got undefined
+   flags want nb_poor_feeding,nb_sepsis_signs,nb_very_low_weight,nb_weak_cry got nb_very_low_weight,nb_poor_feeding
+
+adv-016  Didi jaldi, Laxmi ka bachcha chhathe din ka hai, subah se bilkul nahi hil raha, doodh bhi nahi pee raha bilkul, honth neele se lag rahe.
+   day: want 6 got undefined
+   flags want nb_lethargy,nb_not_feeding,nb_sepsis_signs got nb_not_feeding,nb_lethargy,nb_sepsis_signs
+
+adv-017  Day 3 visit for baby of Geeta. Weight 3.05 kg, temperature 36.8 degree Celsius. Sucking well. No jaundice, no cord bleeding, no eye discharge, no pustules on skin.
+   name: want "Geeta" got undefined
+   symptoms.skin_pustules: want false got undefined
+   flags want - got -
+
+adv-018  Sapna ka baby, aaj das din poore. Vajan pandrah sau gram hai, janam ke samay satrah sau tha, kam ho gaya. Doodh kam pee raha hai.
+   birth_weight_g: want 1700 got undefined
+   flags want nb_at_risk_birth_weight,nb_poor_feeding,nb_very_low_weight got nb_very_low_weight,nb_poor_feeding
+
+adv-022  Baby of Nisha, 12 days old. Loose motions since two days, around 8 times a day, and today I saw streaks of blood in the stool. Feeding is less.
+   day: want 12 got 2
+   flags want nb_blood_stool,nb_diarrhoea,nb_poor_feeding got nb_blood_stool,nb_poor_feeding,nb_diarrhoea
+
+adv-023  Jyoti chya balachi bhet, pachva divas. Jyotila khup taap ahe ani dokedukhi, pan bal theek ahe, dudh pita, vajan don hajar charshe gram.
+   symptoms.hot_to_touch: extra true
+   flags want nb_low_weight got nb_fever,nb_low_weight
+
+adv-024  Manisha ki beti ka teesra hafta chal raha, aaj ikkisva din. Aankh se peela chipchipa paani aa raha hai aur pet pe chhote chhote pus wale daane hain.
+   symptoms.eye_discharge: want true got undefined
+   symptoms.skin_pustules: want true got undefined
+   symptoms.jaundice: extra true
+   flags want nb_eye_discharge,nb_skin_pustules got nb_jaundice_late
+
+adv-025  सुमन का बच्चा तेरह दिन का, हर बार दूध पीने के बाद उल्टी कर देता है, रोना भी बहुत धीमा है, और बदन ठंडा लग रहा है।
+   symptoms.weak_cry: want true got undefined
+   flags want nb_hypothermia,nb_sepsis_signs,nb_vomiting,nb_weak_cry got nb_hypothermia,nb_sepsis_signs,nb_vomiting
+
+adv-026  Khushi ka baby, day 7. Maine poocha jhatke aate hain? Bola nahi. Saans lene mein koi takleef nahi. Weight 3 kilo 100 gram. Doodh achha pee raha.
+   symptoms.convulsions: want false got true
+   flags want - got nb_convulsions
+
+adv-027  Kavita ka baby, aath din. Kavita ki behen ko kal mirgi ka daura pada tha, usko hospital le gaye. Baby ko kuch nahi, doodh peeta hai, vajan dhai kilo.
+   feeding: want "good" got undefined
+   flags want - got -
+
+adv-030  Baby of Archana, day 5. Mother says baby is struggling to breathe, there is a grunting sound and the nostrils are flaring. Respiratory rate 52.
+   name: want "Archana" got "Says"
+   flags want nb_difficulty_breathing got nb_difficulty_breathing
+
+adv-031  Ho tai, Dhanashri cha bal, ekvisava divas. Vajan teen kilo teen she gram. Dudh changla pita, kavil nahi, taap nahi, julab nahi. Sagla barobar.
+   day: want 21 got undefined
+   weight_g: want 3300 got 3000
+   symptoms.diarrhoea: want false got undefined
+   flags want - got -
+
+adv-033  Phoolmati ka bachcha, ghar pe paida hua, aaj doosra din. Ek kilo saadhe saat sau gram vajan. Badan thanda hai, doodh kam kheench raha.
+   weight_g: want 1750 got undefined
+   flags want nb_hypothermia,nb_poor_feeding,nb_sepsis_signs,nb_very_low_weight got nb_hypothermia,nb_sepsis_signs,nb_poor_feeding
+
+adv-034  सरिता का बेबी, डे सेवन। वेट दो पॉइंट दो किलो, टेम्परेचर नाइंटी सेवन पॉइंट फ़ाइव फ़ारेनहाइट। फीडिंग ठीक है, नो वोमिटिंग।
+   day: want 7 got undefined
+   temp_c: want 36.4 got undefined
+   temp_f: want 97.5 got undefined
+   feeding: want "good" got undefined
+   symptoms.vomiting: want false got undefined
+   flags want nb_cool,nb_low_weight got nb_low_weight
+
+adv-035  Pinki ka naya baby, tees din ka. Uski badi beti ko teen din se bukhar aur ulti hai. Naye baby ko koi dikkat nahi, doodh pee raha, vajan saadhe teen kilo.
+   symptoms.hot_to_touch: extra true
+   symptoms.vomiting: extra true
+   flags want - got nb_fever,nb_sepsis_signs,nb_vomiting
+
+adv-040  नमस्ते दीदी, मैं आज रानी के घर गई थी, उसका बच्चा बाईस दिन का है। रानी की सास कह रही थी कि बच्चा रात भर रोता है, पर रोना तेज़ है, कमज़ोर नहीं। दो दिन से पतले दस्त हो रहे हैं, दिन में छह सात बार। दूध पी रहा है ठीक। वजन तीन किलो दो सौ। उल्टी नहीं है।
+   symptoms.weak_cry: want false got undefined
+   flags want nb_diarrhoea got nb_diarrhoea
+
+adv-045  Seema ka paanchva mahina. Pichhli baar Hb 6.9 tha, iron ki goli kha rahi, ab aaj 9.4 aaya. Tees goliyan aur di.
+   ifa_tablets: want 30 got undefined
+   flags want anc_moderate_anaemia got anc_moderate_anaemia
+
+adv-047  ANC visit, Priti, 28 weeks. Patient denies bleeding, leaking, headache or blurring of vision. Fetal movements present and normal. Weight 58 kg. BP 118/76.
+   fetal_movement: want "normal" got undefined
+   flags want - got -
+
+adv-049  Bhavna ka nauva mahina chal raha hai, subah se neeche se paani ja raha hai, kapde geele ho gaye. Dard abhi halka hai, labour wala nahi.
+   symptoms.labour_pain: want false got undefined
+   symptoms.abdominal_pain: extra true
+   flags want anc_leaking got anc_leaking,anc_abdominal_pain
+
+adv-052  सोनाली, वय सतरा वर्षे, सातवा महिना, सोनोग्राफीत जुळी मुलं आहेत असं सांगितलं.
+   name: want "Sonali" got "Varshe"
+   flags want anc_high_risk,anc_multiple_pregnancy got anc_multiple_pregnancy,anc_high_risk
+
+adv-054  Meera, umar chhattis saal, lambai ek sau chawalis cm, pehli baar pregnant, teesra mahina. Koi taklif nahi.
+   height_cm: want 144 got undefined
+   flags want anc_high_risk got anc_high_risk
+
+adv-055  Called from home: Neha, full term, labour pains for 12 hours now, water bag not burst yet, no bleeding.
+   name: want "Neha" got "From"
+   flags want anc_labour got anc_labour
+
+adv-057  Vaishali, satva mahina. Thoda thoda raktasrav hotoy, lal daag kapdyavar. Pani jat nahi.
+   symptoms.bleeding: want true got undefined
+   flags want anc_bleeding got -
+
+adv-058  Asha naam ki mahila hai, chhatha mahina. Uska khoon nikala tha jaanch ke liye, report abhi nahi aayi. Koi bleeding nahi hai. Vajan 52 kilo.
+   name: want "Asha" got "Mahila"
+   flags want - got -
+
+adv-060  Pregnant woman Farzana, 22 weeks, complains of burning while passing urine and white discharge with bad smell. No fever.
+   symptoms.burning_urine: want true got undefined
+   flags want anc_burning_urine,anc_discharge got anc_discharge
+
+adv-061  Rinki ka teesra mahina, din mein chaar paanch baar ulti ho rahi, khana nahi tik raha. Halka sa sir dard rehta hai, aankhon se saaf dikhta hai.
+   symptoms.blurred_vision: want false got undefined
+   flags want anc_vomiting got anc_vomiting
+
+adv-062  शीतलच्या मागच्या बाळंतपणात तिला आकडी आली होती. आता पाचवा महिना, तिच्या बहिणीला पण फिट येतात, पण शीतलला यावेळी काही त्रास नाही.
+   symptoms.convulsions: extra true
+   flags want anc_high_risk got anc_convulsions,anc_high_risk
+
+adv-064  Divya, 26 weeks, Hb ten point five, given 60 IFA tablets, BP 112/72. Feels a bit giddy sometimes.
+   symptoms.dizziness: want true got undefined
+   flags want anc_dizziness,anc_mild_anaemia got anc_mild_anaemia
+
+adv-066  Manda, aathva mahina, BP ekshe saath bay navvad, albumin nahi. Dokedukhi nahi.
+   bp_sys: want 160 got undefined
+   bp_dia: want 90 got undefined
+   flags want anc_severe_hypertension got -
+
+adv-067  Shabnam, chaubees hafte, yaani chhatha mahina samjho. Peshaab mein jalan hai. Baaki theek.
+   weeks: want 24 got undefined
+   symptoms.burning_urine: want true got undefined
+   flags want anc_burning_urine got -
+
+adv-074  तारा को अभी दौरा पड़ा, दाँत भींच गए, मुँह से झाग, नौवाँ महीना है, जल्दी गाड़ी भेजो।
+   name: want "Tara" got "Jhag"
+   flags want anc_convulsions got anc_convulsions
+
+adv-078  PNC day 7, Sunanda. Pads 2 per day, temperature 98.2 F, BP 118/78. Breasts soft, no pain. No foul smell.
+   symptoms.breast_problem: want false got true
+   flags want - got pnc_breast
+
+adv-081  Jayashri, PNC day 10, thermometer var 38.9 Celsius, urine pass kartana burning hote.
+   symptoms.burning_urine: want true got undefined
+   flags want pnc_uti got pnc_fever
+
+adv-082  निर्मला की डिलीवरी को ग्यारह दिन हुए। बच्चे को पीलिया है, आँखें पीली हैं। निर्मला ठीक है, दिन में दो पैड, बुखार नहीं।
+   symptoms.jaundice: extra true
+   flags want - got pnc_jaundice
+
+adv-084  Bindu ka paanchva din, BP ek sau bayalis by atthasi. Sir dard nahi, saans theek.
+   bp_sys: want 142 got undefined
+   bp_dia: want 88 got undefined
+   symptoms.breathless: want false got undefined
+   flags want pnc_hypertension got -
+
+adv-085  सुवर्णा, बाळंतपणानंतर पंधरावा दिवस, हिमोग्लोबिन सहा पॉइंट आठ, चेहरा पांढरा पडलाय.
+   symptoms.pallor: want true got undefined
+   flags want pnc_severe_anaemia got pnc_severe_anaemia
+
+adv-086  Didi, Sushila ko delivery ke doosre din aankhen upar chadh gayi aur haath pair akad gaye, do minute tak, ab behosh si hai.
+   day: want 2 got undefined
+   symptoms.convulsions: want true got undefined
+   flags want pnc_convulsions got -
+
+adv-087  Mother Leela, day 9 after delivery. Family says she is talking irrelevant, not making sense since morning. No fits. No fever.
+   symptoms.abnormal_speech: want true got undefined
+   flags want pnc_neuro got -
+
+adv-090  Kamal tai, bali zalyavar vis divas, laghvi thambavta yet nahi, kapde ole hotat. Taap nahi.
+   day: want 20 got undefined
+   symptoms.incontinence: want true got undefined
+   flags want pnc_incontinence got -
+
+adv-091  Haan ji didi, main Saroj ke ghar gayi thi aaj, unki delivery ko satrah din ho gaye. Woh theek hai, khana kha rahi hai, din mein ek do pad, bukhar nahi hai, pet mein dard nahi, peshab theek hai jalan nahi. Unki jethani ko bukhar tha woh alag baat hai. BP 112 by 70 tha jo ANM ne naapa.
+   symptoms.burning_urine: want false got undefined
+   flags want - got -
+
+adv-096  प्रिया, PNC डे फ़ोर्टी, बीपी वन थर्टी बाय एटी फ़ाइव, एचबी टेन पॉइंट टू।
+   day: want 40 got undefined
+   bp_sys: want 130 got undefined
+   bp_dia: want 85 got undefined
+   hb: want 10.2 got undefined
+   flags want - got -
+
+adv-098  राधा, डिलीवरी को नौ दिन, कल चक्कर आए थे, आज ठीक है, चक्कर नहीं। एक दिन में चार पैड।
+   day: want 9 got 1
+   flags want - got -
+
+adv-099  Yogita, dusra divas, khup raktasrav hotoy, gaadi bharun, hemoglobin aath.
+   symptoms.heavy_bleeding: want true got undefined
+   flags want pnc_heavy_bleeding got -
+
+adv-100  Day 42 PNC for Ritu. No complaints of fever, bleeding, breast pain or burning urine. BP 110/70.
+   symptoms.heavy_bleeding: want false got undefined
+   flags want - got -

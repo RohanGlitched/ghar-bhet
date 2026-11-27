@@ -11,7 +11,7 @@ const tmp = mkdtempSync(join(tmpdir(), "gharbhet-eval-"));
 const run = (...a) => execFileSync(process.execPath, ["eval/run.js", ...a, `--out=${tmp}`], { encoding: "utf8" });
 const result = (name) => JSON.parse(readFileSync(join(tmp, `${name}.json`), "utf8"));
 
-for (const set of ["dev", "dev2", "dev3"]) {
+for (const set of ["dev", "dev2", "dev3", "dev4"]) {
   test(`no regression on the ${set} set`, () => {
     run(set, "--publish");
     const { typed } = result(`eval-${set}`);
@@ -29,10 +29,18 @@ test("held-out set stays at or above run 2 (99.3% fields, every danger visit, no
   assert.equal(typed.danger.false_alarms, 0);
 });
 
+test("adversarial set stays at or above its run 2 (every danger visit, no false alarm)", () => {
+  run("adversarial", "--publish");
+  const { typed } = result("eval-adversarial");
+  assert.ok(typed.fields.recall >= 98, `field recall ${typed.fields.recall}%`);
+  assert.equal(typed.danger.caught, typed.danger.visits);
+  assert.equal(typed.danger.false_alarms, 0);
+});
+
 test("clinical vignettes: no visit that the guidelines refer is missed", () => {
   run("vignettes", "--publish");
   const r = result("eval-vignettes");
-  assert.equal(r.items, 30);
+  assert.equal(r.items, 40);
   assert.equal(r.refer.sensitivity, 100);
   assert.ok(r.refer.specificity >= 80, `specificity ${r.refer.specificity}%`);
 });

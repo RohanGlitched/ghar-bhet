@@ -1,16 +1,16 @@
 {
  "set": "dev2",
- "run_at": "2026-11-27T08:53:10.416Z",
- "ruleset": "mohfw-2026.2",
+ "run_at": "2026-11-27T09:46:15.973Z",
+ "ruleset": "mohfw-2026.3",
  "typed": {
   "mode": "typed",
   "items": 80,
   "fields": {
    "gold": 389,
-   "predicted": 386,
+   "predicted": 385,
    "correct": 385,
    "recall": 99,
-   "precision": 99.7
+   "precision": 100
   },
   "type_detected": 100,
   "danger": {
@@ -22,21 +22,21 @@
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 108,
-   "predicted": 107,
-   "correct": 107,
+   "gold": 109,
+   "predicted": 108,
+   "correct": 108,
    "recall": 99.1,
    "precision": 100,
    "refer_now_recall": 98.8
   },
-  "exact_visits": 93.8,
+  "exact_visits": 95,
   "by_field": {
    "name": {
     "gold": 71,
     "hit": 71,
-    "pred": 72,
+    "pred": 71,
     "recall": 100,
-    "precision": 98.6
+    "precision": 100
    },
    "day": {
     "gold": 47,
@@ -159,13 +159,13 @@
    },
    "numbers-in-words": {
     "n": 72,
-    "ok": 67,
-    "pct": 93.1
+    "ok": 68,
+    "pct": 94.4
    },
    "negation": {
     "n": 28,
-    "ok": 24,
-    "pct": 85.7
+    "ok": 25,
+    "pct": 89.3
    },
    "filler": {
     "n": 6,
@@ -184,13 +184,13 @@
    },
    "no-name": {
     "n": 9,
-    "ok": 8,
-    "pct": 88.9
+    "ok": 9,
+    "pct": 100
    },
    "normal-visit": {
     "n": 19,
-    "ok": 16,
-    "pct": 84.2
+    "ok": 17,
+    "pct": 89.5
    },
    "celsius": {
     "n": 11,
@@ -266,8 +266,8 @@
    },
    "mr/devanagari": {
     "n": 20,
-    "ok": 17,
-    "pct": 85
+    "ok": 18,
+    "pct": 90
    },
    "mr/roman": {
     "n": 4,
@@ -310,15 +310,6 @@
     "flags_got": []
    },
    {
-    "id": "d2-nb-023",
-    "said": "चौदावा दिवस, बाळ छान आहे, दूध पितं, वजन तीन किलो दोनशे, कावीळ नाही, नाळेला पू नाही.",
-    "wrong": [
-     "name: extra \"Nale\""
-    ],
-    "flags_want": [],
-    "flags_got": []
-   },
-   {
     "id": "d2-pnc-010",
     "said": "तापमान अडतीस पॉइंट नऊ, पांढरं पाणी जातंय पण वास नाही, तिसरा दिवस, रेखा.",
     "wrong": [
@@ -352,36 +343,36 @@
   "items": 80,
   "fields": {
    "gold": 389,
-   "predicted": 374,
+   "predicted": 373,
    "correct": 373,
    "recall": 95.9,
-   "precision": 99.7
+   "precision": 100
   },
   "type_detected": 91.3,
   "danger": {
    "visits": 50,
-   "caught": 49,
-   "caught_pct": 98,
+   "caught": 48,
+   "caught_pct": 96,
    "normal_visits": 30,
    "false_alarms": 0,
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 108,
-   "predicted": 100,
-   "correct": 96,
-   "recall": 88.9,
+   "gold": 109,
+   "predicted": 101,
+   "correct": 97,
+   "recall": 89,
    "precision": 96,
-   "refer_now_recall": 90.2
+   "refer_now_recall": 89
   },
-  "exact_visits": 87.5,
+  "exact_visits": 88.8,
   "by_field": {
    "name": {
     "gold": 71,
     "hit": 71,
-    "pred": 72,
+    "pred": 71,
     "recall": 100,
-    "precision": 98.6
+    "precision": 100
    },
    "day": {
     "gold": 47,
@@ -504,13 +495,13 @@
    },
    "numbers-in-words": {
     "n": 72,
-    "ok": 62,
-    "pct": 86.1
+    "ok": 63,
+    "pct": 87.5
    },
    "negation": {
     "n": 28,
-    "ok": 23,
-    "pct": 82.1
+    "ok": 24,
+    "pct": 85.7
    },
    "filler": {
     "n": 6,
@@ -529,13 +520,13 @@
    },
    "no-name": {
     "n": 9,
-    "ok": 6,
-    "pct": 66.7
+    "ok": 7,
+    "pct": 77.8
    },
    "normal-visit": {
     "n": 19,
-    "ok": 15,
-    "pct": 78.9
+    "ok": 16,
+    "pct": 84.2
    },
    "celsius": {
     "n": 11,
@@ -544,8 +535,8 @@
    },
    "watch-only": {
     "n": 11,
-    "ok": 9,
-    "pct": 81.8
+    "ok": 10,
+    "pct": 90.9
    },
    "multi-sign": {
     "n": 26,
@@ -611,8 +602,8 @@
    },
    "mr/devanagari": {
     "n": 20,
-    "ok": 16,
-    "pct": 80
+    "ok": 17,
+    "pct": 85
    },
    "mr/roman": {
     "n": 4,
@@ -668,15 +659,6 @@
      "nb_sepsis_signs",
      "nb_weak_cry"
     ],
-    "flags_got": []
-   },
-   {
-    "id": "d2-nb-023",
-    "said": "चौदावा दिवस, बाळ छान आहे, दूध पितं, वजन तीन किलो दोनशे, कावीळ नाही, नाळेला पू नाही.",
-    "wrong": [
-     "name: extra \"Nale\""
-    ],
-    "flags_want": [],
     "flags_got": []
    },
    {

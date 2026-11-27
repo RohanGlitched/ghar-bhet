@@ -1,0 +1,2387 @@
+{
+ "set": "adversarial",
+ "run_at": "2026-11-27T09:39:52.992Z",
+ "ruleset": "mohfw-2026.3",
+ "typed": {
+  "mode": "typed",
+  "items": 100,
+  "fields": {
+   "gold": 514,
+   "predicted": 473,
+   "correct": 454,
+   "recall": 88.3,
+   "precision": 96
+  },
+  "type_detected": 100,
+  "danger": {
+   "visits": 59,
+   "caught": 50,
+   "caught_pct": 84.7,
+   "normal_visits": 41,
+   "false_alarms": 7,
+   "false_alarm_pct": 17.1
+  },
+  "flags": {
+   "gold": 121,
+   "predicted": 111,
+   "correct": 99,
+   "recall": 81.8,
+   "precision": 89.2,
+   "refer_now_recall": 81.8
+  },
+  "exact_visits": 51,
+  "by_field": {
+   "name": {
+    "gold": 100,
+    "hit": 94,
+    "pred": 99,
+    "recall": 94,
+    "precision": 94.9
+   },
+   "day": {
+    "gold": 65,
+    "hit": 57,
+    "pred": 59,
+    "recall": 87.7,
+    "precision": 96.6
+   },
+   "symptoms": {
+    "gold": 142,
+    "hit": 115,
+    "pred": 125,
+    "recall": 81,
+    "precision": 92
+   },
+   "feeding": {
+    "gold": 31,
+    "hit": 29,
+    "pred": 30,
+    "recall": 93.5,
+    "precision": 96.7
+   },
+   "weight_g": {
+    "gold": 22,
+    "hit": 20,
+    "pred": 21,
+    "recall": 90.9,
+    "precision": 95.2
+   },
+   "temp_c": {
+    "gold": 14,
+    "hit": 13,
+    "pred": 13,
+    "recall": 92.9,
+    "precision": 100
+   },
+   "temp_f": {
+    "gold": 10,
+    "hit": 9,
+    "pred": 9,
+    "recall": 90,
+    "precision": 100
+   },
+   "resp_rate": {
+    "gold": 6,
+    "hit": 5,
+    "pred": 5,
+    "recall": 83.3,
+    "precision": 100
+   },
+   "birth_weight_g": {
+    "gold": 2,
+    "hit": 1,
+    "pred": 1,
+    "recall": 50,
+    "precision": 100
+   },
+   "month": {
+    "gold": 24,
+    "hit": 24,
+    "pred": 24,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 21,
+    "hit": 18,
+    "pred": 18,
+    "recall": 85.7,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 21,
+    "hit": 18,
+    "pred": 18,
+    "recall": 85.7,
+    "precision": 100
+   },
+   "albumin": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 10,
+    "hit": 9,
+    "pred": 9,
+    "recall": 90,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 10,
+    "hit": 9,
+    "pred": 9,
+    "recall": 90,
+    "precision": 100
+   },
+   "ifa_tablets": {
+    "gold": 3,
+    "hit": 2,
+    "pred": 2,
+    "recall": 66.7,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 5,
+    "hit": 4,
+    "pred": 4,
+    "recall": 80,
+    "precision": 100
+   },
+   "weight_kg": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "age": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "twins": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_caesarean": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "height_cm": {
+    "gold": 2,
+    "hit": 1,
+    "pred": 1,
+    "recall": 50,
+    "precision": 100
+   },
+   "labour_hours": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_eclampsia": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_pph": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 8,
+    "hit": 8,
+    "pred": 8,
+    "recall": 100,
+    "precision": 100
+   }
+  },
+  "by_tag": {
+   "colloquial-danger": {
+    "n": 25,
+    "ok": 12,
+    "pct": 48
+   },
+   "filler": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "past-value": {
+    "n": 11,
+    "ok": 6,
+    "pct": 54.5
+   },
+   "normal": {
+    "n": 28,
+    "ok": 13,
+    "pct": 46.4
+   },
+   "negation": {
+    "n": 24,
+    "ok": 13,
+    "pct": 54.2
+   },
+   "numbers-in-words": {
+    "n": 26,
+    "ok": 13,
+    "pct": 50
+   },
+   "normal-visit": {
+    "n": 27,
+    "ok": 13,
+    "pct": 48.1
+   },
+   "wrong-subject": {
+    "n": 10,
+    "ok": 3,
+    "pct": 30
+   },
+   "sepsis-count": {
+    "n": 8,
+    "ok": 2,
+    "pct": 25
+   },
+   "clinical-english": {
+    "n": 14,
+    "ok": 6,
+    "pct": 42.9
+   },
+   "fahrenheit": {
+    "n": 8,
+    "ok": 6,
+    "pct": 75
+   },
+   "comma-number": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "watch-only": {
+    "n": 14,
+    "ok": 6,
+    "pct": 42.9
+   },
+   "name-like-word": {
+    "n": 14,
+    "ok": 7,
+    "pct": 50
+   },
+   "day-boundary": {
+    "n": 2,
+    "ok": 1,
+    "pct": 50
+   },
+   "boundary": {
+    "n": 20,
+    "ok": 14,
+    "pct": 70
+   },
+   "fractions": {
+    "n": 11,
+    "ok": 7,
+    "pct": 63.6
+   },
+   "self-correction": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "hinglish": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "not-in-spec": {
+    "n": 4,
+    "ok": 0,
+    "pct": 0
+   },
+   "negated-list": {
+    "n": 6,
+    "ok": 2,
+    "pct": 33.3
+   },
+   "celsius": {
+    "n": 4,
+    "ok": 2,
+    "pct": 50
+   },
+   "marathi-she-hundreds": {
+    "n": 4,
+    "ok": 2,
+    "pct": 50
+   },
+   "temp-word-not-hot": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "duration-not-day": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "weeks-vs-day": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "question-answer-negation": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "kilo-gram": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "unitless-temp": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "english-in-devanagari": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "range": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "noted-not-flag": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "implausible-weight": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "long-rambling": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "bp-upar-neeche": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "albumin-plus-plus": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "feet-vs-face": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "bp-bata": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "rule-overlap": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "denies-list": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "bp-slash": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "negation-is-danger": {
+    "n": 2,
+    "ok": 1,
+    "pct": 50
+   },
+   "mild-vs-severe": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "bp-words-over": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "risk-items": {
+    "n": 5,
+    "ok": 2,
+    "pct": 40
+   },
+   "mild-still-danger": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "khoon-not-hb": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "bp-par": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "months-vs-weeks": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "fever-exclusion": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "marathi-english": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "indian-english": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "subject-both": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   }
+  },
+  "by_lang": {
+   "hi/roman": {
+    "n": 30,
+    "ok": 12,
+    "pct": 40
+   },
+   "mr/devanagari": {
+    "n": 12,
+    "ok": 9,
+    "pct": 75
+   },
+   "hi/devanagari": {
+    "n": 20,
+    "ok": 14,
+    "pct": 70
+   },
+   "en/roman": {
+    "n": 21,
+    "ok": 11,
+    "pct": 52.4
+   },
+   "mr/roman": {
+    "n": 10,
+    "ok": 2,
+    "pct": 20
+   },
+   "mix/roman": {
+    "n": 5,
+    "ok": 3,
+    "pct": 60
+   },
+   "mix/devanagari": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   }
+  },
+  "misses": [
+   {
+    "id": "adv-001",
+    "said": "haan didi, Rekha ka baby hai, paanchva din. Subah se do baar aisa hua ki poora badan akad jaata hai aur aankhen upar chadh jaati hain, ek do minute. Doodh theek pee raha tha kal tak.",
+    "wrong": [
+     "feeding: extra \"good\""
+    ],
+    "flags_want": [
+     "nb_convulsions"
+    ],
+    "flags_got": [
+     "nb_convulsions"
+    ]
+   },
+   {
+    "id": "adv-003",
+    "said": "मीना के बच्चे का तीसरा दिन है जी। मीना को कल रात से बुखार है, बच्चा ठीक है, दूध अच्छे से पी रहा है, वजन दो किलो नौ सौ।",
+    "wrong": [
+     "symptoms.hot_to_touch: extra true"
+    ],
+    "flags_want": [],
+    "flags_got": [
+     "nb_fever"
+    ]
+   },
+   {
+    "id": "adv-004",
+    "said": "Sunaina ki beti, das din ki. Rona bahut dheema hai, doodh thoda sa peeke chhod deti hai, aur badan garam lag raha hai chhoone mein.",
+    "wrong": [
+     "symptoms.weak_cry: want true got undefined"
+    ],
+    "flags_want": [
+     "nb_fever",
+     "nb_poor_feeding",
+     "nb_sepsis_signs",
+     "nb_weak_cry"
+    ],
+    "flags_got": [
+     "nb_fever",
+     "nb_sepsis_signs",
+     "nb_poor_feeding"
+    ]
+   },
+   {
+    "id": "adv-007",
+    "said": "Ashwini chi mulgi kaal janmali, aaj pahila divas. Tichya dolyat ani angavar pivlepana disto. Baki dudh nit pitey.",
+    "wrong": [
+     "symptoms.jaundice: want true got undefined"
+    ],
+    "flags_want": [
+     "nb_jaundice_early"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-010",
+    "said": "Champa ka ladka, chautha din. Pasli chal rahi hai bahut, ginti ki toh ek minute mein chhiyasath saans. Bachcha sust pada hai, uthaane pe bhi aankh nahi kholta.",
+    "wrong": [
+     "resp_rate: want 66 got undefined"
+    ],
+    "flags_want": [
+     "nb_chest_indrawing",
+     "nb_fast_breathing",
+     "nb_lethargy",
+     "nb_sepsis_signs"
+    ],
+    "flags_got": [
+     "nb_chest_indrawing",
+     "nb_lethargy",
+     "nb_sepsis_signs"
+    ]
+   },
+   {
+    "id": "adv-015",
+    "said": "Pallavi chya balacha tisra divas, vajan paune don kilo, dudh kami pitay, radna halu ahe.",
+    "wrong": [
+     "symptoms.weak_cry: want true got undefined"
+    ],
+    "flags_want": [
+     "nb_poor_feeding",
+     "nb_sepsis_signs",
+     "nb_very_low_weight",
+     "nb_weak_cry"
+    ],
+    "flags_got": [
+     "nb_very_low_weight",
+     "nb_poor_feeding"
+    ]
+   },
+   {
+    "id": "adv-016",
+    "said": "Didi jaldi, Laxmi ka bachcha chhathe din ka hai, subah se bilkul nahi hil raha, doodh bhi nahi pee raha bilkul, honth neele se lag rahe.",
+    "wrong": [
+     "day: want 6 got undefined"
+    ],
+    "flags_want": [
+     "nb_lethargy",
+     "nb_not_feeding",
+     "nb_sepsis_signs"
+    ],
+    "flags_got": [
+     "nb_not_feeding",
+     "nb_lethargy",
+     "nb_sepsis_signs"
+    ]
+   },
+   {
+    "id": "adv-017",
+    "said": "Day 3 visit for baby of Geeta. Weight 3.05 kg, temperature 36.8 degree Celsius. Sucking well. No jaundice, no cord bleeding, no eye discharge, no pustules on skin.",
+    "wrong": [
+     "name: want \"Geeta\" got undefined",
+     "symptoms.skin_pustules: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-018",
+    "said": "Sapna ka baby, aaj das din poore. Vajan pandrah sau gram hai, janam ke samay satrah sau tha, kam ho gaya. Doodh kam pee raha hai.",
+    "wrong": [
+     "birth_weight_g: want 1700 got undefined"
+    ],
+    "flags_want": [
+     "nb_at_risk_birth_weight",
+     "nb_poor_feeding",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "nb_very_low_weight",
+     "nb_poor_feeding"
+    ]
+   },
+   {
+    "id": "adv-022",
+    "said": "Baby of Nisha, 12 days old. Loose motions since two days, around 8 times a day, and today I saw streaks of blood in the stool. Feeding is less.",
+    "wrong": [
+     "day: want 12 got 2"
+    ],
+    "flags_want": [
+     "nb_blood_stool",
+     "nb_diarrhoea",
+     "nb_poor_feeding"
+    ],
+    "flags_got": [
+     "nb_blood_stool",
+     "nb_poor_feeding",
+     "nb_diarrhoea"
+    ]
+   },
+   {
+    "id": "adv-023",
+    "said": "Jyoti chya balachi bhet, pachva divas. Jyotila khup taap ahe ani dokedukhi, pan bal theek ahe, dudh pita, vajan don hajar charshe gram.",
+    "wrong": [
+     "symptoms.hot_to_touch: extra true"
+    ],
+    "flags_want": [
+     "nb_low_weight"
+    ],
+    "flags_got": [
+     "nb_fever",
+     "nb_low_weight"
+    ]
+   },
+   {
+    "id": "adv-024",
+    "said": "Manisha ki beti ka teesra hafta chal raha, aaj ikkisva din. Aankh se peela chipchipa paani aa raha hai aur pet pe chhote chhote pus wale daane hain.",
+    "wrong": [
+     "symptoms.eye_discharge: want true got undefined",
+     "symptoms.skin_pustules: want true got undefined",
+     "symptoms.jaundice: extra true"
+    ],
+    "flags_want": [
+     "nb_eye_discharge",
+     "nb_skin_pustules"
+    ],
+    "flags_got": [
+     "nb_jaundice_late"
+    ]
+   },
+   {
+    "id": "adv-025",
+    "said": "सुमन का बच्चा तेरह दिन का, हर बार दूध पीने के बाद उल्टी कर देता है, रोना भी बहुत धीमा है, और बदन ठंडा लग रहा है।",
+    "wrong": [
+     "symptoms.weak_cry: want true got undefined"
+    ],
+    "flags_want": [
+     "nb_hypothermia",
+     "nb_sepsis_signs",
+     "nb_vomiting",
+     "nb_weak_cry"
+    ],
+    "flags_got": [
+     "nb_hypothermia",
+     "nb_sepsis_signs",
+     "nb_vomiting"
+    ]
+   },
+   {
+    "id": "adv-026",
+    "said": "Khushi ka baby, day 7. Maine poocha jhatke aate hain? Bola nahi. Saans lene mein koi takleef nahi. Weight 3 kilo 100 gram. Doodh achha pee raha.",
+    "wrong": [
+     "symptoms.convulsions: want false got true"
+    ],
+    "flags_want": [],
+    "flags_got": [
+     "nb_convulsions"
+    ]
+   },
+   {
+    "id": "adv-027",
+    "said": "Kavita ka baby, aath din. Kavita ki behen ko kal mirgi ka daura pada tha, usko hospital le gaye. Baby ko kuch nahi, doodh peeta hai, vajan dhai kilo.",
+    "wrong": [
+     "feeding: want \"good\" got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-030",
+    "said": "Baby of Archana, day 5. Mother says baby is struggling to breathe, there is a grunting sound and the nostrils are flaring. Respiratory rate 52.",
+    "wrong": [
+     "name: want \"Archana\" got \"Says\""
+    ],
+    "flags_want": [
+     "nb_difficulty_breathing"
+    ],
+    "flags_got": [
+     "nb_difficulty_breathing"
+    ]
+   },
+   {
+    "id": "adv-031",
+    "said": "Ho tai, Dhanashri cha bal, ekvisava divas. Vajan teen kilo teen she gram. Dudh changla pita, kavil nahi, taap nahi, julab nahi. Sagla barobar.",
+    "wrong": [
+     "day: want 21 got undefined",
+     "weight_g: want 3300 got 3000",
+     "symptoms.diarrhoea: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-033",
+    "said": "Phoolmati ka bachcha, ghar pe paida hua, aaj doosra din. Ek kilo saadhe saat sau gram vajan. Badan thanda hai, doodh kam kheench raha.",
+    "wrong": [
+     "weight_g: want 1750 got undefined"
+    ],
+    "flags_want": [
+     "nb_hypothermia",
+     "nb_poor_feeding",
+     "nb_sepsis_signs",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "nb_hypothermia",
+     "nb_sepsis_signs",
+     "nb_poor_feeding"
+    ]
+   },
+   {
+    "id": "adv-034",
+    "said": "सरिता का बेबी, डे सेवन। वेट दो पॉइंट दो किलो, टेम्परेचर नाइंटी सेवन पॉइंट फ़ाइव फ़ारेनहाइट। फीडिंग ठीक है, नो वोमिटिंग।",
+    "wrong": [
+     "day: want 7 got undefined",
+     "temp_c: want 36.4 got undefined",
+     "temp_f: want 97.5 got undefined",
+     "feeding: want \"good\" got undefined",
+     "symptoms.vomiting: want false got undefined"
+    ],
+    "flags_want": [
+     "nb_cool",
+     "nb_low_weight"
+    ],
+    "flags_got": [
+     "nb_low_weight"
+    ]
+   },
+   {
+    "id": "adv-035",
+    "said": "Pinki ka naya baby, tees din ka. Uski badi beti ko teen din se bukhar aur ulti hai. Naye baby ko koi dikkat nahi, doodh pee raha, vajan saadhe teen kilo.",
+    "wrong": [
+     "symptoms.hot_to_touch: extra true",
+     "symptoms.vomiting: extra true"
+    ],
+    "flags_want": [],
+    "flags_got": [
+     "nb_fever",
+     "nb_sepsis_signs",
+     "nb_vomiting"
+    ]
+   },
+   {
+    "id": "adv-040",
+    "said": "नमस्ते दीदी, मैं आज रानी के घर गई थी, उसका बच्चा बाईस दिन का है। रानी की सास कह रही थी कि बच्चा रात भर रोता है, पर रोना तेज़ है, कमज़ोर नहीं। दो दिन से पतले दस्त हो रहे हैं, दिन में छह सात बार। दूध पी रहा है ठीक। वजन तीन किलो दो सौ। उल्टी नहीं है।",
+    "wrong": [
+     "symptoms.weak_cry: want false got undefined"
+    ],
+    "flags_want": [
+     "nb_diarrhoea"
+    ],
+    "flags_got": [
+     "nb_diarrhoea"
+    ]
+   },
+   {
+    "id": "adv-045",
+    "said": "Seema ka paanchva mahina. Pichhli baar Hb 6.9 tha, iron ki goli kha rahi, ab aaj 9.4 aaya. Tees goliyan aur di.",
+    "wrong": [
+     "ifa_tablets: want 30 got undefined"
+    ],
+    "flags_want": [
+     "anc_moderate_anaemia"
+    ],
+    "flags_got": [
+     "anc_moderate_anaemia"
+    ]
+   },
+   {
+    "id": "adv-047",
+    "said": "ANC visit, Priti, 28 weeks. Patient denies bleeding, leaking, headache or blurring of vision. Fetal movements present and normal. Weight 58 kg. BP 118/76.",
+    "wrong": [
+     "fetal_movement: want \"normal\" got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-049",
+    "said": "Bhavna ka nauva mahina chal raha hai, subah se neeche se paani ja raha hai, kapde geele ho gaye. Dard abhi halka hai, labour wala nahi.",
+    "wrong": [
+     "symptoms.labour_pain: want false got undefined",
+     "symptoms.abdominal_pain: extra true"
+    ],
+    "flags_want": [
+     "anc_leaking"
+    ],
+    "flags_got": [
+     "anc_leaking",
+     "anc_abdominal_pain"
+    ]
+   },
+   {
+    "id": "adv-052",
+    "said": "सोनाली, वय सतरा वर्षे, सातवा महिना, सोनोग्राफीत जुळी मुलं आहेत असं सांगितलं.",
+    "wrong": [
+     "name: want \"Sonali\" got \"Varshe\""
+    ],
+    "flags_want": [
+     "anc_high_risk",
+     "anc_multiple_pregnancy"
+    ],
+    "flags_got": [
+     "anc_multiple_pregnancy",
+     "anc_high_risk"
+    ]
+   },
+   {
+    "id": "adv-054",
+    "said": "Meera, umar chhattis saal, lambai ek sau chawalis cm, pehli baar pregnant, teesra mahina. Koi taklif nahi.",
+    "wrong": [
+     "height_cm: want 144 got undefined"
+    ],
+    "flags_want": [
+     "anc_high_risk"
+    ],
+    "flags_got": [
+     "anc_high_risk"
+    ]
+   },
+   {
+    "id": "adv-055",
+    "said": "Called from home: Neha, full term, labour pains for 12 hours now, water bag not burst yet, no bleeding.",
+    "wrong": [
+     "name: want \"Neha\" got \"From\""
+    ],
+    "flags_want": [
+     "anc_labour"
+    ],
+    "flags_got": [
+     "anc_labour"
+    ]
+   },
+   {
+    "id": "adv-057",
+    "said": "Vaishali, satva mahina. Thoda thoda raktasrav hotoy, lal daag kapdyavar. Pani jat nahi.",
+    "wrong": [
+     "symptoms.bleeding: want true got undefined"
+    ],
+    "flags_want": [
+     "anc_bleeding"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-058",
+    "said": "Asha naam ki mahila hai, chhatha mahina. Uska khoon nikala tha jaanch ke liye, report abhi nahi aayi. Koi bleeding nahi hai. Vajan 52 kilo.",
+    "wrong": [
+     "name: want \"Asha\" got \"Mahila\""
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-060",
+    "said": "Pregnant woman Farzana, 22 weeks, complains of burning while passing urine and white discharge with bad smell. No fever.",
+    "wrong": [
+     "symptoms.burning_urine: want true got undefined"
+    ],
+    "flags_want": [
+     "anc_burning_urine",
+     "anc_discharge"
+    ],
+    "flags_got": [
+     "anc_discharge"
+    ]
+   },
+   {
+    "id": "adv-061",
+    "said": "Rinki ka teesra mahina, din mein chaar paanch baar ulti ho rahi, khana nahi tik raha. Halka sa sir dard rehta hai, aankhon se saaf dikhta hai.",
+    "wrong": [
+     "symptoms.blurred_vision: want false got undefined"
+    ],
+    "flags_want": [
+     "anc_vomiting"
+    ],
+    "flags_got": [
+     "anc_vomiting"
+    ]
+   },
+   {
+    "id": "adv-062",
+    "said": "शीतलच्या मागच्या बाळंतपणात तिला आकडी आली होती. आता पाचवा महिना, तिच्या बहिणीला पण फिट येतात, पण शीतलला यावेळी काही त्रास नाही.",
+    "wrong": [
+     "symptoms.convulsions: extra true"
+    ],
+    "flags_want": [
+     "anc_high_risk"
+    ],
+    "flags_got": [
+     "anc_convulsions",
+     "anc_high_risk"
+    ]
+   },
+   {
+    "id": "adv-064",
+    "said": "Divya, 26 weeks, Hb ten point five, given 60 IFA tablets, BP 112/72. Feels a bit giddy sometimes.",
+    "wrong": [
+     "symptoms.dizziness: want true got undefined"
+    ],
+    "flags_want": [
+     "anc_dizziness",
+     "anc_mild_anaemia"
+    ],
+    "flags_got": [
+     "anc_mild_anaemia"
+    ]
+   },
+   {
+    "id": "adv-066",
+    "said": "Manda, aathva mahina, BP ekshe saath bay navvad, albumin nahi. Dokedukhi nahi.",
+    "wrong": [
+     "bp_sys: want 160 got undefined",
+     "bp_dia: want 90 got undefined"
+    ],
+    "flags_want": [
+     "anc_severe_hypertension"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-067",
+    "said": "Shabnam, chaubees hafte, yaani chhatha mahina samjho. Peshaab mein jalan hai. Baaki theek.",
+    "wrong": [
+     "weeks: want 24 got undefined",
+     "symptoms.burning_urine: want true got undefined"
+    ],
+    "flags_want": [
+     "anc_burning_urine"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-074",
+    "said": "तारा को अभी दौरा पड़ा, दाँत भींच गए, मुँह से झाग, नौवाँ महीना है, जल्दी गाड़ी भेजो।",
+    "wrong": [
+     "name: want \"Tara\" got \"Jhag\""
+    ],
+    "flags_want": [
+     "anc_convulsions"
+    ],
+    "flags_got": [
+     "anc_convulsions"
+    ]
+   },
+   {
+    "id": "adv-078",
+    "said": "PNC day 7, Sunanda. Pads 2 per day, temperature 98.2 F, BP 118/78. Breasts soft, no pain. No foul smell.",
+    "wrong": [
+     "symptoms.breast_problem: want false got true"
+    ],
+    "flags_want": [],
+    "flags_got": [
+     "pnc_breast"
+    ]
+   },
+   {
+    "id": "adv-081",
+    "said": "Jayashri, PNC day 10, thermometer var 38.9 Celsius, urine pass kartana burning hote.",
+    "wrong": [
+     "symptoms.burning_urine: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_uti"
+    ],
+    "flags_got": [
+     "pnc_fever"
+    ]
+   },
+   {
+    "id": "adv-082",
+    "said": "निर्मला की डिलीवरी को ग्यारह दिन हुए। बच्चे को पीलिया है, आँखें पीली हैं। निर्मला ठीक है, दिन में दो पैड, बुखार नहीं।",
+    "wrong": [
+     "symptoms.jaundice: extra true"
+    ],
+    "flags_want": [],
+    "flags_got": [
+     "pnc_jaundice"
+    ]
+   },
+   {
+    "id": "adv-084",
+    "said": "Bindu ka paanchva din, BP ek sau bayalis by atthasi. Sir dard nahi, saans theek.",
+    "wrong": [
+     "bp_sys: want 142 got undefined",
+     "bp_dia: want 88 got undefined",
+     "symptoms.breathless: want false got undefined"
+    ],
+    "flags_want": [
+     "pnc_hypertension"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-085",
+    "said": "सुवर्णा, बाळंतपणानंतर पंधरावा दिवस, हिमोग्लोबिन सहा पॉइंट आठ, चेहरा पांढरा पडलाय.",
+    "wrong": [
+     "symptoms.pallor: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_severe_anaemia"
+    ],
+    "flags_got": [
+     "pnc_severe_anaemia"
+    ]
+   },
+   {
+    "id": "adv-086",
+    "said": "Didi, Sushila ko delivery ke doosre din aankhen upar chadh gayi aur haath pair akad gaye, do minute tak, ab behosh si hai.",
+    "wrong": [
+     "day: want 2 got undefined",
+     "symptoms.convulsions: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_convulsions"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-087",
+    "said": "Mother Leela, day 9 after delivery. Family says she is talking irrelevant, not making sense since morning. No fits. No fever.",
+    "wrong": [
+     "symptoms.abnormal_speech: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_neuro"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-090",
+    "said": "Kamal tai, bali zalyavar vis divas, laghvi thambavta yet nahi, kapde ole hotat. Taap nahi.",
+    "wrong": [
+     "day: want 20 got undefined",
+     "symptoms.incontinence: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_incontinence"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-091",
+    "said": "Haan ji didi, main Saroj ke ghar gayi thi aaj, unki delivery ko satrah din ho gaye. Woh theek hai, khana kha rahi hai, din mein ek do pad, bukhar nahi hai, pet mein dard nahi, peshab theek hai jalan nahi. Unki jethani ko bukhar tha woh alag baat hai. BP 112 by 70 tha jo ANM ne naapa.",
+    "wrong": [
+     "symptoms.burning_urine: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-096",
+    "said": "प्रिया, PNC डे फ़ोर्टी, बीपी वन थर्टी बाय एटी फ़ाइव, एचबी टेन पॉइंट टू।",
+    "wrong": [
+     "day: want 40 got undefined",
+     "bp_sys: want 130 got undefined",
+     "bp_dia: want 85 got undefined",
+     "hb: want 10.2 got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-098",
+    "said": "राधा, डिलीवरी को नौ दिन, कल चक्कर आए थे, आज ठीक है, चक्कर नहीं। एक दिन में चार पैड।",
+    "wrong": [
+     "day: want 9 got 1"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-099",
+    "said": "Yogita, dusra divas, khup raktasrav hotoy, gaadi bharun, hemoglobin aath.",
+    "wrong": [
+     "symptoms.heavy_bleeding: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_heavy_bleeding"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-100",
+    "said": "Day 42 PNC for Ritu. No complaints of fever, bleeding, breast pain or burning urine. BP 110/70.",
+    "wrong": [
+     "symptoms.heavy_bleeding: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   }
+  ]
+ },
+ "auto": {
+  "mode": "auto",
+  "items": 100,
+  "fields": {
+   "gold": 514,
+   "predicted": 457,
+   "correct": 438,
+   "recall": 85.2,
+   "precision": 95.8
+  },
+  "type_detected": 91,
+  "danger": {
+   "visits": 59,
+   "caught": 48,
+   "caught_pct": 81.4,
+   "normal_visits": 41,
+   "false_alarms": 7,
+   "false_alarm_pct": 17.1
+  },
+  "flags": {
+   "gold": 121,
+   "predicted": 103,
+   "correct": 87,
+   "recall": 71.9,
+   "precision": 84.5,
+   "refer_now_recall": 69.3
+  },
+  "exact_visits": 47,
+  "by_field": {
+   "name": {
+    "gold": 100,
+    "hit": 94,
+    "pred": 99,
+    "recall": 94,
+    "precision": 94.9
+   },
+   "day": {
+    "gold": 65,
+    "hit": 54,
+    "pred": 56,
+    "recall": 83.1,
+    "precision": 96.4
+   },
+   "symptoms": {
+    "gold": 142,
+    "hit": 108,
+    "pred": 118,
+    "recall": 76.1,
+    "precision": 91.5
+   },
+   "feeding": {
+    "gold": 31,
+    "hit": 29,
+    "pred": 30,
+    "recall": 93.5,
+    "precision": 96.7
+   },
+   "weight_g": {
+    "gold": 22,
+    "hit": 19,
+    "pred": 20,
+    "recall": 86.4,
+    "precision": 95
+   },
+   "temp_c": {
+    "gold": 14,
+    "hit": 13,
+    "pred": 13,
+    "recall": 92.9,
+    "precision": 100
+   },
+   "temp_f": {
+    "gold": 10,
+    "hit": 9,
+    "pred": 9,
+    "recall": 90,
+    "precision": 100
+   },
+   "resp_rate": {
+    "gold": 6,
+    "hit": 5,
+    "pred": 5,
+    "recall": 83.3,
+    "precision": 100
+   },
+   "birth_weight_g": {
+    "gold": 2,
+    "hit": 1,
+    "pred": 1,
+    "recall": 50,
+    "precision": 100
+   },
+   "month": {
+    "gold": 24,
+    "hit": 23,
+    "pred": 23,
+    "recall": 95.8,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 21,
+    "hit": 18,
+    "pred": 18,
+    "recall": 85.7,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 21,
+    "hit": 18,
+    "pred": 18,
+    "recall": 85.7,
+    "precision": 100
+   },
+   "albumin": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 10,
+    "hit": 9,
+    "pred": 9,
+    "recall": 90,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 10,
+    "hit": 8,
+    "pred": 8,
+    "recall": 80,
+    "precision": 100
+   },
+   "ifa_tablets": {
+    "gold": 3,
+    "hit": 2,
+    "pred": 2,
+    "recall": 66.7,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 5,
+    "hit": 4,
+    "pred": 4,
+    "recall": 80,
+    "precision": 100
+   },
+   "weight_kg": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "age": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "twins": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_caesarean": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "height_cm": {
+    "gold": 2,
+    "hit": 1,
+    "pred": 1,
+    "recall": 50,
+    "precision": 100
+   },
+   "labour_hours": {
+    "gold": 2,
+    "hit": 0,
+    "pred": 0,
+    "recall": 0,
+    "precision": null
+   },
+   "prev_eclampsia": {
+    "gold": 1,
+    "hit": 0,
+    "pred": 0,
+    "recall": 0,
+    "precision": null
+   },
+   "prev_pph": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 8,
+    "hit": 8,
+    "pred": 8,
+    "recall": 100,
+    "precision": 100
+   }
+  },
+  "by_tag": {
+   "colloquial-danger": {
+    "n": 25,
+    "ok": 11,
+    "pct": 44
+   },
+   "filler": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "past-value": {
+    "n": 11,
+    "ok": 5,
+    "pct": 45.5
+   },
+   "normal": {
+    "n": 28,
+    "ok": 13,
+    "pct": 46.4
+   },
+   "negation": {
+    "n": 24,
+    "ok": 13,
+    "pct": 54.2
+   },
+   "numbers-in-words": {
+    "n": 26,
+    "ok": 12,
+    "pct": 46.2
+   },
+   "normal-visit": {
+    "n": 27,
+    "ok": 13,
+    "pct": 48.1
+   },
+   "wrong-subject": {
+    "n": 10,
+    "ok": 3,
+    "pct": 30
+   },
+   "sepsis-count": {
+    "n": 8,
+    "ok": 1,
+    "pct": 12.5
+   },
+   "clinical-english": {
+    "n": 14,
+    "ok": 5,
+    "pct": 35.7
+   },
+   "fahrenheit": {
+    "n": 8,
+    "ok": 6,
+    "pct": 75
+   },
+   "comma-number": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "watch-only": {
+    "n": 14,
+    "ok": 6,
+    "pct": 42.9
+   },
+   "name-like-word": {
+    "n": 14,
+    "ok": 7,
+    "pct": 50
+   },
+   "day-boundary": {
+    "n": 2,
+    "ok": 1,
+    "pct": 50
+   },
+   "boundary": {
+    "n": 20,
+    "ok": 13,
+    "pct": 65
+   },
+   "fractions": {
+    "n": 11,
+    "ok": 6,
+    "pct": 54.5
+   },
+   "self-correction": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "hinglish": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "not-in-spec": {
+    "n": 4,
+    "ok": 0,
+    "pct": 0
+   },
+   "negated-list": {
+    "n": 6,
+    "ok": 2,
+    "pct": 33.3
+   },
+   "celsius": {
+    "n": 4,
+    "ok": 2,
+    "pct": 50
+   },
+   "marathi-she-hundreds": {
+    "n": 4,
+    "ok": 2,
+    "pct": 50
+   },
+   "temp-word-not-hot": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "duration-not-day": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "weeks-vs-day": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "question-answer-negation": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "kilo-gram": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "unitless-temp": {
+    "n": 2,
+    "ok": 1,
+    "pct": 50
+   },
+   "english-in-devanagari": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "range": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "noted-not-flag": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "implausible-weight": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "long-rambling": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "bp-upar-neeche": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "albumin-plus-plus": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "feet-vs-face": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "bp-bata": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "rule-overlap": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "denies-list": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "bp-slash": {
+    "n": 3,
+    "ok": 1,
+    "pct": 33.3
+   },
+   "negation-is-danger": {
+    "n": 2,
+    "ok": 1,
+    "pct": 50
+   },
+   "mild-vs-severe": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "bp-words-over": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "risk-items": {
+    "n": 5,
+    "ok": 2,
+    "pct": 40
+   },
+   "mild-still-danger": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "khoon-not-hb": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "bp-par": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "months-vs-weeks": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "fever-exclusion": {
+    "n": 3,
+    "ok": 1,
+    "pct": 33.3
+   },
+   "marathi-english": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "indian-english": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "subject-both": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   }
+  },
+  "by_lang": {
+   "hi/roman": {
+    "n": 30,
+    "ok": 12,
+    "pct": 40
+   },
+   "mr/devanagari": {
+    "n": 12,
+    "ok": 8,
+    "pct": 66.7
+   },
+   "hi/devanagari": {
+    "n": 20,
+    "ok": 13,
+    "pct": 65
+   },
+   "en/roman": {
+    "n": 21,
+    "ok": 9,
+    "pct": 42.9
+   },
+   "mr/roman": {
+    "n": 10,
+    "ok": 2,
+    "pct": 20
+   },
+   "mix/roman": {
+    "n": 5,
+    "ok": 3,
+    "pct": 60
+   },
+   "mix/devanagari": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   }
+  },
+  "misses": [
+   {
+    "id": "adv-001",
+    "said": "haan didi, Rekha ka baby hai, paanchva din. Subah se do baar aisa hua ki poora badan akad jaata hai aur aankhen upar chadh jaati hain, ek do minute. Doodh theek pee raha tha kal tak.",
+    "wrong": [
+     "feeding: extra \"good\""
+    ],
+    "flags_want": [
+     "nb_convulsions"
+    ],
+    "flags_got": [
+     "nb_convulsions"
+    ]
+   },
+   {
+    "id": "adv-003",
+    "said": "मीना के बच्चे का तीसरा दिन है जी। मीना को कल रात से बुखार है, बच्चा ठीक है, दूध अच्छे से पी रहा है, वजन दो किलो नौ सौ।",
+    "wrong": [
+     "symptoms.hot_to_touch: extra true"
+    ],
+    "flags_want": [],
+    "flags_got": [
+     "nb_fever"
+    ]
+   },
+   {
+    "id": "adv-004",
+    "said": "Sunaina ki beti, das din ki. Rona bahut dheema hai, doodh thoda sa peeke chhod deti hai, aur badan garam lag raha hai chhoone mein.",
+    "wrong": [
+     "symptoms.weak_cry: want true got undefined"
+    ],
+    "flags_want": [
+     "nb_fever",
+     "nb_poor_feeding",
+     "nb_sepsis_signs",
+     "nb_weak_cry"
+    ],
+    "flags_got": [
+     "nb_fever",
+     "nb_sepsis_signs",
+     "nb_poor_feeding"
+    ]
+   },
+   {
+    "id": "adv-007",
+    "said": "Ashwini chi mulgi kaal janmali, aaj pahila divas. Tichya dolyat ani angavar pivlepana disto. Baki dudh nit pitey.",
+    "wrong": [
+     "symptoms.jaundice: want true got undefined"
+    ],
+    "flags_want": [
+     "nb_jaundice_early"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-010",
+    "said": "Champa ka ladka, chautha din. Pasli chal rahi hai bahut, ginti ki toh ek minute mein chhiyasath saans. Bachcha sust pada hai, uthaane pe bhi aankh nahi kholta.",
+    "wrong": [
+     "resp_rate: want 66 got undefined"
+    ],
+    "flags_want": [
+     "nb_chest_indrawing",
+     "nb_fast_breathing",
+     "nb_lethargy",
+     "nb_sepsis_signs"
+    ],
+    "flags_got": [
+     "nb_chest_indrawing",
+     "nb_lethargy",
+     "nb_sepsis_signs"
+    ]
+   },
+   {
+    "id": "adv-015",
+    "said": "Pallavi chya balacha tisra divas, vajan paune don kilo, dudh kami pitay, radna halu ahe.",
+    "wrong": [
+     "symptoms.weak_cry: want true got undefined"
+    ],
+    "flags_want": [
+     "nb_poor_feeding",
+     "nb_sepsis_signs",
+     "nb_very_low_weight",
+     "nb_weak_cry"
+    ],
+    "flags_got": [
+     "nb_very_low_weight",
+     "nb_poor_feeding"
+    ]
+   },
+   {
+    "id": "adv-016",
+    "said": "Didi jaldi, Laxmi ka bachcha chhathe din ka hai, subah se bilkul nahi hil raha, doodh bhi nahi pee raha bilkul, honth neele se lag rahe.",
+    "wrong": [
+     "day: want 6 got undefined"
+    ],
+    "flags_want": [
+     "nb_lethargy",
+     "nb_not_feeding",
+     "nb_sepsis_signs"
+    ],
+    "flags_got": [
+     "nb_not_feeding",
+     "nb_lethargy",
+     "nb_sepsis_signs"
+    ]
+   },
+   {
+    "id": "adv-017",
+    "said": "Day 3 visit for baby of Geeta. Weight 3.05 kg, temperature 36.8 degree Celsius. Sucking well. No jaundice, no cord bleeding, no eye discharge, no pustules on skin.",
+    "wrong": [
+     "name: want \"Geeta\" got undefined",
+     "symptoms.skin_pustules: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-018",
+    "said": "Sapna ka baby, aaj das din poore. Vajan pandrah sau gram hai, janam ke samay satrah sau tha, kam ho gaya. Doodh kam pee raha hai.",
+    "wrong": [
+     "birth_weight_g: want 1700 got undefined"
+    ],
+    "flags_want": [
+     "nb_at_risk_birth_weight",
+     "nb_poor_feeding",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "nb_very_low_weight",
+     "nb_poor_feeding"
+    ]
+   },
+   {
+    "id": "adv-022",
+    "said": "Baby of Nisha, 12 days old. Loose motions since two days, around 8 times a day, and today I saw streaks of blood in the stool. Feeding is less.",
+    "wrong": [
+     "day: want 12 got 2"
+    ],
+    "flags_want": [
+     "nb_blood_stool",
+     "nb_diarrhoea",
+     "nb_poor_feeding"
+    ],
+    "flags_got": [
+     "nb_blood_stool",
+     "nb_poor_feeding",
+     "nb_diarrhoea"
+    ]
+   },
+   {
+    "id": "adv-023",
+    "said": "Jyoti chya balachi bhet, pachva divas. Jyotila khup taap ahe ani dokedukhi, pan bal theek ahe, dudh pita, vajan don hajar charshe gram.",
+    "wrong": [
+     "symptoms.hot_to_touch: extra true"
+    ],
+    "flags_want": [
+     "nb_low_weight"
+    ],
+    "flags_got": [
+     "nb_fever",
+     "nb_low_weight"
+    ]
+   },
+   {
+    "id": "adv-024",
+    "said": "Manisha ki beti ka teesra hafta chal raha, aaj ikkisva din. Aankh se peela chipchipa paani aa raha hai aur pet pe chhote chhote pus wale daane hain.",
+    "wrong": [
+     "symptoms.eye_discharge: want true got undefined",
+     "symptoms.skin_pustules: want true got undefined",
+     "symptoms.jaundice: extra true"
+    ],
+    "flags_want": [
+     "nb_eye_discharge",
+     "nb_skin_pustules"
+    ],
+    "flags_got": [
+     "nb_jaundice_late"
+    ]
+   },
+   {
+    "id": "adv-025",
+    "said": "सुमन का बच्चा तेरह दिन का, हर बार दूध पीने के बाद उल्टी कर देता है, रोना भी बहुत धीमा है, और बदन ठंडा लग रहा है।",
+    "wrong": [
+     "symptoms.weak_cry: want true got undefined"
+    ],
+    "flags_want": [
+     "nb_hypothermia",
+     "nb_sepsis_signs",
+     "nb_vomiting",
+     "nb_weak_cry"
+    ],
+    "flags_got": [
+     "nb_hypothermia",
+     "nb_sepsis_signs",
+     "nb_vomiting"
+    ]
+   },
+   {
+    "id": "adv-026",
+    "said": "Khushi ka baby, day 7. Maine poocha jhatke aate hain? Bola nahi. Saans lene mein koi takleef nahi. Weight 3 kilo 100 gram. Doodh achha pee raha.",
+    "wrong": [
+     "symptoms.convulsions: want false got true"
+    ],
+    "flags_want": [],
+    "flags_got": [
+     "nb_convulsions"
+    ]
+   },
+   {
+    "id": "adv-027",
+    "said": "Kavita ka baby, aath din. Kavita ki behen ko kal mirgi ka daura pada tha, usko hospital le gaye. Baby ko kuch nahi, doodh peeta hai, vajan dhai kilo.",
+    "wrong": [
+     "feeding: want \"good\" got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-030",
+    "said": "Baby of Archana, day 5. Mother says baby is struggling to breathe, there is a grunting sound and the nostrils are flaring. Respiratory rate 52.",
+    "wrong": [
+     "name: want \"Archana\" got \"Says\""
+    ],
+    "flags_want": [
+     "nb_difficulty_breathing"
+    ],
+    "flags_got": [
+     "nb_difficulty_breathing"
+    ]
+   },
+   {
+    "id": "adv-031",
+    "said": "Ho tai, Dhanashri cha bal, ekvisava divas. Vajan teen kilo teen she gram. Dudh changla pita, kavil nahi, taap nahi, julab nahi. Sagla barobar.",
+    "wrong": [
+     "day: want 21 got undefined",
+     "weight_g: want 3300 got 3000",
+     "symptoms.diarrhoea: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-033",
+    "said": "Phoolmati ka bachcha, ghar pe paida hua, aaj doosra din. Ek kilo saadhe saat sau gram vajan. Badan thanda hai, doodh kam kheench raha.",
+    "wrong": [
+     "weight_g: want 1750 got undefined"
+    ],
+    "flags_want": [
+     "nb_hypothermia",
+     "nb_poor_feeding",
+     "nb_sepsis_signs",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "nb_hypothermia",
+     "nb_sepsis_signs",
+     "nb_poor_feeding"
+    ]
+   },
+   {
+    "id": "adv-034",
+    "said": "सरिता का बेबी, डे सेवन। वेट दो पॉइंट दो किलो, टेम्परेचर नाइंटी सेवन पॉइंट फ़ाइव फ़ारेनहाइट। फीडिंग ठीक है, नो वोमिटिंग।",
+    "wrong": [
+     "day: want 7 got undefined",
+     "temp_c: want 36.4 got undefined",
+     "temp_f: want 97.5 got undefined",
+     "feeding: want \"good\" got undefined",
+     "symptoms.vomiting: want false got undefined"
+    ],
+    "flags_want": [
+     "nb_cool",
+     "nb_low_weight"
+    ],
+    "flags_got": [
+     "nb_low_weight"
+    ]
+   },
+   {
+    "id": "adv-035",
+    "said": "Pinki ka naya baby, tees din ka. Uski badi beti ko teen din se bukhar aur ulti hai. Naye baby ko koi dikkat nahi, doodh pee raha, vajan saadhe teen kilo.",
+    "wrong": [
+     "symptoms.hot_to_touch: extra true",
+     "symptoms.vomiting: extra true"
+    ],
+    "flags_want": [],
+    "flags_got": [
+     "nb_fever",
+     "nb_sepsis_signs",
+     "nb_vomiting"
+    ]
+   },
+   {
+    "id": "adv-037",
+    "said": "सुषमाच्या बाळाचा बारावा दिवस. अंग खूप गरम आहे, बाळ सुस्त पडलंय, हलवलं तरच थोडी हालचाल करतं. वजन दीड किलो.",
+    "wrong": [
+     "day: want 12 got undefined",
+     "weight_g: want 1500 got undefined",
+     "symptoms.hot_to_touch: want true got undefined",
+     "symptoms.lethargy: want true got undefined"
+    ],
+    "flags_want": [
+     "nb_fever",
+     "nb_lethargy",
+     "nb_sepsis_signs",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "anc_fever"
+    ]
+   },
+   {
+    "id": "adv-040",
+    "said": "नमस्ते दीदी, मैं आज रानी के घर गई थी, उसका बच्चा बाईस दिन का है। रानी की सास कह रही थी कि बच्चा रात भर रोता है, पर रोना तेज़ है, कमज़ोर नहीं। दो दिन से पतले दस्त हो रहे हैं, दिन में छह सात बार। दूध पी रहा है ठीक। वजन तीन किलो दो सौ। उल्टी नहीं है।",
+    "wrong": [
+     "symptoms.weak_cry: want false got undefined"
+    ],
+    "flags_want": [
+     "nb_diarrhoea"
+    ],
+    "flags_got": [
+     "nb_diarrhoea"
+    ]
+   },
+   {
+    "id": "adv-045",
+    "said": "Seema ka paanchva mahina. Pichhli baar Hb 6.9 tha, iron ki goli kha rahi, ab aaj 9.4 aaya. Tees goliyan aur di.",
+    "wrong": [
+     "ifa_tablets: want 30 got undefined"
+    ],
+    "flags_want": [
+     "anc_moderate_anaemia"
+    ],
+    "flags_got": [
+     "anc_moderate_anaemia"
+    ]
+   },
+   {
+    "id": "adv-047",
+    "said": "ANC visit, Priti, 28 weeks. Patient denies bleeding, leaking, headache or blurring of vision. Fetal movements present and normal. Weight 58 kg. BP 118/76.",
+    "wrong": [
+     "fetal_movement: want \"normal\" got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-049",
+    "said": "Bhavna ka nauva mahina chal raha hai, subah se neeche se paani ja raha hai, kapde geele ho gaye. Dard abhi halka hai, labour wala nahi.",
+    "wrong": [
+     "symptoms.labour_pain: want false got undefined",
+     "symptoms.abdominal_pain: extra true"
+    ],
+    "flags_want": [
+     "anc_leaking"
+    ],
+    "flags_got": [
+     "anc_leaking",
+     "anc_abdominal_pain"
+    ]
+   },
+   {
+    "id": "adv-052",
+    "said": "सोनाली, वय सतरा वर्षे, सातवा महिना, सोनोग्राफीत जुळी मुलं आहेत असं सांगितलं.",
+    "wrong": [
+     "name: want \"Sonali\" got \"Varshe\""
+    ],
+    "flags_want": [
+     "anc_high_risk",
+     "anc_multiple_pregnancy"
+    ],
+    "flags_got": [
+     "anc_multiple_pregnancy",
+     "anc_high_risk"
+    ]
+   },
+   {
+    "id": "adv-054",
+    "said": "Meera, umar chhattis saal, lambai ek sau chawalis cm, pehli baar pregnant, teesra mahina. Koi taklif nahi.",
+    "wrong": [
+     "height_cm: want 144 got undefined"
+    ],
+    "flags_want": [
+     "anc_high_risk"
+    ],
+    "flags_got": [
+     "anc_high_risk"
+    ]
+   },
+   {
+    "id": "adv-055",
+    "said": "Called from home: Neha, full term, labour pains for 12 hours now, water bag not burst yet, no bleeding.",
+    "wrong": [
+     "name: want \"Neha\" got \"From\"",
+     "labour_hours: want 12 got undefined",
+     "symptoms.leaking_fluid: want false got undefined",
+     "symptoms.bleeding: want false got undefined",
+     "symptoms.labour_pain: want true got undefined"
+    ],
+    "flags_want": [
+     "anc_labour"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-056",
+    "said": "ललिता को तेरह घंटे से दर्द हो रहा है, अभी बच्चा नहीं हुआ, घर पर ही है।",
+    "wrong": [
+     "labour_hours: want 13 got undefined"
+    ],
+    "flags_want": [
+     "anc_labour_prolonged"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-057",
+    "said": "Vaishali, satva mahina. Thoda thoda raktasrav hotoy, lal daag kapdyavar. Pani jat nahi.",
+    "wrong": [
+     "symptoms.bleeding: want true got undefined"
+    ],
+    "flags_want": [
+     "anc_bleeding"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-058",
+    "said": "Asha naam ki mahila hai, chhatha mahina. Uska khoon nikala tha jaanch ke liye, report abhi nahi aayi. Koi bleeding nahi hai. Vajan 52 kilo.",
+    "wrong": [
+     "name: want \"Asha\" got \"Mahila\""
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-060",
+    "said": "Pregnant woman Farzana, 22 weeks, complains of burning while passing urine and white discharge with bad smell. No fever.",
+    "wrong": [
+     "symptoms.burning_urine: want true got undefined"
+    ],
+    "flags_want": [
+     "anc_burning_urine",
+     "anc_discharge"
+    ],
+    "flags_got": [
+     "anc_discharge"
+    ]
+   },
+   {
+    "id": "adv-061",
+    "said": "Rinki ka teesra mahina, din mein chaar paanch baar ulti ho rahi, khana nahi tik raha. Halka sa sir dard rehta hai, aankhon se saaf dikhta hai.",
+    "wrong": [
+     "symptoms.blurred_vision: want false got undefined"
+    ],
+    "flags_want": [
+     "anc_vomiting"
+    ],
+    "flags_got": [
+     "anc_vomiting"
+    ]
+   },
+   {
+    "id": "adv-062",
+    "said": "शीतलच्या मागच्या बाळंतपणात तिला आकडी आली होती. आता पाचवा महिना, तिच्या बहिणीला पण फिट येतात, पण शीतलला यावेळी काही त्रास नाही.",
+    "wrong": [
+     "prev_eclampsia: want true got undefined",
+     "month: want 5 got undefined",
+     "symptoms.convulsions: extra true"
+    ],
+    "flags_want": [
+     "anc_high_risk"
+    ],
+    "flags_got": [
+     "pnc_convulsions"
+    ]
+   },
+   {
+    "id": "adv-064",
+    "said": "Divya, 26 weeks, Hb ten point five, given 60 IFA tablets, BP 112/72. Feels a bit giddy sometimes.",
+    "wrong": [
+     "symptoms.dizziness: want true got undefined"
+    ],
+    "flags_want": [
+     "anc_dizziness",
+     "anc_mild_anaemia"
+    ],
+    "flags_got": [
+     "anc_mild_anaemia"
+    ]
+   },
+   {
+    "id": "adv-066",
+    "said": "Manda, aathva mahina, BP ekshe saath bay navvad, albumin nahi. Dokedukhi nahi.",
+    "wrong": [
+     "bp_sys: want 160 got undefined",
+     "bp_dia: want 90 got undefined"
+    ],
+    "flags_want": [
+     "anc_severe_hypertension"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-067",
+    "said": "Shabnam, chaubees hafte, yaani chhatha mahina samjho. Peshaab mein jalan hai. Baaki theek.",
+    "wrong": [
+     "weeks: want 24 got undefined",
+     "symptoms.burning_urine: want true got undefined"
+    ],
+    "flags_want": [
+     "anc_burning_urine"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-074",
+    "said": "तारा को अभी दौरा पड़ा, दाँत भींच गए, मुँह से झाग, नौवाँ महीना है, जल्दी गाड़ी भेजो।",
+    "wrong": [
+     "name: want \"Tara\" got \"Jhag\""
+    ],
+    "flags_want": [
+     "anc_convulsions"
+    ],
+    "flags_got": [
+     "anc_convulsions"
+    ]
+   },
+   {
+    "id": "adv-078",
+    "said": "PNC day 7, Sunanda. Pads 2 per day, temperature 98.2 F, BP 118/78. Breasts soft, no pain. No foul smell.",
+    "wrong": [
+     "symptoms.breast_problem: want false got true"
+    ],
+    "flags_want": [],
+    "flags_got": [
+     "pnc_breast"
+    ]
+   },
+   {
+    "id": "adv-081",
+    "said": "Jayashri, PNC day 10, thermometer var 38.9 Celsius, urine pass kartana burning hote.",
+    "wrong": [
+     "symptoms.burning_urine: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_uti"
+    ],
+    "flags_got": [
+     "pnc_fever"
+    ]
+   },
+   {
+    "id": "adv-082",
+    "said": "निर्मला की डिलीवरी को ग्यारह दिन हुए। बच्चे को पीलिया है, आँखें पीली हैं। निर्मला ठीक है, दिन में दो पैड, बुखार नहीं।",
+    "wrong": [
+     "symptoms.jaundice: extra true"
+    ],
+    "flags_want": [],
+    "flags_got": [
+     "pnc_jaundice"
+    ]
+   },
+   {
+    "id": "adv-083",
+    "said": "Postnatal day 2, Kamini, BP 164/104, complains of severe headache and blurred vision.",
+    "wrong": [
+     "day: want 2 got undefined"
+    ],
+    "flags_want": [
+     "pnc_headache",
+     "pnc_neuro",
+     "pnc_severe_hypertension"
+    ],
+    "flags_got": [
+     "anc_severe_hypertension",
+     "anc_headache_vision"
+    ]
+   },
+   {
+    "id": "adv-084",
+    "said": "Bindu ka paanchva din, BP ek sau bayalis by atthasi. Sir dard nahi, saans theek.",
+    "wrong": [
+     "day: want 5 got undefined",
+     "bp_sys: want 142 got undefined",
+     "bp_dia: want 88 got undefined",
+     "symptoms.breathless: want false got undefined"
+    ],
+    "flags_want": [
+     "pnc_hypertension"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-085",
+    "said": "सुवर्णा, बाळंतपणानंतर पंधरावा दिवस, हिमोग्लोबिन सहा पॉइंट आठ, चेहरा पांढरा पडलाय.",
+    "wrong": [
+     "symptoms.pallor: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_severe_anaemia"
+    ],
+    "flags_got": [
+     "pnc_severe_anaemia"
+    ]
+   },
+   {
+    "id": "adv-086",
+    "said": "Didi, Sushila ko delivery ke doosre din aankhen upar chadh gayi aur haath pair akad gaye, do minute tak, ab behosh si hai.",
+    "wrong": [
+     "day: want 2 got undefined",
+     "symptoms.convulsions: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_convulsions"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-087",
+    "said": "Mother Leela, day 9 after delivery. Family says she is talking irrelevant, not making sense since morning. No fits. No fever.",
+    "wrong": [
+     "symptoms.abnormal_speech: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_neuro"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-090",
+    "said": "Kamal tai, bali zalyavar vis divas, laghvi thambavta yet nahi, kapde ole hotat. Taap nahi.",
+    "wrong": [
+     "day: want 20 got undefined",
+     "symptoms.incontinence: want true got undefined",
+     "symptoms.fever: want false got undefined"
+    ],
+    "flags_want": [
+     "pnc_incontinence"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-091",
+    "said": "Haan ji didi, main Saroj ke ghar gayi thi aaj, unki delivery ko satrah din ho gaye. Woh theek hai, khana kha rahi hai, din mein ek do pad, bukhar nahi hai, pet mein dard nahi, peshab theek hai jalan nahi. Unki jethani ko bukhar tha woh alag baat hai. BP 112 by 70 tha jo ANM ne naapa.",
+    "wrong": [
+     "symptoms.burning_urine: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-096",
+    "said": "प्रिया, PNC डे फ़ोर्टी, बीपी वन थर्टी बाय एटी फ़ाइव, एचबी टेन पॉइंट टू।",
+    "wrong": [
+     "day: want 40 got undefined",
+     "bp_sys: want 130 got undefined",
+     "bp_dia: want 85 got undefined",
+     "hb: want 10.2 got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-097",
+    "said": "Mother Gauri, day 5, temperature was 102 last night, now 103 when I checked. Burning urine also.",
+    "wrong": [
+     "symptoms.burning_urine: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_high_fever",
+     "pnc_uti"
+    ],
+    "flags_got": [
+     "nb_fever"
+    ]
+   },
+   {
+    "id": "adv-098",
+    "said": "राधा, डिलीवरी को नौ दिन, कल चक्कर आए थे, आज ठीक है, चक्कर नहीं। एक दिन में चार पैड।",
+    "wrong": [
+     "day: want 9 got 1"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "adv-099",
+    "said": "Yogita, dusra divas, khup raktasrav hotoy, gaadi bharun, hemoglobin aath.",
+    "wrong": [
+     "hb: want 8 got undefined",
+     "symptoms.heavy_bleeding: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_heavy_bleeding"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-100",
+    "said": "Day 42 PNC for Ritu. No complaints of fever, bleeding, breast pain or burning urine. BP 110/70.",
+    "wrong": [
+     "symptoms.heavy_bleeding: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   }
+  ]
+ }
+}

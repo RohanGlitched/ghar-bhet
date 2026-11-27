@@ -1,7 +1,7 @@
 {
  "set": "dev",
- "run_at": "2026-11-27T08:53:10.219Z",
- "ruleset": "mohfw-2026.2",
+ "run_at": "2026-11-27T09:46:15.739Z",
+ "ruleset": "mohfw-2026.3",
  "typed": {
   "mode": "typed",
   "items": 120,
@@ -14,20 +14,20 @@
   },
   "type_detected": 100,
   "danger": {
-   "visits": 89,
-   "caught": 89,
+   "visits": 90,
+   "caught": 90,
    "caught_pct": 100,
-   "normal_visits": 31,
+   "normal_visits": 30,
    "false_alarms": 0,
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 172,
-   "predicted": 173,
+   "gold": 174,
+   "predicted": 175,
    "correct": 172,
-   "recall": 100,
-   "precision": 99.4,
-   "refer_now_recall": 100
+   "recall": 98.9,
+   "precision": 98.3,
+   "refer_now_recall": 98.5
   },
   "exact_visits": 100,
   "by_field": {
@@ -168,8 +168,8 @@
     "pct": 100
    },
    "watch-only": {
-    "n": 13,
-    "ok": 13,
+    "n": 12,
+    "ok": 12,
     "pct": 100
    },
    "local-idiom": {
@@ -302,6 +302,32 @@
      "nb_very_low_weight",
      "nb_at_risk_birth_weight"
     ]
+   },
+   {
+    "id": "anc-019",
+    "said": "Sonu ko tez bukhar hai, kaanp rahi hai, pet mein bahut dard bhi. 33 hafte.",
+    "wrong": [],
+    "flags_want": [
+     "anc_abdominal_pain",
+     "anc_fever"
+    ],
+    "flags_got": [
+     "anc_high_fever",
+     "anc_abdominal_pain"
+    ]
+   },
+   {
+    "id": "anc-030",
+    "said": "खूप ताप आहे, थंडी वाजून, लघवीला जळजळ होते. योगिता, पाचवा महिना.",
+    "wrong": [],
+    "flags_want": [
+     "anc_burning_urine",
+     "anc_fever"
+    ],
+    "flags_got": [
+     "anc_high_fever",
+     "anc_burning_urine"
+    ]
    }
   ]
  },
@@ -310,27 +336,27 @@
   "items": 120,
   "fields": {
    "gold": 577,
-   "predicted": 557,
-   "correct": 557,
-   "recall": 96.5,
+   "predicted": 555,
+   "correct": 555,
+   "recall": 96.2,
    "precision": 100
   },
   "type_detected": 89.2,
   "danger": {
-   "visits": 89,
-   "caught": 87,
-   "caught_pct": 97.8,
-   "normal_visits": 31,
-   "false_alarms": 2,
-   "false_alarm_pct": 6.5
+   "visits": 90,
+   "caught": 86,
+   "caught_pct": 95.6,
+   "normal_visits": 30,
+   "false_alarms": 1,
+   "false_alarm_pct": 3.3
   },
   "flags": {
-   "gold": 172,
-   "predicted": 169,
-   "correct": 157,
-   "recall": 91.3,
+   "gold": 174,
+   "predicted": 168,
+   "correct": 156,
+   "recall": 89.7,
    "precision": 92.9,
-   "refer_now_recall": 90.4
+   "refer_now_recall": 88.1
   },
   "exact_visits": 90,
   "by_field": {
@@ -364,9 +390,9 @@
    },
    "symptoms": {
     "gold": 144,
-    "hit": 129,
-    "pred": 129,
-    "recall": 89.6,
+    "hit": 128,
+    "pred": 128,
+    "recall": 88.9,
     "precision": 100
    },
    "resp_rate": {
@@ -378,9 +404,9 @@
    },
    "temp_c": {
     "gold": 26,
-    "hit": 26,
-    "pred": 26,
-    "recall": 100,
+    "hit": 25,
+    "pred": 25,
+    "recall": 96.2,
     "precision": 100
    },
    "month": {
@@ -471,9 +497,9 @@
     "pct": 90.5
    },
    "watch-only": {
-    "n": 13,
+    "n": 12,
     "ok": 12,
-    "pct": 92.3
+    "pct": 100
    },
    "local-idiom": {
     "n": 47,
@@ -621,10 +647,37 @@
     ]
    },
    {
+    "id": "anc-019",
+    "said": "Sonu ko tez bukhar hai, kaanp rahi hai, pet mein bahut dard bhi. 33 hafte.",
+    "wrong": [],
+    "flags_want": [
+     "anc_abdominal_pain",
+     "anc_fever"
+    ],
+    "flags_got": [
+     "anc_high_fever",
+     "anc_abdominal_pain"
+    ]
+   },
+   {
+    "id": "anc-030",
+    "said": "खूप ताप आहे, थंडी वाजून, लघवीला जळजळ होते. योगिता, पाचवा महिना.",
+    "wrong": [],
+    "flags_want": [
+     "anc_burning_urine",
+     "anc_fever"
+    ],
+    "flags_got": [
+     "anc_high_fever",
+     "anc_burning_urine"
+    ]
+   },
+   {
     "id": "anc-033",
     "said": "Pushpa la jhatke ale nahit, pan khup dokedukhi ahe, 36 athavde",
     "wrong": [
      "weeks: want 36 got undefined",
+     "symptoms.convulsions: want false got undefined",
      "symptoms.severe_headache: want true got undefined"
     ],
     "flags_want": [
@@ -636,14 +689,13 @@
     "id": "pnc-002",
     "said": "बबली को 102 बुखार है, नीचे से बदबूदार पानी आ रहा है, सातवाँ दिन।",
     "wrong": [
+     "temp_c: want 38.9 got undefined",
      "symptoms.foul_discharge: want true got undefined"
     ],
     "flags_want": [
      "pnc_infection"
     ],
-    "flags_got": [
-     "nb_fever"
-    ]
+    "flags_got": []
    },
    {
     "id": "pnc-006",
@@ -653,7 +705,7 @@
     ],
     "flags_want": [
      "pnc_breast",
-     "pnc_fever"
+     "pnc_low_fever"
     ],
     "flags_got": [
      "nb_fever"
@@ -695,9 +747,7 @@
     "flags_want": [
      "pnc_infection"
     ],
-    "flags_got": [
-     "nb_fever"
-    ]
+    "flags_got": []
    },
    {
     "id": "pnc-014",
@@ -758,7 +808,8 @@
      "symptoms.foul_discharge: want true got undefined"
     ],
     "flags_want": [
-     "pnc_infection"
+     "pnc_infection",
+     "pnc_low_fever"
     ],
     "flags_got": [
      "nb_fever"

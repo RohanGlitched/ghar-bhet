@@ -1,10 +1,12 @@
-# Ghar Bhet: record and rule spec (v2, rule set `mohfw-2026.2`, 27 Nov 2026)
+# Ghar Bhet: record and rule spec (v3, rule set `mohfw-2026.3`, 27 Nov 2026)
 
 This is the contract between the product and the test sets. The product fills a **record** from what the ASHA says, and a fixed **rule table** turns the record into **flags**. A test item gives, for each spoken visit, the record and flags a careful human would write. Gold flags are always recomputed from the gold record by `check_gold.py`, which implements the rule table below without importing product code.
 
 Sources for every threshold are in `../docs/RESEARCH.md` (MoHFW CHO manuals 2021, SBA guidelines 2010, Maternal Near Miss guidelines 2014, MCP card, HBNC 2014, SSBSK Operational Guidelines 2026 final of 06-08-2026, Anemia Mukt Bharat 2026, PMSMA fact sheet 2026). Section 9 of RESEARCH.md lists the pages.
 
 v2 changes (from `mohfw-2026.1`): pnc BP and Hb; pregnancy risk items; labour hours; birth weight; `temp_f`; new symptom codes; 27 new rules; newborn cold line moved to 36 °C (official SSBSK), fast breathing to 60 or more; cord, skin and eye signs refer (SSBSK Form 3); after-birth fever refers (SSBSK Form 4).
+
+v3 changes (from `mohfw-2026.2`): pregnancy temperature, high fever and a raised-temperature watch; labour pains and preterm labour; breech near term; more high-risk items (stillbirth, preterm or small baby before, diabetes, heart disease, Rh negative, HIV/syphilis, 4 or more births); newborn preterm, place of birth, swollen belly; after-birth fever line at 100 °F, infected stitches, calf pain, low mood; after-birth headache, blurred vision and breathlessness are urgent; breast problems refer (SSBSK Form 3).
 
 ## Visit types
 
@@ -18,7 +20,9 @@ All fields are optional. Leave a field out when it was not said. A record never 
 
 **Ranges.** "chaar se paanch pad", "4 ya 5", "4 to 5": the more dangerous end (higher pads, temperature, breaths, BP; lower weight, Hb).
 
-**Subject.** Symptoms said about someone else (saas, sasur, pati, devar, another woman; the mother in a newborn visit; the baby in a pnc visit) are left out.
+**Subject.** Symptoms and readings said about someone else are left out: relatives (saas, sasur, pati, devar, behen, dadi, nani) in every visit; the mother in a newborn visit ("baby ki maa ko bukhar hai"); the baby in a pregnancy or after-birth visit ("bachche ko bukhar hai", "baby ka temperature 38").
+
+**Denials and mild pain.** "denies X", "no complaints of X or Y" mark every listed sign absent. "khoon ki jaanch / kami / chadhaya" (a test, a level, a transfusion) is not bleeding. A headache or (in pregnancy) stomach pain said as mild ("halka", "thoda", "mild") is not recorded as severe; leave it out of the gold record (the app asks "Is it severe?").
 
 ### Common
 | field | type | notes |
@@ -45,8 +49,18 @@ All fields are optional. Leave a field out when it was not said. A record never 
 | `prev_pph` | boolean | heavy bleeding after a previous delivery (v2) |
 | `prev_aph` | boolean | bleeding in a previous pregnancy (v2) |
 | `prev_eclampsia` | boolean | fits or eclampsia in a previous pregnancy (v2) |
+| `temp_c`, `temp_f` | number | as for `pnc` (v3) |
+| `prev_stillbirth` | boolean | a stillbirth or newborn death before ("pichli baar bachcha mara hua paida hua") (v3) |
+| `prev_preterm` | boolean | a previous baby born early or small (v3) |
+| `diabetes` | boolean | diabetes or "sugar" said (v3) |
+| `heart_disease` | boolean | "dil ki bimari", heart disease (v3) |
+| `rh_negative` | boolean | Rh negative / negative blood group (v3) |
+| `hiv_syphilis` | boolean | HIV or syphilis test positive (true) or negative (false) (v3) |
+| `previous_births` | integer | births before this pregnancy ("5 bachche pehle se" → 5; "chautha bachcha" → 3) (v3) |
+| `malpresentation` | boolean | baby breech or lying across ("bachcha ulta hai") (v3) |
+| `td_doses` | integer 0-3 | Td/TT injections taken ("dono teeke" → 2) (v3) |
 
-Symptom codes (`anc`): `bleeding`, `leaking_fluid` (water leaking / bag burst), `convulsions`, `severe_headache`, `blurred_vision`, `swelling_face_hands` (face, hands or whole body), `swelling_feet` (feet/legs only), `fever`, `breathless`, `abdominal_pain` (severe), `vomiting`, `dizziness` (giddiness, weakness, darkness before eyes), `burning_urine`, `foul_discharge` (foul or abnormal discharge).
+Symptom codes (`anc`): `bleeding`, `leaking_fluid` (water leaking / bag burst), `convulsions`, `severe_headache`, `blurred_vision`, `swelling_face_hands` (face, hands or whole body), `swelling_feet` (feet/legs only), `fever`, `breathless`, `abdominal_pain` (severe), `vomiting`, `dizziness` (giddiness, weakness, darkness before eyes), `burning_urine`, `foul_discharge` (foul or abnormal discharge), and in v3 `high_fever` ("tez bukhar", "high fever"; also mark `fever`), `labour_pain` (labour pains said).
 
 ### `pnc`
 | field | type | notes |
@@ -58,7 +72,7 @@ Symptom codes (`anc`): `bleeding`, `leaking_fluid` (water leaking / bag burst), 
 | `bp_sys`, `bp_dia` | integers | as for `anc` (v2) |
 | `hb` | number | as for `anc` (v2) |
 
-Symptom codes (`pnc`): `heavy_bleeding`, `fever`, `foul_discharge`, `convulsions`, `blurred_vision`, `abnormal_speech`, `breathless`, `abdominal_pain`, `burning_urine`, `swelling_face_hands`, `breast_problem`, `dizziness`, and in v2 `severe_headache`, `jaundice` (her eyes or skin yellow), `incontinence` (urine or stool she cannot hold), `pallor` (pale, white).
+Symptom codes (`pnc`): `heavy_bleeding`, `fever`, `foul_discharge`, `convulsions`, `blurred_vision`, `abnormal_speech`, `breathless`, `abdominal_pain`, `burning_urine`, `swelling_face_hands`, `breast_problem`, `dizziness`, and in v2 `severe_headache`, `jaundice` (her eyes or skin yellow), `incontinence` (urine or stool she cannot hold), `pallor` (pale, white), and in v3 `wound_infection` (pus, redness or smell at the stitches), `calf_pain` (calf pain or swelling), `low_mood` (sad, hopeless, no interest).
 
 ### `newborn`
 | field | type | notes |
@@ -70,8 +84,11 @@ Symptom codes (`pnc`): `heavy_bleeding`, `fever`, `foul_discharge`, `convulsions
 | `temp_f` | number | as for `pnc` (v2) |
 | `resp_rate` | integer per minute | |
 | `feeding` | `good` / `poor` / `none` | "stanpan nahi kar raha" → none |
+| `weeks_at_birth` | integer | "34 hafte mein paida hua" → 34 (v3) |
+| `preterm` | boolean | born before 37 weeks, or "samay se pehle" said (v3) |
+| `birth_place` | `home` / `facility` | where the baby was born (v3) |
 
-Symptom codes (`newborn`): `convulsions`, `chest_indrawing` ("pasli chal rahi", "chest andar ja raha"), `lethargy`, `jaundice` (any yellowness), `jaundice_palms_soles`, `blood_stool`, `cord_pus` (pus, redness or bleeding at the cord), `skin_pustules`, `eye_discharge`, `cold_to_touch`, `hot_to_touch`, `weak_cry`, `vomiting`, `diarrhoea`, and in v2 `difficulty_breathing` ("saans lene mein takleef", "श्वास घ्यायला त्रास").
+Symptom codes (`newborn`): `convulsions`, `chest_indrawing` ("pasli chal rahi", "chest andar ja raha"), `lethargy`, `jaundice` (any yellowness), `jaundice_palms_soles`, `blood_stool`, `cord_pus` (pus, redness or bleeding at the cord), `skin_pustules`, `eye_discharge`, `cold_to_touch`, `hot_to_touch`, `weak_cry`, `vomiting`, `diarrhoea`, and in v2 `difficulty_breathing` ("saans lene mein takleef", "श्वास घ्यायला त्रास"), and in v3 `abdominal_distension` ("pet phula", swollen belly).
 
 Never both `hot_to_touch` and `cold_to_touch` true. A temperature word alone ("taapmaan", "tapman") is not `hot_to_touch`.
 
@@ -93,7 +110,9 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 | `anc_bleeding` | `bleeding` | refer_now, urgent |
 | `anc_leaking` | `leaking_fluid` | refer_now, urgent |
 | `anc_convulsions` | `convulsions` | refer_now, urgent |
-| `anc_fever` | `fever` | refer_now |
+| `anc_high_fever` | temperature above 101 °F, or `high_fever` | refer_now, urgent |
+| `anc_fever` | (`fever` or temperature above 100 °F), and not high fever | refer_now |
+| `anc_low_fever` | 37.5 °C ≤ temperature ≤ 100 °F, no `fever` or `high_fever` said | watch |
 | `anc_fetal_movement` | `fetal_movement` is `reduced` or `absent` | refer_now |
 | `anc_swelling` | `swelling_face_hands` | refer_now |
 | `anc_breathless` | `breathless` | refer_now |
@@ -101,10 +120,13 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 | `anc_burning_urine` | `burning_urine` | refer_now |
 | `anc_discharge` | `foul_discharge` | refer_now |
 | `anc_labour_prolonged` | `labour_hours` > 12 | refer_now, urgent |
+| `anc_preterm_labour` | (`labour_pain` or `labour_hours`) and (`weeks` < 37, or no weeks and `month` ≤ 8) | refer_now, urgent |
+| `anc_labour` | `labour_pain`, not preterm, and not `labour_hours` > 12 | refer_now |
+| `anc_malpresentation` | `malpresentation` and (`weeks` ≥ 36, or no weeks and `month` ≥ 9) | refer_now |
 | `anc_multiple_pregnancy` | `twins` | refer_now |
 | `anc_vomiting` | `vomiting` | watch |
 | `anc_dizziness` | `dizziness` | watch |
-| `anc_high_risk` | `age` < 18 or > 35, `height_cm` < 145, or any of `prev_caesarean`, `prev_pph`, `prev_aph`, `prev_eclampsia` | watch |
+| `anc_high_risk` | `age` < 18 or > 35, `height_cm` < 145, `previous_births` ≥ 4, or any of `prev_caesarean`, `prev_pph`, `prev_aph`, `prev_eclampsia`, `prev_stillbirth`, `prev_preterm`, `diabetes`, `heart_disease`, `rh_negative`, `hiv_syphilis` true | watch |
 
 ### `pnc`
 | flag | when | severity |
@@ -116,16 +138,20 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 | `pnc_high_fever` | temperature above 102 °F | refer_now, urgent |
 | `pnc_uti` | `burning_urine` | refer_now |
 | `pnc_infection` | `foul_discharge` | refer_now |
-| `pnc_fever` | (`fever` or temperature ≥ 37.5 °C), and no high fever, no `burning_urine`, no `foul_discharge` | refer_now |
+| `pnc_fever` | (`fever` or temperature above 100 °F), and no high fever, no `burning_urine`, no `foul_discharge` | refer_now |
+| `pnc_low_fever` | 37.5 °C ≤ temperature ≤ 100 °F, no `fever` said | watch |
 | `pnc_convulsions` | `convulsions` | refer_now, urgent |
-| `pnc_neuro` | `blurred_vision` or `abnormal_speech` | refer_now |
-| `pnc_headache` | `severe_headache` | refer_now |
-| `pnc_breathless` | `breathless` | refer_now |
+| `pnc_neuro` | `blurred_vision` or `abnormal_speech` | refer_now, urgent |
+| `pnc_headache` | `severe_headache` | refer_now, urgent |
+| `pnc_breathless` | `breathless` | refer_now, urgent |
 | `pnc_abdominal_pain` | `abdominal_pain` | refer_now |
 | `pnc_swelling` | `swelling_face_hands` | refer_now |
 | `pnc_jaundice` | `jaundice` | refer_now |
 | `pnc_incontinence` | `incontinence` | refer_now |
-| `pnc_breast` | `breast_problem` | watch |
+| `pnc_wound_infection` | `wound_infection` | refer_now |
+| `pnc_calf_pain` | `calf_pain` | refer_now |
+| `pnc_low_mood` | `low_mood` | watch |
+| `pnc_breast` | `breast_problem` | refer_now |
 
 ### `newborn` (SSBSK 2026: any single danger sign means immediate referral)
 | flag | when | severity |
@@ -147,17 +173,19 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 | `nb_very_low_weight` | `weight_g` < 1800 | refer_now, urgent |
 | `nb_low_weight` | 1800 ≤ `weight_g` < 2500 | watch |
 | `nb_at_risk_birth_weight` | `birth_weight_g` < 2500 | watch |
+| `nb_preterm` | `preterm` true, or `weeks_at_birth` < 37 | watch |
+| `nb_abdominal_distension` | `abdominal_distension` | watch |
 | `nb_cord_infection` | `cord_pus` | refer_now |
 | `nb_skin_pustules` | `skin_pustules` | refer_now |
 | `nb_eye_discharge` | `eye_discharge` | refer_now |
-| `nb_sepsis_signs` | 2 or more of: `lethargy`; `feeding` poor or none; `weak_cry`; `vomiting`; `cold_to_touch`, `hot_to_touch`, temperature < 36 °C or > 99 °F; `chest_indrawing`; `resp_rate` > 60; `cord_pus` (HBNC 2014 checklist) | refer_now, urgent |
+| `nb_sepsis_signs` | 2 or more of: `lethargy`; `feeding` poor or none; `weak_cry`; `vomiting` or `abdominal_distension` (one sign); `cold_to_touch`, `hot_to_touch`, temperature < 36 °C or > 99 °F; `chest_indrawing`; `resp_rate` > 60; `cord_pus` (HBNC 2014 checklist) | refer_now, urgent |
 | `nb_weak_cry` | `weak_cry` | watch |
 | `nb_vomiting` | `vomiting` | watch |
 | `nb_diarrhoea` | `diarrhoea` | watch |
 
 ### Never silent
 
-`noted(record, flags)` in rules.js lists every symptom marked `true` that no fired flag covers (for example jaundice on day 5, or swelling of the feet in pregnancy). The app shows these as "Noted: tell the nurse" and never shows "No danger signs" while the list is not empty.
+`noted(record, flags)` in rules.js lists every symptom marked `true` that no fired flag covers (for example jaundice on day 5, or swelling of the feet in pregnancy). The app shows these as "Noted: tell the nurse" and never shows "No danger signs" while the list is not empty. The reader also returns `unread`: clauses that name a body part or complaint but filled nothing, so the app can show "Noted: words not understood".
 
 ## Test item format (JSONL, one object per line)
 
@@ -165,10 +193,10 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 {"id":"nb-017","lang":"hi","script":"devanagari","said":"सुनीता का बच्चा सात दिन का है, वजन एक किलो सात सौ ग्राम, बुखार नहीं है, दूध कम पी रहा है","record":{"type":"newborn","name":"Sunita","day":7,"weight_g":1700,"feeding":"poor","symptoms":{"hot_to_touch":false}},"flags":["nb_poor_feeding","nb_very_low_weight"],"tags":["numbers-in-words","negation"]}
 ```
 
-Ids: `nb-`, `anc-`, `pnc-` in dev; `d2-` and `d3-` prefixes in dev2 and dev3; `h-` in the held-out sets.
+Ids: `nb-`, `anc-`, `pnc-` in dev; `d2-`, `d3-` and `d4-` prefixes in dev2, dev3 and dev4; `h-` in the held-out sets.
 
 Notes for labellers: `fever` is not a newborn symptom code; for a newborn "बुखार नहीं" means `hot_to_touch: false`. For newborn and pnc, "bukhar hai" with no number means `hot_to_touch: true` (newborn) or `fever: true` (pnc). Use these exact codes.
 
 ## How fields added later are scored
 
-Sets written before v2 (dev, dev2, heldout) have no gold for the v2 fields, though a sentence may say such a value (a pnc BP, a previous caesarean). `eval/run.js` therefore counts a predicted field only when that set's gold records use the same field for the same visit type somewhere, or the item's own gold has it. Every gold field always counts for recall. Expected flags are recomputed from the gold records with the current rules (`python eval/check_gold.py --fix …`); the published run-1 and run-2 files keep the flags of their time.
+Sets written before v2 or v3 (dev, dev2, heldout; dev3 for the v3 fields) have no gold for the newer fields, though a sentence may say such a value (a pnc BP, a previous caesarean). `eval/run.js` therefore counts a predicted field only when that set's gold records use the same field for the same visit type somewhere, or the item's own gold has it. Every gold field always counts for recall. Expected flags are recomputed from the gold records with the current rules (`python eval/check_gold.py --fix …`); the published run-1 and run-2 files keep the flags of their time.

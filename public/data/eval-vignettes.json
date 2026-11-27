@@ -1,24 +1,24 @@
 {
- "run_at": "2026-11-27T08:53:10.949Z",
+ "run_at": "2026-11-27T09:46:17.096Z",
  "set": "vignettes",
- "ruleset": "mohfw-2026.2",
- "items": 30,
+ "ruleset": "mohfw-2026.3",
+ "items": 40,
  "refer": {
-  "positives": 25,
-  "negatives": 5,
-  "tp": 25,
+  "positives": 33,
+  "negatives": 7,
+  "tp": 33,
   "fn": 0,
-  "tn": 5,
+  "tn": 7,
   "fp": 0,
   "sensitivity": 100,
   "specificity": 100
  },
  "urgent": {
-  "gold": 14,
-  "caught": 14,
+  "gold": 18,
+  "caught": 18,
   "recall": 100,
-  "predicted": 14,
-  "precision": 100
+  "predicted": 20,
+  "precision": 90
  },
  "rows": [
   {
@@ -680,6 +680,218 @@
     "symptoms": {
      "dizziness": true
     }
+   },
+   "agree": true
+  },
+  {
+   "id": "v-31",
+   "type": "anc",
+   "said": "Sunita saat mahine ki hai, temperature 103 hai, kal se.",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "anc_high_fever"
+   ],
+   "record": {
+    "type": "anc",
+    "name": "Sunita",
+    "temp_c": 39.4,
+    "temp_f": 103,
+    "month": 7
+   },
+   "agree": true
+  },
+  {
+   "id": "v-32",
+   "type": "pnc",
+   "said": "Rekha, delivery was 14 days ago, temperature 103 F since morning.",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_high_fever"
+   ],
+   "record": {
+    "type": "pnc",
+    "name": "Rekha",
+    "temp_c": 39.4,
+    "temp_f": 103,
+    "day": 14
+   },
+   "agree": true
+  },
+  {
+   "id": "v-33",
+   "type": "anc",
+   "said": "Meena aathva mahina, teen ghante se dard ho raha hai, labour shuru lag raha hai.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "anc_preterm_labour"
+   ],
+   "record": {
+    "type": "anc",
+    "name": "Meena",
+    "month": 8,
+    "labour_hours": 3,
+    "symptoms": {
+     "labour_pain": true
+    }
+   },
+   "agree": false
+  },
+  {
+   "id": "v-34",
+   "type": "newborn",
+   "said": "Kavita ka baby 34 hafte mein paida hua tha, aaj paanchva din, doodh achha pee raha, badan garam nahi.",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [
+    "nb_preterm"
+   ],
+   "record": {
+    "type": "newborn",
+    "name": "Kavita",
+    "day": 5,
+    "weeks_at_birth": 34,
+    "preterm": true,
+    "feeding": "good",
+    "symptoms": {
+     "hot_to_touch": false
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v-35",
+   "type": "newborn",
+   "said": "Baby chhatha din, pet phula hua hai aur doodh kam pee raha hai.",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "nb_sepsis_signs",
+    "nb_poor_feeding",
+    "nb_abdominal_distension"
+   ],
+   "record": {
+    "type": "newborn",
+    "day": 6,
+    "feeding": "poor",
+    "symptoms": {
+     "abdominal_distension": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v-36",
+   "type": "pnc",
+   "said": "Pooja ki delivery ko aath din, pair ki pindli mein sujan aur dard hai.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": false,
+   "flags": [
+    "pnc_calf_pain"
+   ],
+   "record": {
+    "type": "pnc",
+    "name": "Pooja",
+    "day": 8,
+    "symptoms": {
+     "calf_pain": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v-37",
+   "type": "anc",
+   "said": "Rani saatva mahina, pichli baar bachcha mara hua paida hua tha, BP 110 by 70, koi takleef nahi.",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [
+    "anc_high_risk"
+   ],
+   "record": {
+    "type": "anc",
+    "name": "Rani",
+    "bp_sys": 110,
+    "bp_dia": 70,
+    "month": 7,
+    "prev_stillbirth": true
+   },
+   "agree": true
+  },
+  {
+   "id": "v-38",
+   "type": "pnc",
+   "said": "Day 4 after delivery, she has a severe headache and blurred vision.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_neuro",
+    "pnc_headache"
+   ],
+   "record": {
+    "type": "pnc",
+    "day": 4,
+    "symptoms": {
+     "severe_headache": true,
+     "blurred_vision": true
+    }
+   },
+   "agree": false
+  },
+  {
+   "id": "v-39",
+   "type": "newborn",
+   "said": "Baby ko daure pad rahe hain, teesra din.",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "nb_convulsions"
+   ],
+   "record": {
+    "type": "newborn",
+    "day": 3,
+    "symptoms": {
+     "convulsions": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v-40",
+   "type": "anc",
+   "said": "Seema aathva mahina, bachcha ghoom nahi raha pet mein kal se.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": false,
+   "flags": [
+    "anc_fetal_movement"
+   ],
+   "record": {
+    "type": "anc",
+    "name": "Seema",
+    "month": 8,
+    "fetal_movement": "absent"
    },
    "agree": true
   }

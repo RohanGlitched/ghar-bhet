@@ -1,7 +1,7 @@
 {
  "set": "heldout",
- "run_at": "2026-11-27T08:53:10.811Z",
- "ruleset": "mohfw-2026.2",
+ "run_at": "2026-11-27T09:46:16.658Z",
+ "ruleset": "mohfw-2026.3",
  "typed": {
   "mode": "typed",
   "items": 60,
@@ -352,7 +352,7 @@
    "correct": 87,
    "recall": 94.6,
    "precision": 96.7,
-   "refer_now_recall": 93.1
+   "refer_now_recall": 93.2
   },
   "exact_visits": 88.3,
   "by_field": {

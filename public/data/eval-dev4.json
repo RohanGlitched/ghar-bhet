@@ -1,0 +1,732 @@
+{
+ "set": "dev4",
+ "run_at": "2026-11-27T09:46:16.447Z",
+ "ruleset": "mohfw-2026.3",
+ "typed": {
+  "mode": "typed",
+  "items": 51,
+  "fields": {
+   "gold": 176,
+   "predicted": 176,
+   "correct": 176,
+   "recall": 100,
+   "precision": 100
+  },
+  "type_detected": 100,
+  "danger": {
+   "visits": 22,
+   "caught": 22,
+   "caught_pct": 100,
+   "normal_visits": 29,
+   "false_alarms": 0,
+   "false_alarm_pct": 0
+  },
+  "flags": {
+   "gold": 37,
+   "predicted": 37,
+   "correct": 37,
+   "recall": 100,
+   "precision": 100,
+   "refer_now_recall": 100
+  },
+  "exact_visits": 100,
+  "by_field": {
+   "name": {
+    "gold": 51,
+    "hit": 51,
+    "pred": 51,
+    "recall": 100,
+    "precision": 100
+   },
+   "day": {
+    "gold": 26,
+    "hit": 26,
+    "pred": 26,
+    "recall": 100,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 25,
+    "hit": 25,
+    "pred": 25,
+    "recall": 100,
+    "precision": 100
+   },
+   "feeding": {
+    "gold": 9,
+    "hit": 9,
+    "pred": 9,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks_at_birth": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "preterm": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "weight_g": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "birth_place": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "month": {
+    "gold": 19,
+    "hit": 19,
+    "pred": 19,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_c": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_f": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "malpresentation": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_stillbirth": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "diabetes": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "rh_negative": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "hiv_syphilis": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "heart_disease": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "previous_births": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_preterm": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "td_doses": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "height_cm": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   }
+  },
+  "by_tag": {
+   "local-idiom": {
+    "n": 9,
+    "ok": 9,
+    "pct": 100
+   },
+   "new-rule": {
+    "n": 17,
+    "ok": 17,
+    "pct": 100
+   },
+   "numbers-digits": {
+    "n": 26,
+    "ok": 26,
+    "pct": 100
+   },
+   "wrong-subject": {
+    "n": 5,
+    "ok": 5,
+    "pct": 100
+   },
+   "subject-ambiguity": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "normal-visit": {
+    "n": 16,
+    "ok": 16,
+    "pct": 100
+   },
+   "watch-only": {
+    "n": 13,
+    "ok": 13,
+    "pct": 100
+   },
+   "multi-sign": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "numbers-in-words": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "borderline": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "negation": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "doubt": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "fahrenheit": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "no-number-fever": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "high-risk-history": {
+    "n": 5,
+    "ok": 5,
+    "pct": 100
+   },
+   "distractor-number": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "list-negation": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "mild": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "fraction-words": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "name-correction": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   }
+  },
+  "by_lang": {
+   "hi/roman": {
+    "n": 39,
+    "ok": 39,
+    "pct": 100
+   },
+   "en/roman": {
+    "n": 8,
+    "ok": 8,
+    "pct": 100
+   },
+   "hi/devanagari": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "mr/devanagari": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   }
+  },
+  "misses": []
+ },
+ "auto": {
+  "mode": "auto",
+  "items": 51,
+  "fields": {
+   "gold": 176,
+   "predicted": 170,
+   "correct": 170,
+   "recall": 96.6,
+   "precision": 100
+  },
+  "type_detected": 94.1,
+  "danger": {
+   "visits": 22,
+   "caught": 22,
+   "caught_pct": 100,
+   "normal_visits": 29,
+   "false_alarms": 0,
+   "false_alarm_pct": 0
+  },
+  "flags": {
+   "gold": 37,
+   "predicted": 36,
+   "correct": 35,
+   "recall": 94.6,
+   "precision": 97.2,
+   "refer_now_recall": 95.5
+  },
+  "exact_visits": 94.1,
+  "by_field": {
+   "name": {
+    "gold": 51,
+    "hit": 51,
+    "pred": 51,
+    "recall": 100,
+    "precision": 100
+   },
+   "day": {
+    "gold": 26,
+    "hit": 25,
+    "pred": 25,
+    "recall": 96.2,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 25,
+    "hit": 25,
+    "pred": 25,
+    "recall": 100,
+    "precision": 100
+   },
+   "feeding": {
+    "gold": 9,
+    "hit": 8,
+    "pred": 8,
+    "recall": 88.9,
+    "precision": 100
+   },
+   "weeks_at_birth": {
+    "gold": 1,
+    "hit": 0,
+    "pred": 0,
+    "recall": 0,
+    "precision": null
+   },
+   "preterm": {
+    "gold": 2,
+    "hit": 1,
+    "pred": 1,
+    "recall": 50,
+    "precision": 100
+   },
+   "weight_g": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "birth_place": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "month": {
+    "gold": 19,
+    "hit": 17,
+    "pred": 17,
+    "recall": 89.5,
+    "precision": 100
+   },
+   "temp_c": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_f": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "malpresentation": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_stillbirth": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "diabetes": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "rh_negative": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "hiv_syphilis": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "heart_disease": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "previous_births": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_preterm": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "td_doses": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "height_cm": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   }
+  },
+  "by_tag": {
+   "local-idiom": {
+    "n": 9,
+    "ok": 9,
+    "pct": 100
+   },
+   "new-rule": {
+    "n": 17,
+    "ok": 15,
+    "pct": 88.2
+   },
+   "numbers-digits": {
+    "n": 26,
+    "ok": 24,
+    "pct": 92.3
+   },
+   "wrong-subject": {
+    "n": 5,
+    "ok": 5,
+    "pct": 100
+   },
+   "subject-ambiguity": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "normal-visit": {
+    "n": 16,
+    "ok": 15,
+    "pct": 93.8
+   },
+   "watch-only": {
+    "n": 13,
+    "ok": 12,
+    "pct": 92.3
+   },
+   "multi-sign": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "numbers-in-words": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "borderline": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "negation": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "doubt": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "fahrenheit": {
+    "n": 4,
+    "ok": 3,
+    "pct": 75
+   },
+   "no-number-fever": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "high-risk-history": {
+    "n": 5,
+    "ok": 5,
+    "pct": 100
+   },
+   "distractor-number": {
+    "n": 2,
+    "ok": 1,
+    "pct": 50
+   },
+   "list-negation": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "mild": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "fraction-words": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "name-correction": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   }
+  },
+  "by_lang": {
+   "hi/roman": {
+    "n": 39,
+    "ok": 36,
+    "pct": 92.3
+   },
+   "en/roman": {
+    "n": 8,
+    "ok": 8,
+    "pct": 100
+   },
+   "hi/devanagari": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "mr/devanagari": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   }
+  },
+  "misses": [
+   {
+    "id": "d4-nb-008",
+    "said": "Anu ka baby 34 hafte mein paida hua tha, aaj paanchva din, doodh achha pee raha.",
+    "wrong": [
+     "day: want 5 got undefined",
+     "weeks_at_birth: want 34 got undefined",
+     "preterm: want true got undefined",
+     "feeding: want \"good\" got undefined"
+    ],
+    "flags_want": [
+     "nb_preterm"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "d4-anc-001",
+    "said": "Sunita saat mahine ki hai, temperature 103 hai, kal se.",
+    "wrong": [
+     "month: want 7 got undefined"
+    ],
+    "flags_want": [
+     "anc_high_fever"
+    ],
+    "flags_got": [
+     "nb_fever"
+    ]
+   },
+   {
+    "id": "d4-anc-025",
+    "said": "Savita, aathva mahina, pichli delivery mein khoon chadhaya tha, abhi theek hai.",
+    "wrong": [
+     "month: want 8 got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   }
+  ]
+ }
+}

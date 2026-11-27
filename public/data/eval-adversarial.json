@@ -1,0 +1,1168 @@
+{
+ "set": "adversarial",
+ "run_at": "2026-11-27T09:46:16.954Z",
+ "ruleset": "mohfw-2026.3",
+ "typed": {
+  "mode": "typed",
+  "items": 100,
+  "fields": {
+   "gold": 514,
+   "predicted": 514,
+   "correct": 514,
+   "recall": 100,
+   "precision": 100
+  },
+  "type_detected": 100,
+  "danger": {
+   "visits": 59,
+   "caught": 59,
+   "caught_pct": 100,
+   "normal_visits": 41,
+   "false_alarms": 0,
+   "false_alarm_pct": 0
+  },
+  "flags": {
+   "gold": 121,
+   "predicted": 121,
+   "correct": 121,
+   "recall": 100,
+   "precision": 100,
+   "refer_now_recall": 100
+  },
+  "exact_visits": 100,
+  "by_field": {
+   "name": {
+    "gold": 100,
+    "hit": 100,
+    "pred": 100,
+    "recall": 100,
+    "precision": 100
+   },
+   "day": {
+    "gold": 65,
+    "hit": 65,
+    "pred": 65,
+    "recall": 100,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 142,
+    "hit": 142,
+    "pred": 142,
+    "recall": 100,
+    "precision": 100
+   },
+   "weight_g": {
+    "gold": 22,
+    "hit": 22,
+    "pred": 22,
+    "recall": 100,
+    "precision": 100
+   },
+   "feeding": {
+    "gold": 31,
+    "hit": 31,
+    "pred": 31,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_c": {
+    "gold": 14,
+    "hit": 14,
+    "pred": 14,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_f": {
+    "gold": 10,
+    "hit": 10,
+    "pred": 10,
+    "recall": 100,
+    "precision": 100
+   },
+   "resp_rate": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "birth_weight_g": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "month": {
+    "gold": 24,
+    "hit": 24,
+    "pred": 24,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 21,
+    "hit": 21,
+    "pred": 21,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 21,
+    "hit": 21,
+    "pred": 21,
+    "recall": 100,
+    "precision": 100
+   },
+   "albumin": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 10,
+    "hit": 10,
+    "pred": 10,
+    "recall": 100,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 10,
+    "hit": 10,
+    "pred": 10,
+    "recall": 100,
+    "precision": 100
+   },
+   "ifa_tablets": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "weight_kg": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "age": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "twins": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_caesarean": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "height_cm": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "labour_hours": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_eclampsia": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_pph": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 8,
+    "hit": 8,
+    "pred": 8,
+    "recall": 100,
+    "precision": 100
+   }
+  },
+  "by_tag": {
+   "colloquial-danger": {
+    "n": 25,
+    "ok": 25,
+    "pct": 100
+   },
+   "filler": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "past-value": {
+    "n": 11,
+    "ok": 11,
+    "pct": 100
+   },
+   "normal": {
+    "n": 28,
+    "ok": 28,
+    "pct": 100
+   },
+   "negation": {
+    "n": 24,
+    "ok": 24,
+    "pct": 100
+   },
+   "numbers-in-words": {
+    "n": 26,
+    "ok": 26,
+    "pct": 100
+   },
+   "normal-visit": {
+    "n": 27,
+    "ok": 27,
+    "pct": 100
+   },
+   "wrong-subject": {
+    "n": 10,
+    "ok": 10,
+    "pct": 100
+   },
+   "sepsis-count": {
+    "n": 8,
+    "ok": 8,
+    "pct": 100
+   },
+   "clinical-english": {
+    "n": 14,
+    "ok": 14,
+    "pct": 100
+   },
+   "fahrenheit": {
+    "n": 8,
+    "ok": 8,
+    "pct": 100
+   },
+   "comma-number": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "watch-only": {
+    "n": 14,
+    "ok": 14,
+    "pct": 100
+   },
+   "name-like-word": {
+    "n": 14,
+    "ok": 14,
+    "pct": 100
+   },
+   "day-boundary": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "boundary": {
+    "n": 20,
+    "ok": 20,
+    "pct": 100
+   },
+   "fractions": {
+    "n": 11,
+    "ok": 11,
+    "pct": 100
+   },
+   "self-correction": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "hinglish": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "not-in-spec": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "negated-list": {
+    "n": 6,
+    "ok": 6,
+    "pct": 100
+   },
+   "celsius": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "marathi-she-hundreds": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "temp-word-not-hot": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "duration-not-day": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "weeks-vs-day": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "question-answer-negation": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "kilo-gram": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "unitless-temp": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "english-in-devanagari": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "range": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "noted-not-flag": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "implausible-weight": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "long-rambling": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "bp-upar-neeche": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "albumin-plus-plus": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "feet-vs-face": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "bp-bata": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "rule-overlap": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "denies-list": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "bp-slash": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "negation-is-danger": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "mild-vs-severe": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "bp-words-over": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "risk-items": {
+    "n": 5,
+    "ok": 5,
+    "pct": 100
+   },
+   "mild-still-danger": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "khoon-not-hb": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "bp-par": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "months-vs-weeks": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "fever-exclusion": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "marathi-english": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "indian-english": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "subject-both": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   }
+  },
+  "by_lang": {
+   "hi/roman": {
+    "n": 30,
+    "ok": 30,
+    "pct": 100
+   },
+   "mr/devanagari": {
+    "n": 12,
+    "ok": 12,
+    "pct": 100
+   },
+   "hi/devanagari": {
+    "n": 20,
+    "ok": 20,
+    "pct": 100
+   },
+   "en/roman": {
+    "n": 21,
+    "ok": 21,
+    "pct": 100
+   },
+   "mr/roman": {
+    "n": 10,
+    "ok": 10,
+    "pct": 100
+   },
+   "mix/roman": {
+    "n": 5,
+    "ok": 5,
+    "pct": 100
+   },
+   "mix/devanagari": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   }
+  },
+  "misses": []
+ },
+ "auto": {
+  "mode": "auto",
+  "items": 100,
+  "fields": {
+   "gold": 514,
+   "predicted": 497,
+   "correct": 496,
+   "recall": 96.5,
+   "precision": 99.8
+  },
+  "type_detected": 91,
+  "danger": {
+   "visits": 59,
+   "caught": 55,
+   "caught_pct": 93.2,
+   "normal_visits": 41,
+   "false_alarms": 1,
+   "false_alarm_pct": 2.4
+  },
+  "flags": {
+   "gold": 121,
+   "predicted": 112,
+   "correct": 106,
+   "recall": 87.6,
+   "precision": 94.6,
+   "refer_now_recall": 84.1
+  },
+  "exact_visits": 91,
+  "by_field": {
+   "name": {
+    "gold": 100,
+    "hit": 100,
+    "pred": 100,
+    "recall": 100,
+    "precision": 100
+   },
+   "day": {
+    "gold": 65,
+    "hit": 62,
+    "pred": 62,
+    "recall": 95.4,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 142,
+    "hit": 133,
+    "pred": 134,
+    "recall": 93.7,
+    "precision": 99.3
+   },
+   "weight_g": {
+    "gold": 22,
+    "hit": 21,
+    "pred": 21,
+    "recall": 95.5,
+    "precision": 100
+   },
+   "feeding": {
+    "gold": 31,
+    "hit": 31,
+    "pred": 31,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_c": {
+    "gold": 14,
+    "hit": 14,
+    "pred": 14,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_f": {
+    "gold": 10,
+    "hit": 10,
+    "pred": 10,
+    "recall": 100,
+    "precision": 100
+   },
+   "resp_rate": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "birth_weight_g": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "month": {
+    "gold": 24,
+    "hit": 23,
+    "pred": 23,
+    "recall": 95.8,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 21,
+    "hit": 21,
+    "pred": 21,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 21,
+    "hit": 21,
+    "pred": 21,
+    "recall": 100,
+    "precision": 100
+   },
+   "albumin": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 10,
+    "hit": 10,
+    "pred": 10,
+    "recall": 100,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 10,
+    "hit": 9,
+    "pred": 9,
+    "recall": 90,
+    "precision": 100
+   },
+   "ifa_tablets": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "weight_kg": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "age": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "twins": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "prev_caesarean": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "height_cm": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "labour_hours": {
+    "gold": 2,
+    "hit": 0,
+    "pred": 0,
+    "recall": 0,
+    "precision": null
+   },
+   "prev_eclampsia": {
+    "gold": 1,
+    "hit": 0,
+    "pred": 0,
+    "recall": 0,
+    "precision": null
+   },
+   "prev_pph": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 8,
+    "hit": 8,
+    "pred": 8,
+    "recall": 100,
+    "precision": 100
+   }
+  },
+  "by_tag": {
+   "colloquial-danger": {
+    "n": 25,
+    "ok": 22,
+    "pct": 88
+   },
+   "filler": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "past-value": {
+    "n": 11,
+    "ok": 9,
+    "pct": 81.8
+   },
+   "normal": {
+    "n": 28,
+    "ok": 27,
+    "pct": 96.4
+   },
+   "negation": {
+    "n": 24,
+    "ok": 22,
+    "pct": 91.7
+   },
+   "numbers-in-words": {
+    "n": 26,
+    "ok": 23,
+    "pct": 88.5
+   },
+   "normal-visit": {
+    "n": 27,
+    "ok": 27,
+    "pct": 100
+   },
+   "wrong-subject": {
+    "n": 10,
+    "ok": 9,
+    "pct": 90
+   },
+   "sepsis-count": {
+    "n": 8,
+    "ok": 7,
+    "pct": 87.5
+   },
+   "clinical-english": {
+    "n": 14,
+    "ok": 13,
+    "pct": 92.9
+   },
+   "fahrenheit": {
+    "n": 8,
+    "ok": 8,
+    "pct": 100
+   },
+   "comma-number": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "watch-only": {
+    "n": 14,
+    "ok": 13,
+    "pct": 92.9
+   },
+   "name-like-word": {
+    "n": 14,
+    "ok": 13,
+    "pct": 92.9
+   },
+   "day-boundary": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "boundary": {
+    "n": 20,
+    "ok": 18,
+    "pct": 90
+   },
+   "fractions": {
+    "n": 11,
+    "ok": 10,
+    "pct": 90.9
+   },
+   "self-correction": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "hinglish": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "not-in-spec": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "negated-list": {
+    "n": 6,
+    "ok": 6,
+    "pct": 100
+   },
+   "celsius": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "marathi-she-hundreds": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "temp-word-not-hot": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "duration-not-day": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "weeks-vs-day": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "question-answer-negation": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "kilo-gram": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "unitless-temp": {
+    "n": 2,
+    "ok": 1,
+    "pct": 50
+   },
+   "english-in-devanagari": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "range": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "noted-not-flag": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "implausible-weight": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "long-rambling": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "bp-upar-neeche": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "albumin-plus-plus": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "feet-vs-face": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "bp-bata": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "rule-overlap": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "denies-list": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "bp-slash": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "negation-is-danger": {
+    "n": 2,
+    "ok": 1,
+    "pct": 50
+   },
+   "mild-vs-severe": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "bp-words-over": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "risk-items": {
+    "n": 5,
+    "ok": 4,
+    "pct": 80
+   },
+   "mild-still-danger": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "khoon-not-hb": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "bp-par": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "months-vs-weeks": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "fever-exclusion": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "marathi-english": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "indian-english": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "subject-both": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   }
+  },
+  "by_lang": {
+   "hi/roman": {
+    "n": 30,
+    "ok": 29,
+    "pct": 96.7
+   },
+   "mr/devanagari": {
+    "n": 12,
+    "ok": 10,
+    "pct": 83.3
+   },
+   "hi/devanagari": {
+    "n": 20,
+    "ok": 19,
+    "pct": 95
+   },
+   "en/roman": {
+    "n": 21,
+    "ok": 18,
+    "pct": 85.7
+   },
+   "mr/roman": {
+    "n": 10,
+    "ok": 8,
+    "pct": 80
+   },
+   "mix/roman": {
+    "n": 5,
+    "ok": 5,
+    "pct": 100
+   },
+   "mix/devanagari": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   }
+  },
+  "misses": [
+   {
+    "id": "adv-037",
+    "said": "सुषमाच्या बाळाचा बारावा दिवस. अंग खूप गरम आहे, बाळ सुस्त पडलंय, हलवलं तरच थोडी हालचाल करतं. वजन दीड किलो.",
+    "wrong": [
+     "day: want 12 got undefined",
+     "weight_g: want 1500 got undefined",
+     "symptoms.hot_to_touch: want true got undefined",
+     "symptoms.lethargy: want true got undefined"
+    ],
+    "flags_want": [
+     "nb_fever",
+     "nb_lethargy",
+     "nb_sepsis_signs",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "anc_fever"
+    ]
+   },
+   {
+    "id": "adv-055",
+    "said": "Called from home: Neha, full term, labour pains for 12 hours now, water bag not burst yet, no bleeding.",
+    "wrong": [
+     "labour_hours: want 12 got undefined",
+     "symptoms.leaking_fluid: want false got undefined",
+     "symptoms.bleeding: want false got undefined",
+     "symptoms.labour_pain: want true got undefined"
+    ],
+    "flags_want": [
+     "anc_labour"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-056",
+    "said": "ललिता को तेरह घंटे से दर्द हो रहा है, अभी बच्चा नहीं हुआ, घर पर ही है।",
+    "wrong": [
+     "labour_hours: want 13 got undefined"
+    ],
+    "flags_want": [
+     "anc_labour_prolonged"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-062",
+    "said": "शीतलच्या मागच्या बाळंतपणात तिला आकडी आली होती. आता पाचवा महिना, तिच्या बहिणीला पण फिट येतात, पण शीतलला यावेळी काही त्रास नाही.",
+    "wrong": [
+     "prev_eclampsia: want true got undefined",
+     "month: want 5 got undefined",
+     "symptoms.convulsions: extra true"
+    ],
+    "flags_want": [
+     "anc_high_risk"
+    ],
+    "flags_got": [
+     "pnc_convulsions"
+    ]
+   },
+   {
+    "id": "adv-083",
+    "said": "Postnatal day 2, Kamini, BP 164/104, complains of severe headache and blurred vision.",
+    "wrong": [
+     "day: want 2 got undefined"
+    ],
+    "flags_want": [
+     "pnc_headache",
+     "pnc_neuro",
+     "pnc_severe_hypertension"
+    ],
+    "flags_got": [
+     "anc_severe_hypertension",
+     "anc_headache_vision"
+    ]
+   },
+   {
+    "id": "adv-084",
+    "said": "Bindu ka paanchva din, BP ek sau bayalis by atthasi. Sir dard nahi, saans theek.",
+    "wrong": [
+     "day: want 5 got undefined"
+    ],
+    "flags_want": [
+     "pnc_hypertension"
+    ],
+    "flags_got": [
+     "anc_hypertension"
+    ]
+   },
+   {
+    "id": "adv-090",
+    "said": "Kamal tai, bali zalyavar vis divas, laghvi thambavta yet nahi, kapde ole hotat. Taap nahi.",
+    "wrong": [
+     "symptoms.incontinence: want true got undefined",
+     "symptoms.fever: want false got undefined"
+    ],
+    "flags_want": [
+     "pnc_incontinence"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "adv-097",
+    "said": "Mother Gauri, day 5, temperature was 102 last night, now 103 when I checked. Burning urine also.",
+    "wrong": [
+     "symptoms.burning_urine: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_high_fever",
+     "pnc_uti"
+    ],
+    "flags_got": [
+     "nb_fever"
+    ]
+   },
+   {
+    "id": "adv-099",
+    "said": "Yogita, dusra divas, khup raktasrav hotoy, gaadi bharun, hemoglobin aath.",
+    "wrong": [
+     "hb: want 8 got undefined",
+     "symptoms.heavy_bleeding: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_heavy_bleeding"
+    ],
+    "flags_got": []
+   }
+  ]
+ }
+}

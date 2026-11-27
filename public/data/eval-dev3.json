@@ -1,7 +1,7 @@
 {
  "set": "dev3",
- "run_at": "2026-11-27T08:53:10.624Z",
- "ruleset": "mohfw-2026.2",
+ "run_at": "2026-11-27T09:46:16.261Z",
+ "ruleset": "mohfw-2026.3",
  "typed": {
   "mode": "typed",
   "items": 76,
@@ -14,17 +14,17 @@
   },
   "type_detected": 100,
   "danger": {
-   "visits": 45,
-   "caught": 45,
+   "visits": 46,
+   "caught": 46,
    "caught_pct": 100,
-   "normal_visits": 31,
+   "normal_visits": 30,
    "false_alarms": 0,
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 72,
-   "predicted": 72,
-   "correct": 72,
+   "gold": 73,
+   "predicted": 73,
+   "correct": 73,
    "recall": 100,
    "precision": 100,
    "refer_now_recall": 100
@@ -206,7 +206,7 @@
     "ok": 2,
     "pct": 100
    },
-   "judge-case": {
+   "review-case": {
     "n": 33,
     "ok": 33,
     "pct": 100
@@ -217,8 +217,8 @@
     "pct": 100
    },
    "watch-only": {
-    "n": 13,
-    "ok": 13,
+    "n": 12,
+    "ok": 12,
     "pct": 100
    },
    "negation": {
@@ -363,20 +363,20 @@
   },
   "type_detected": 98.7,
   "danger": {
-   "visits": 45,
-   "caught": 45,
+   "visits": 46,
+   "caught": 46,
    "caught_pct": 100,
-   "normal_visits": 31,
+   "normal_visits": 30,
    "false_alarms": 0,
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 72,
-   "predicted": 72,
-   "correct": 69,
-   "recall": 95.8,
-   "precision": 95.8,
-   "refer_now_recall": 94.2
+   "gold": 73,
+   "predicted": 73,
+   "correct": 70,
+   "recall": 95.9,
+   "precision": 95.9,
+   "refer_now_recall": 94.3
   },
   "exact_visits": 98.7,
   "by_field": {
@@ -555,7 +555,7 @@
     "ok": 2,
     "pct": 100
    },
-   "judge-case": {
+   "review-case": {
     "n": 33,
     "ok": 32,
     "pct": 97
@@ -566,8 +566,8 @@
     "pct": 100
    },
    "watch-only": {
-    "n": 13,
-    "ok": 13,
+    "n": 12,
+    "ok": 12,
     "pct": 100
    },
    "negation": {

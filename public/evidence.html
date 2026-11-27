@@ -39,7 +39,7 @@
 <header id="top"></header>
 <main class="wrap e-wrap">
   <h1>How accurately it reads a spoken visit</h1>
-  <p class="lead">We tested the reader on 60 visit transcripts it had never seen. On that first run it filled 281 of 291 fields correctly and caught 37 of 38 danger visits. The transcripts and their right answers were written from the record format and the government rules alone, by a separate AI writing pass that never saw the reader's code; they are written the way ASHAs speak, not recorded.</p>
+  <p class="lead"><b>The numbers to trust are the first runs:</b> 96.6% of fields and 37 of 38 danger visits on 60 visits the reader had never seen; 88.3% of fields and 50 of 59 danger visits on a harder set of 100 written by a separate agent; and on a second, English-heavy independent set of 60, 80.3% of fields and 36 of 39 danger visits, but 9 of 21 normal visits wrongly flagged. Everything else on this page is after tuning or a supporting check. The transcripts and their right answers were written from the record format and the government rules alone, by a separate AI writing pass that never saw the reader's code; they are written the way ASHAs speak, not recorded.</p>
   <p class="faint">Reproduce it: every number here comes from <code>node eval/run.js</code> on files in the <a href="https://github.com/RohanGlitched/ghar-bhet/tree/main/eval">repository's eval folder</a>.</p>
 
   <div class="runs" id="runs"><p class="faint">Loading results…</p></div>
@@ -87,15 +87,15 @@ import { romanize } from "/js/understand.js";
 import { RULE_TABLE } from "/js/rules.js";
 mountChrome("/evidence");
 const get = (f) => fetch(`/data/${f}`).then((r) => r.ok ? r.json() : null).then((d) => (d && !d.pending ? d : null)).catch(() => null);
-const [r1, r2, h2, now, vig, rsW, rsB, adv1, advNow] = await Promise.all(["eval-heldout-run1.json", "eval-heldout-run2.json", "eval-heldout2.json", "eval-heldout.json", "eval-vignettes.json", "eval-realspeech-wispr.json", "eval-realspeech-browser.json", "eval-adversarial-run1.json", "eval-adversarial.json"].map(get));
+const [r1, r2, h2, now, vig, rsW, rsB, adv1, advNow, adv21, adv2Now] = await Promise.all(["eval-heldout-run1.json", "eval-heldout-run2.json", "eval-heldout2.json", "eval-heldout.json", "eval-vignettes.json", "eval-realspeech-wispr.json", "eval-realspeech-browser.json", "eval-adversarial-run1.json", "eval-adversarial.json", "eval-adversarial2-run1.json", "eval-adversarial2.json"].map(get));
 const card = (title, sub, r, cls = "") => r ? `<div class="run ${cls}"><h2>${title}</h2><p class="faint" style="margin:0">${sub}</p><div class="nums">
   <div><b>${r.typed.fields.recall}%</b><span>of fields read right (${r.typed.fields.correct} of ${r.typed.fields.gold})</span></div>
   <div><b>${r.typed.fields.precision}%</b><span>of filled fields correct</span></div>
   <div><b>${r.typed.danger.caught} of ${r.typed.danger.visits}</b><span>danger visits flagged</span></div>
   <div><b>${r.typed.danger.false_alarms} of ${r.typed.danger.normal_visits}</b><span>normal visits wrongly flagged</span></div></div>
-  <p class="faint" style="margin:10px 0 0">${r.typed.items} visits · flags ${r.typed.flags.recall}% recall, ${r.typed.flags.precision}% precision · whole visit exactly right ${r.typed.exact_visits}% · with the visit type guessed instead of picked: ${r.auto.fields.recall}% of fields, ${r.auto.danger.caught} of ${r.auto.danger.visits} danger visits</p></div>` : "";
+  <p class="faint" style="margin:10px 0 0">${r.typed.items} visits · per danger sign (not per visit): ${r.typed.flags.recall}% of signs caught, ${r.typed.flags.precision}% of raised signs were real · whole visit exactly right ${r.typed.exact_visits}% · with the visit type guessed instead of picked: ${r.auto.fields.recall}% of fields, ${r.auto.danger.caught} of ${r.auto.danger.visits} danger visits</p></div>` : "";
 document.getElementById("runs").innerHTML =
-  card("Held-out, first run", "60 sealed sentences, never seen before this run (rule set 2026.1). The honest number.", r1, "headline") +
+  card("Held-out, first run", "60 sealed sentences, never seen before this run (first rule set, mohfw-2026.1, 37 rules). Run once, before any change.", r1, "headline") +
   card("Held-out, after fixes", "Same 60 sentences, after fixing the gaps the first run found (rule set 2026.1).", r2) +
   (now ? card("Held-out today", `Same 60 sentences with today's rule set (${esc(now.ruleset)}). The larger rule table turns 7 visits that were normal under the old rules into referrals (SSBSK 2026 Forms 3 and 4), so the split is ${now.typed.danger.visits} danger / ${now.typed.danger.normal_visits} normal. Tuned after reading them, so not independent.`, now) : "") +
   (h2 ? card("Second sealed set", "60 new sentences written after the fixes, run once.", h2, "headline") : "");
@@ -105,8 +105,10 @@ const rs = (eng, r) => r ? `<div class="run"><h2>Real speech: ${eng}</h2><p clas
   <div><b>${r.spoken.danger.false_alarms} of ${r.spoken.danger.normal_visits}</b><span>normal visits wrongly flagged from speech</span></div>
   <div><b>${r.spoken.fields.precision}%</b><span>of filled fields correct from speech</span></div></div></div>` : "";
 document.getElementById("adv").innerHTML =
-  card("Independent set, first run", "100 tricky visits written by a separate agent that never saw the code: colloquial danger phrases, other people's symptoms, denials, mild vs severe, exact thresholds. The honest number.", adv1, "headline") +
-  (advNow && adv1 && advNow.run_at !== adv1.run_at ? card("Independent set, after fixes", "Same 100 visits after fixing the gaps the first run found. Tuned on, so not independent.", advNow) : "");
+  card("Independent set, first run", "100 tricky visits written by a separate agent that never saw the code: colloquial danger phrases, other people's symptoms, denials, mild vs severe, exact thresholds. Run once, before any change.", adv1, "headline") +
+  (advNow && adv1 && advNow.run_at !== adv1.run_at ? card("Independent set, after fixes", "Same 100 visits after fixing the gaps the first run found. Tuned on, so not independent.", advNow) : "") +
+  card("Second independent set, first run", "60 visits in mostly English and clinical shorthand (\u201cno h/o fits\u201d, \u201ctemp 101.4F\u201d, \u201cwt 2.1kg\u201d), written by another separate agent and run once against the reader as it was. Its false alarms are the weakest number on this page.", adv21, "headline") +
+  (adv2Now && adv21 && adv2Now.run_at !== adv21.run_at ? card("Second independent set, after fixes", "Same 60 after fixing what the first run found. Tuned on, so not independent.", adv2Now) : "");
 document.getElementById("speech").innerHTML = (rs("Wispr Flow", rsW) + rs("browser microphone", rsB)) || `<p class="muted">Not run yet. A person reads 12 of the held-out visits aloud on the <a href="/dictation.html">real speech test page</a>, once through Wispr Flow and once through the browser's microphone; the results appear here.</p>`;
 document.getElementById("vig").innerHTML = vig ? `<div class="run"><h2>Against the guideline text</h2><p class="faint" style="margin:0">${vig.items} short cases, each labelled "should refer" or not, and urgent or not, from the guideline wording before the rules were run.</p><div class="nums">
   <div><b>11 of 24</b><span>should-refer cases caught on the first run, with the old 37-rule table</span></div>

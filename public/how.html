@@ -43,7 +43,7 @@
   </div>
 
   <h2 class="s" id="rules-title">Every rule, with its threshold and source</h2>
-  <p class="muted">Rule set <code id="rs"></code>. <b>Refer today</b> means she must be seen by a doctor or hospital today; where the action says "now", go immediately and call 108. <b>Watch</b> means advise her, check again, and tell the nurse. Newborn rules follow SSBSK 2026, where any single danger sign refers. A sign she mentions that no rule covers is still shown as "Noted: tell the nurse".</p>
+  <p class="muted">Rule set <code id="rs"></code>. <b>Go now</b> means go to the hospital immediately and call 108. <b>Refer today</b> means she must be seen by a doctor or the PHC today. <b>Watch</b> means advise her, check again, and tell the nurse. Newborn rules follow SSBSK 2026, where any single danger sign refers. A sign she mentions that no rule covers is still shown as "Noted: tell the nurse".</p>
   <div class="tblwrap" id="rules"><p class="faint">Loading the rules…</p></div>
 
   <h2 class="s">Words used on this site</h2>
@@ -81,9 +81,9 @@ import { RULE_TABLE, RULESET } from "/js/rules.js";
 mountChrome("/how");
 document.getElementById("rs").textContent = RULESET.id;
 const T = { anc: "Pregnancy", pnc: "Mother after birth", newborn: "Newborn" };
-const nRef = RULE_TABLE.filter((r) => r.severity === "refer_now").length;
-document.getElementById("rules-title").textContent = `All ${RULE_TABLE.length} rules (${nRef} refer today, ${RULE_TABLE.length - nRef} watch), with their thresholds and sources`;
-document.getElementById("rules").innerHTML = `<table class="t"><thead><tr><th>Visit</th><th>Sign</th><th>Threshold</th><th>Level</th><th>What to do</th><th>Source</th></tr></thead><tbody>${RULE_TABLE.map((r) => `<tr><td>${T[r.type]}</td><td>${esc(r.title)}</td><td>${esc(r.threshold || "")}</td><td>${r.severity === "refer_now" ? '<span class="pill refer">refer today</span>' : '<span class="pill watch">watch</span>'}</td><td>${esc(r.action)}</td><td>${esc(r.source)}<br><code class="faint" style="font-size:12px">${esc(r.code)}</code></td></tr>`).join("")}</tbody></table>`;
+const nRef = RULE_TABLE.filter((r) => r.severity === "refer_now").length, nNow = RULE_TABLE.filter((r) => r.severity === "refer_now" && r.urgent).length;
+document.getElementById("rules-title").textContent = `All ${RULE_TABLE.length} rules (${nNow} go now, ${nRef - nNow} refer today, ${RULE_TABLE.length - nRef} watch), with their thresholds and sources`;
+document.getElementById("rules").innerHTML = `<table class="t"><thead><tr><th>Visit</th><th>Sign</th><th>Threshold</th><th>Level</th><th>What to do</th><th>Source</th></tr></thead><tbody>${RULE_TABLE.map((r) => `<tr><td>${T[r.type]}</td><td>${esc(r.title)}</td><td>${esc(r.threshold || "")}</td><td>${r.severity !== "refer_now" ? '<span class="pill watch">watch</span>' : r.urgent ? '<span class="pill refer">go now</span>' : '<span class="pill refer">refer today</span>'}</td><td>${esc(r.action)}</td><td>${esc(r.source)}<br><code class="faint" style="font-size:12px">${esc(r.code)}</code></td></tr>`).join("")}</tbody></table>`;
 </script>
 </body>
 </html>

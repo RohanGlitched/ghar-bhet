@@ -48,13 +48,20 @@ export function seedVillage(now) {
     const person = people.find((p) => p.name === name && p.kind === kind);
     const type = TYPE[kind];
     const { record } = understand(said, type);
-    const flags = checkRecord(record).map(({ code, severity, title, why, action, source }) => ({ code, severity, title, why, action, source }));
+    const flags = checkRecord(record).map(({ code, severity, urgent, title, why, action, source }) => ({ code, severity, urgent: !!urgent, title, why, action, source }));
     const refer = flags.some((f) => f.severity === "refer_now");
+    const urgent = flags.some((f) => f.severity === "refer_now" && f.urgent);
     const at = now - hoursAgo * HOUR;
     return {
       id: "v" + (i + 1), sample: true, at, type, personId: person.id, name, record, flags, ruleset: RULESET.id, said: [said], lang, via: "voice", asha: "Sample ASHA",
-      referral: refer ? (hoursAgo > 40 ? { status: "seen", at, seenAt: at + 5 * HOUR, seenBy: "ANM" } : { status: "open", at }) : null,
+      referral: refer ? (hoursAgo > 40 ? { status: "seen", at, urgent, seenAt: at + 5 * HOUR, seenBy: "ANM" } : { status: "open", at, urgent }) : null,
     };
   }).sort((a, b) => a.at - b.at);
+  // a few referral outcomes, so the board shows the whole loop: reached, and a refusal to follow up
+  const OUTCOME = { Saroj: ["refused", 8], Shabnam: ["reached", 6] };
+  for (const [name, [outcome, hoursAfter]] of Object.entries(OUTCOME)) {
+    const v = visits.find((x) => x.name === name && x.referral);
+    if (v) Object.assign(v.referral, { outcome, outcomeAt: v.at + hoursAfter * HOUR, outcomeBy: "Sample ASHA", changedAt: v.at + hoursAfter * HOUR });
+  }
   return { village: { name: "Sample village", block: "Pune district", sample: true, asha: "Sample ASHA", anmPhone: "" }, people, visits };
 }

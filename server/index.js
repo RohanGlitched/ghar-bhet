@@ -52,28 +52,33 @@ function expand6(ip) {
   return [...a, ...fill, ...b].map((x) => x.toLowerCase());
 }
 
-// ---------- write limits: per visitor, and for everyone together ----------
-const PER_VISITOR = num("RATE_PER_MIN", 20), GLOBAL = num("RATE_GLOBAL_PER_MIN", 300), MAX_KEYS = 5000;
-const writes = new Map(); // key -> recent timestamps; Map order = least recently used first
-let everyone = [];
-function allowWrite(req) {
-  const key = clientKey(req), now = Date.now();
-  everyone = everyone.filter((t) => now - t < MINUTE);
-  const recent = (writes.get(key) || []).filter((t) => now - t < MINUTE);
-  writes.delete(key);
-  if (recent.length >= PER_VISITOR) { writes.set(key, recent); return "visitor"; }
-  if (everyone.length >= GLOBAL) { writes.set(key, recent); return "global"; }
-  recent.push(now); everyone.push(now); writes.set(key, recent);
-  while (writes.size > MAX_KEYS) writes.delete(writes.keys().next().value); // forget the oldest visitors, not everyone
-  return null;
+// ---------- limits: per visitor, and for everyone together ----------
+const MAX_KEYS = 5000;
+function limiter(perVisitor, global) {
+  const seen = new Map(); // key -> recent timestamps; Map order = least recently used first
+  let everyone = [];
+  return (req) => {
+    const key = clientKey(req), now = Date.now();
+    everyone = everyone.filter((t) => now - t < MINUTE);
+    const recent = (seen.get(key) || []).filter((t) => now - t < MINUTE);
+    seen.delete(key);
+    if (recent.length >= perVisitor) { seen.set(key, recent); return "visitor"; }
+    if (everyone.length >= global) { seen.set(key, recent); return "global"; }
+    recent.push(now); everyone.push(now); seen.set(key, recent);
+    while (seen.size > MAX_KEYS) seen.delete(seen.keys().next().value); // forget the oldest visitors, not everyone
+    return null;
+  };
 }
+const allowWrite = limiter(num("RATE_PER_MIN", 20), num("RATE_GLOBAL_PER_MIN", 300));
+// reads are cheap but not free: a board polling every 5 s uses 12 a minute
+const allowRead = limiter(num("READ_RATE_PER_MIN", 300), num("READ_RATE_GLOBAL_PER_MIN", 6000));
 function limited(res, why, what) {
   res.setHeader("retry-after", "60");
   return send(res, 429, { error: why === "global" ? "The demo register is very busy right now. Wait a minute and try again; nothing on your screen is lost." : `Too many ${what} from this device in a minute. Wait a moment and try again.` });
 }
 
 // ---------- the live stream to the nurse's board ----------
-const SSE_MAX = num("SSE_MAX", 200), SSE_PER_VISITOR = num("SSE_PER_IP", 6);
+const SSE_MAX = num("SSE_MAX", 200), SSE_PER_VISITOR = num("SSE_PER_IP", 30); // a judging room shares one address
 const streams = new Map(); // res -> key
 function broadcast(event, data) {
   const msg = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
@@ -103,13 +108,22 @@ const personView = (p) => p && { id: p.id, kind: p.kind, name: p.name, sample: !
 async function api(req, res, url) {
   const p = url.pathname;
   if (p === "/api/health") return send(res, 200, { ok: true, ruleset: RULESET.id });
+  if (req.method === "GET" && p !== "/api/stream") {
+    const why = allowRead(req);
+    if (why) return limited(res, why, "requests");
+  }
   if (p === "/api/state" && req.method === "GET") return send(res, 200, store.state());
   if (p === "/api/rules") return send(res, 200, { ruleset: RULESET, rules: RULE_TABLE });
+  if (p === "/api/export.csv" && req.method === "GET") {
+    const day = new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 10);
+    res.writeHead(200, { "content-type": "text/csv; charset=utf-8", "content-disposition": `attachment; filename="ghar-bhet-register-${day}.csv"`, "cache-control": "no-store", ...SECURITY });
+    return res.end(store.exportCsv());
+  }
   if (p === "/api/visits" && req.method === "POST") {
     const why = allowWrite(req);
     if (why) return limited(res, why, "visits");
     const { visit: v, person, matched } = store.addVisit(await readBody(req));
-    broadcast("visit", { id: v.id, name: v.name, type: v.type, refer: !!v.referral, flags: v.flags.map((f) => f.title) });
+    broadcast("visit", { id: v.id, name: v.name, type: v.type, refer: !!v.referral, urgent: !!v.referral?.urgent, flags: v.flags.map((f) => f.title) });
     broadcast("state", store.state());
     return send(res, 200, { ...v, person: personView(person), matched });
   }
@@ -117,16 +131,19 @@ async function api(req, res, url) {
     const v = store.visit(p.split("/")[3]);
     return v ? send(res, 200, { ...v, person: store.person(v.personId), village: store.db.village }) : send(res, 404, { error: "No visit with that id." });
   }
-  const ref = p.match(/^\/api\/referrals\/([^/]+)\/(seen|open)$/);
+  const ref = p.match(/^\/api\/referrals\/([^/]+)\/(seen|open|outcome)$/);
   if (ref && req.method === "POST") {
     const why = allowWrite(req);
     if (why) return limited(res, why, "changes");
     const b = await readBody(req);
-    const v = ref[2] === "seen" ? store.ackReferral(ref[1], b.by) : store.reopenReferral(ref[1], b.by);
+    const v = ref[2] === "seen" ? store.ackReferral(ref[1], b.by) : ref[2] === "open" ? store.reopenReferral(ref[1], b.by) : store.setOutcome(ref[1], b.outcome, b.by);
     if (!v) return send(res, 404, { error: "No referral with that id." });
     broadcast("state", store.state());
     const r = v.referral;
-    return send(res, 200, { ok: true, id: v.id, status: r.status, seenAt: r.seenAt || null, seenBy: r.seenBy || null, reopenedAt: r.reopenedAt || null });
+    return send(res, 200, {
+      ok: true, id: v.id, status: r.status, urgent: !!r.urgent, seenAt: r.seenAt || null, seenBy: r.seenBy || null, reopenedAt: r.reopenedAt || null,
+      outcome: r.outcome || null, outcomeAt: r.outcomeAt || null, outcomeBy: r.outcomeBy || null,
+    });
   }
   if (p === "/api/reset" && req.method === "POST") {
     if (process.env.ALLOW_RESET !== "1") return send(res, 403, { error: "Reset is turned off on this server." });

@@ -67,7 +67,7 @@ test("a referral marked seen by mistake can be opened again", async () => {
   assert.equal(r.status, "seen"); assert.equal(r.seenBy, "Someone"); assert.ok(r.seenAt); assert.equal(r.sample, false);
   const res = await post(BASE, `/api/referrals/${v.id}/open`, { by: "ANM" });
   assert.equal(res.status, 200);
-  assert.deepEqual(Object.keys(await res.json()).sort(), ["id", "ok", "reopenedAt", "seenAt", "seenBy", "status"]);
+  assert.deepEqual(Object.keys(await res.json()).sort(), ["id", "ok", "outcome", "outcomeAt", "outcomeBy", "reopenedAt", "seenAt", "seenBy", "status", "urgent"]);
   r = (await state(BASE)).referrals.find((x) => x.id === v.id);
   assert.equal(r.status, "open"); assert.equal(r.seenAt, null); assert.equal(r.seenBy, null); assert.ok(r.reopenedAt);
   assert.equal((await post(BASE, "/api/referrals/nope/open", {})).status, 404);
@@ -176,13 +176,133 @@ test("with no age said, a name joins only when exactly one person has it", async
   assert.equal(b.matched, "new");
 });
 
+// ---------- the server re-reads what the ASHA said ----------
+const FITS = "Sunita ka baby 5 din ka, wajan 3 kilo, jhatke aa rahe hain, bukhar 103";
+
+test("a danger sign in the ASHA's words but not in the record is added as a server flag and refers", async () => {
+  const v = await (await post(BASE, "/api/visits", { type: "newborn", record: { name: "Trans", day: 5, weight_g: 3000 }, said: [FITS] })).json();
+  const added = v.flags.filter((f) => f.from === "transcript");
+  assert.deepEqual(added.map((f) => f.code).sort(), ["nb_convulsions", "nb_fever"]);
+  assert.ok(added.every((f) => f.note === "said in the visit but not in the record" && f.severity === "refer_now"));
+  assert.equal(v.referral.status, "open");
+  assert.equal(v.referral.urgent, true);
+  assert.deepEqual(v.transcript.added.sort(), ["nb_convulsions", "nb_fever"]);
+  assert.equal(v.transcript.heard.symptoms.convulsions, true);
+  assert.equal(v.record.symptoms, undefined, "the record itself is kept as the ASHA saved it");
+  const r = (await state(BASE)).referrals.find((x) => x.id === v.id);
+  assert.equal(r.fromTranscript, true);
+  assert.ok(r.flags.some((f) => f.code === "nb_convulsions" && f.from === "transcript" && f.urgent));
+  const slip = await (await fetch(BASE + `/api/visits/${v.id}`)).json();
+  assert.ok(slip.flags.some((f) => f.from === "transcript"));
+});
+
+test("the transcript never removes the record's flags, and the record's explicit answers win", async () => {
+  // record says no fits (asked and answered on screen); words say fits: the record wins, fever is still added
+  const a = await (await post(BASE, "/api/visits", { type: "newborn", record: { name: "Trans", day: 5, weight_g: 3000, symptoms: { convulsions: false } }, said: [FITS] })).json();
+  assert.ok(!a.flags.some((f) => f.code === "nb_convulsions"));
+  assert.ok(a.flags.some((f) => f.code === "nb_fever" && f.from === "transcript"));
+  // a record flag stays even when the words are calm
+  const b = await (await post(BASE, "/api/visits", { type: "newborn", record: { name: "Trans", day: 5, weight_g: 1600 }, said: ["baby theek hai, doodh pee raha hai"] })).json();
+  assert.ok(b.flags.some((f) => f.code === "nb_very_low_weight" && !f.from));
+  assert.deepEqual(b.transcript.added, []);
+  // nothing extra when the record already has it
+  const c = await (await post(BASE, "/api/visits", { type: "anc", record: { name: "Meena", weeks: 30, bp_sys: 160, bp_dia: 112 }, said: ["Meena 30 hafte, BP 160 by 112"] })).json();
+  assert.ok(!c.flags.some((f) => f.from === "transcript"));
+  // an empty record with words that say something is read from the words
+  const d = await (await post(BASE, "/api/visits", { type: "pnc", record: { name: "Wordsonly" }, said: ["Sudha teesra din, bahut khoon ja raha hai, 6 pad"] })).json();
+  assert.ok(d.flags.some((f) => f.code === "pnc_heavy_bleeding" && f.from === "transcript"));
+});
+
+test("urgent referrals are marked and come first among open referrals", async () => {
+  const u = await (await post(BASE, "/api/visits", { type: "anc", record: { name: "Urgentone", weeks: 30, bp_sys: 160, bp_dia: 115 } })).json();
+  assert.equal(u.referral.urgent, true);
+  assert.ok(u.flags[0].urgent);
+  const n = await (await post(BASE, "/api/visits", { type: "anc", record: { name: "Calmone", weeks: 30, bp_sys: 142, bp_dia: 92 } })).json();
+  assert.equal(n.referral.status, "open");
+  assert.equal(n.referral.urgent, false);
+  const s = await state(BASE);
+  const open = s.referrals.filter((r) => r.status === "open");
+  const firstCalm = open.findIndex((r) => !r.urgent);
+  assert.ok(firstCalm > 0 && open.slice(firstCalm).every((r) => !r.urgent), "every urgent open referral is above every non-urgent one");
+  assert.ok(open.findIndex((r) => r.id === u.id) < open.findIndex((r) => r.id === n.id));
+  assert.equal(s.totals.urgentReferrals, open.filter((r) => r.urgent).length);
+});
+
+test("a referral's outcome is stored; refused and unreachable become follow-ups", async () => {
+  const v = await (await post(BASE, "/api/visits", { type: "newborn", record: { name: "Outcomebaby", day: 9, weight_g: 1500 } })).json();
+  assert.equal((await post(BASE, `/api/referrals/${v.id}/outcome`, { outcome: "went home" })).status, 400);
+  const r = await (await post(BASE, `/api/referrals/${v.id}/outcome`, { outcome: "refused", by: "ASHA Sunanda" })).json();
+  assert.equal(r.outcome, "refused"); assert.equal(r.outcomeBy, "ASHA Sunanda"); assert.ok(r.outcomeAt);
+  let s = await state(BASE);
+  const f = s.followups.find((x) => x.referralId === v.id);
+  assert.ok(f, "a follow-up exists");
+  assert.equal(f.isDue, false, "due from the next day");
+  assert.ok(f.due > Date.now() && f.due - Date.now() <= 24 * 3600e3);
+  assert.match(f.reason, /refused/);
+  assert.equal(s.referrals.find((x) => x.id === v.id).outcome, "refused");
+  assert.ok(s.changes.some((c) => c.referralId === v.id && c.action === "outcome:refused" && c.by === "ASHA Sunanda"));
+  await post(BASE, `/api/referrals/${v.id}/outcome`, { outcome: "admitted" });
+  s = await state(BASE);
+  assert.ok(!s.followups.some((x) => x.referralId === v.id), "admitted closes the follow-up");
+  assert.equal((await post(BASE, "/api/referrals/nope/outcome", { outcome: "reached" })).status, 404);
+});
+
+test("follow-up timing: no outcome after 24 hours, next day after a refusal, closed by a newer visit", async () => {
+  const { Store } = await import("../server/store.js");
+  const st = new Store(mkdtempSync(join(tmpdir(), "gbf-")), { bucket: "" });
+  await st.load();
+  const { visit: v } = st.addVisit({ type: "anc", record: { name: "Timing", weeks: 30, bp_sys: 150, bp_dia: 100 } });
+  const H = 3600e3;
+  assert.ok(!st.followups(Date.now() + 23 * H).some((f) => f.referralId === v.id), "not before 24 h");
+  const late = st.followups(Date.now() + 25 * H).find((f) => f.referralId === v.id);
+  assert.ok(late && late.isDue && /No outcome/.test(late.reason));
+  st.setOutcome(v.id, "not_reachable", "ASHA");
+  const nr = st.followups(Date.now()).find((f) => f.referralId === v.id);
+  assert.ok(nr && !nr.isDue && /could not be reached/.test(nr.reason));
+  assert.ok(st.followups(nr.due + 1).find((f) => f.referralId === v.id).isDue, "due on the next day");
+  await new Promise((r) => setTimeout(r, 5));
+  st.addVisit({ type: "anc", personId: v.personId, record: { name: "Timing", weeks: 30, bp_sys: 130, bp_dia: 80 } });
+  assert.ok(!st.followups(nr.due + 1).some((f) => f.referralId === v.id), "a newer visit closes it");
+  clearTimeout(st.timer);
+});
+
+test("the register exports as CSV for the ANM's monthly register", async () => {
+  await post(BASE, "/api/visits", { type: "anc", asha: "=HYPERLINK(evil)", record: { name: "Csvwoman", weeks: 28, bp_sys: 150, bp_dia: 100, hb: 9.5, symptoms: { severe_headache: true, bleeding: false } } });
+  const r = await fetch(BASE + "/api/export.csv");
+  assert.equal(r.status, 200);
+  assert.match(r.headers.get("content-type"), /^text\/csv/);
+  assert.match(r.headers.get("content-disposition"), /attachment; filename="ghar-bhet-register-\d{4}-\d{2}-\d{2}\.csv"/);
+  const text = await r.text();
+  const lines = text.replace(/^﻿/, "").split("\r\n");
+  assert.match(lines[0], /^# Ghar Bhet village register export/);
+  assert.match(lines[0], /MCP card/); assert.match(lines[0], /SSBSK/);
+  assert.match(lines[1], /sample data/);
+  const head = lines[2].split(",");
+  for (const h of ["Date of visit", "ASHA", "Visit type", "BP (mmHg)", "Hb (g/dl)", "Danger signs present", "Flags (rule codes)", "Referral status", "Referral outcome"]) assert.ok(head.includes(h), h);
+  const row = lines.find((l) => l.includes("Csvwoman"));
+  assert.ok(row.includes("150/100") && row.includes("9.5") && row.includes("ANC (pregnancy)"));
+  assert.ok(row.includes("'=HYPERLINK(evil)"), "a cell that looks like a formula is defused");
+  assert.ok(/anc_/.test(row) && row.includes(",open,"));
+  assert.ok(lines.filter((l) => l && !l.startsWith("#")).length >= 14);
+});
+
+test("the ASHA name is cleaned and ids are random", async () => {
+  const v = await (await post(BASE, "/api/visits", { type: "newborn", asha: "<img src=x onerror=alert(1)>", record: { name: "Idbaby", day: 3, weight_g: 2800 } })).json();
+  assert.ok(!/[<>"'`]/.test(v.asha));
+  assert.match(v.id, /^[a-z2-9]{10}$/);
+});
+
 // ---------- abuse limits ----------
-test("made-up X-Forwarded-For headers do not get round the write limit", async () => {
-  const { base } = await start(); // not behind a proxy: the socket address counts
+test("made-up X-Forwarded-For headers do not get round the write limit; reads are limited too", async () => {
+  const { base } = await start({ READ_RATE_PER_MIN: "5" }); // not behind a proxy: the socket address counts
   let last;
   for (let i = 0; i < 22; i++) last = await post(base, "/api/referrals/none/seen", {}, { "x-forwarded-for": `10.0.0.${i}` });
   assert.equal(last.status, 429);
   assert.ok(last.headers.get("retry-after"));
+  const codes = [];
+  for (let i = 0; i < 6; i++) codes.push((await fetch(base + (i % 2 ? "/api/export.csv" : "/api/state"))).status);
+  assert.deepEqual(codes, [200, 200, 200, 200, 200, 429]);
+  assert.equal((await fetch(base + "/api/health")).status, 200, "the healthcheck is never limited");
 });
 
 test("behind Cloud Run the last X-Forwarded-For entry is the visitor; there is a cap for everyone and on live boards", async () => {

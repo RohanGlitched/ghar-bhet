@@ -4,14 +4,23 @@
 // GCS_BUCKET), so a hosted demo survives restarts. No packages and no keys:
 // the access token comes from the platform's metadata server.
 import { readFile, writeFile, mkdir, rename } from "node:fs/promises";
+import { randomBytes } from "node:crypto";
 import { join } from "node:path";
 import * as RULES from "../public/js/rules.js";
-import { FIELDS as READER_FIELDS } from "../public/js/understand.js";
+import { FIELDS as READER_FIELDS, understand } from "../public/js/understand.js";
 import { seedVillage } from "./seed.js";
 
 const { checkRecord, RULESET } = RULES;
 const DAY = 24 * 3600 * 1000;
-const id = () => Math.random().toString(36).slice(2, 10);
+const ID_CHARS = "abcdefghijkmnpqrstuvwxyz23456789";
+const id = () => [...randomBytes(10)].map((b) => ID_CHARS[b % 32]).join(""); // 50 random bits, not guessable
+const clean = (x, n) => String(x ?? "").replace(/[<>"'`&]/g, "").trim().slice(0, n);
+const URGENT_CODES = new Set((RULES.RULE_TABLE || []).filter((r) => r.urgent).map((r) => r.code));
+const isUrgent = (f) => f.severity === "refer_now" && (f.urgent === true || (f.urgent === undefined && URGENT_CODES.has(f.code)));
+const flagView = ({ code, severity, urgent, title, why, action, source, from, note }) => ({ code, severity, urgent: !!urgent, title, why, action, source, ...(from ? { from, note } : {}) });
+export const OUTCOMES = { reached: "Reached the facility", admitted: "Admitted", refused: "Family refused to go", not_reachable: "Could not be reached" };
+const IST = 5.5 * 3600 * 1000;
+const istDayStart = (t) => Math.floor((t + IST) / DAY) * DAY - IST;
 const sound = (x) => String(x || "").toLowerCase().replace(/ee|ii/g, "i").replace(/oo|uu/g, "u").replace(/w/g, "v").replace(/([kgcjtdpb])h/g, "$1").replace(/(.)\1+/g, "$1").replace(/y$/, "i").replace(/(?!^)a/g, "");
 const badRequest = (msg) => Object.assign(new Error(msg), { status: 400 });
 
@@ -170,7 +179,10 @@ export class Store {
     const rec = body?.record && typeof body.record === "object" && !Array.isArray(body.record) ? body.record : null;
     if (!type || !rec) throw badRequest("This visit needs a type (anc, pnc or newborn) and a record.");
     const record = sanitize({ ...rec, type });
-    if (!Object.keys(record).some((k) => k !== "type" && k !== "name")) throw badRequest("This visit has nothing in it yet. Say or type at least one reading or sign (for example the day, weight, BP or a danger sign) before saving.");
+    const said = Array.isArray(body.said) ? body.said.slice(0, 12).map((s) => String(s).slice(0, 600)) : [];
+    const heard = readTranscript(type, said);
+    const hasData = (r) => Object.keys(r).some((k) => k !== "type" && k !== "name");
+    if (!hasData(record) && !hasData(heard.record)) throw badRequest("This visit has nothing in it yet. Say or type at least one reading or sign (for example the day, weight, BP or a danger sign) before saving.");
     const pid = typeof body.personId === "string" && /^[A-Za-z0-9_-]{1,24}$/.test(body.personId) ? body.personId : null;
     const now = Date.now();
     const { person, matched } = this.personFor(type, record, pid, now);
@@ -181,15 +193,24 @@ export class Store {
     else if (type === "anc" && Number.isFinite(record.month)) person.lmp = now - (record.month - 0.5) * MONTH;
     person.updatedAt = now;
     let flags = [];
-    try { flags = (checkRecord(record) || []).map(({ code, severity, title, why, action, source }) => ({ code, severity, title, why, action, source })); }
+    try { flags = (checkRecord(record) || []).map(flagView); }
     catch (e) { console.error("The rules could not check a visit:", e.message); }
+    // Re-read what the ASHA said. A refer-level sign in her words that the record lacks is added
+    // as a server flag (never removing what the record has), so a slip can't say "no danger
+    // sign" above words that say fits.
+    const extra = transcriptFlags(record, heard.record, flags);
+    flags = [...flags, ...extra.flags];
     const refer = flags.some((f) => f.severity === "refer_now");
+    const urgent = flags.some(isUrgent);
+    let notes = [];
+    try { if (typeof RULES.noted === "function") notes = (RULES.noted(record, flags) || []).slice(0, 20); } catch { notes = []; }
     const visit = {
       id: id(), at: now, type, personId: person.id, name: person.name, record, flags, ruleset: RULESET.id,
-      said: Array.isArray(body.said) ? body.said.slice(0, 12).map((s) => String(s).slice(0, 600)) : [],
-      lang: ["hi", "mr", "en"].includes(body.lang) ? body.lang : "hi", via: body.via === "typed" ? "typed" : "voice",
-      asha: String(body.asha || "Asha worker").slice(0, 40),
-      referral: refer ? { status: "open", at: now } : null,
+      said, lang: ["hi", "mr", "en"].includes(body.lang) ? body.lang : "hi", via: body.via === "typed" ? "typed" : "voice",
+      asha: clean(body.asha, 40) || "Asha worker",
+      noted: notes,
+      transcript: { checked: heard.ok, added: extra.flags.map((f) => f.code), heard: extra.heard },
+      referral: refer ? { status: "open", at: now, urgent } : null,
     };
     if (type === "newborn" && refer) person.atRisk = true;
     if (type === "newborn" && record.weight_g && record.weight_g < 2500) person.atRisk = true;
@@ -226,8 +247,10 @@ export class Store {
     const v = this.visit(vid);
     if (!v || !v.referral) return null;
     const now = Date.now();
-    v.referral = { ...v.referral, status: "seen", seenAt: now, seenBy: String(by || "ANM").replace(/[<>]/g, "").slice(0, 40), changedAt: now };
+    const who = clean(by, 40) || "ANM";
+    v.referral = { ...v.referral, status: "seen", seenAt: now, seenBy: who, changedAt: now };
     delete v.referral.by;
+    logChange(v, "seen", who, now);
     this.save();
     return v;
   }
@@ -237,10 +260,53 @@ export class Store {
     if (!v || !v.referral) return null;
     const now = Date.now();
     const { seenAt, seenBy, by: oldBy, ...rest } = v.referral;
-    v.referral = { ...rest, status: "open", reopenedAt: now, reopenedBy: String(by || "ANM").replace(/[<>]/g, "").slice(0, 40), changedAt: now };
+    const who = clean(by, 40) || "ANM";
+    v.referral = { ...rest, status: "open", reopenedAt: now, reopenedBy: who, changedAt: now };
+    logChange(v, "reopened", who, now);
     this.save();
     return v;
   }
+  /** What happened after the referral: reached / admitted / refused / not_reachable. */
+  setOutcome(vid, outcome, by) {
+    const v = this.visit(vid);
+    if (!v || !v.referral) return null;
+    if (!Object.hasOwn(OUTCOMES, outcome)) throw badRequest(`outcome must be one of: ${Object.keys(OUTCOMES).join(", ")}.`);
+    const now = Date.now(), who = clean(by, 40) || "ASHA";
+    v.referral = { ...v.referral, outcome, outcomeAt: now, outcomeBy: who, changedAt: now };
+    logChange(v, "outcome:" + outcome, who, now);
+    this.save();
+    return v;
+  }
+
+  /**
+   * Referrals that need another visit: refused or not reachable (due from the next day, IST),
+   * or no outcome 24 hours after the referral. A newer visit to the same person closes it.
+   */
+  followups(now = Date.now()) {
+    const out = [];
+    const lastVisit = new Map();
+    for (const v of this.db.visits) if ((lastVisit.get(v.personId) || 0) < v.at) lastVisit.set(v.personId, v.at);
+    for (const v of this.db.visits) {
+      const r = v.referral;
+      if (!r) continue;
+      let due, reason;
+      if (r.outcome === "refused" || r.outcome === "not_reachable") {
+        if ((lastVisit.get(v.personId) || 0) > r.outcomeAt) continue;
+        due = istDayStart(r.outcomeAt) + DAY;
+        reason = r.outcome === "refused" ? "The family refused to go. Visit again, counsel them and tell the ANM." : "The family could not be reached. Visit again.";
+      } else if (!r.outcome) {
+        if ((lastVisit.get(v.personId) || 0) > r.at) continue;
+        due = r.at + DAY;
+        if (now < due) continue;
+        reason = "No outcome recorded 24 hours after the referral. Find out whether she reached the facility.";
+      } else continue;
+      out.push({ referralId: v.id, personId: v.personId, name: v.name, type: v.type, due, isDue: now >= due, reason, outcome: r.outcome || null, urgent: referralUrgent(v), sample: isSampleVisit(v) });
+    }
+    return out.sort((a, b) => a.due - b.due).slice(0, 40);
+  }
+
+  /** The register as CSV, for the ANM's monthly register. */
+  exportCsv() { return toCsv(this.db); }
 
   state() {
     const now = Date.now();
@@ -272,19 +338,28 @@ export class Store {
       }
       return out;
     });
-    const referrals = visits.filter((v) => v.referral).sort((a, b) => b.at - a.at).slice(0, 30).map((v) => ({
-      id: v.id, at: v.at, name: v.name, type: v.type, personId: v.personId, status: v.referral.status,
+    // open referrals first, urgent (go now, 108) before the rest; newest first within each group
+    const order = (v) => (v.referral.status === "open" ? (referralUrgent(v) ? 0 : 1) : 2);
+    const referrals = visits.filter((v) => v.referral).sort((a, b) => order(a) - order(b) || b.at - a.at).slice(0, 40).map((v) => ({
+      id: v.id, at: v.at, name: v.name, type: v.type, personId: v.personId, status: v.referral.status, urgent: referralUrgent(v),
       seenAt: v.referral.seenAt || null, seenBy: v.referral.seenBy || v.referral.by || null, reopenedAt: v.referral.reopenedAt || null,
-      flags: v.flags.filter((f) => f.severity === "refer_now").map((f) => ({ code: f.code, title: f.title, why: f.why, action: f.action })),
+      outcome: v.referral.outcome || null, outcomeAt: v.referral.outcomeAt || null, outcomeBy: v.referral.outcomeBy || null,
+      flags: v.flags.filter((f) => f.severity === "refer_now").map((f) => ({ code: f.code, urgent: isUrgent(f), title: f.title, why: f.why, action: f.action, ...(f.from ? { from: f.from, note: f.note } : {}) })),
+      fromTranscript: (v.transcript?.added || []).length > 0,
       sample: sampleIds.has(v.personId) && isSampleVisit(v), samplePerson: sampleIds.has(v.personId),
     }));
+    const followups = this.followups(now);
+    // who changed what, so a referral cleared by mistake (or by a stranger on the demo) can be put back
+    const changes = visits.flatMap((v) => (v.referral?.log || []).map((c) => ({ referralId: v.id, name: v.name, ...c }))).sort((a, b) => b.at - a.at).slice(0, 15);
     const week = visits.filter((v) => now - v.at < 7 * DAY);
     return {
       village: this.db.village, ruleset: RULESET, now, people,
-      referrals, recent: visits.slice(-15).reverse().map((v) => ({ id: v.id, at: v.at, name: v.name, type: v.type, via: v.via, refer: v.flags.some((f) => f.severity === "refer_now"), watch: v.flags.some((f) => f.severity === "watch"), flags: v.flags.map((f) => f.title), sample: isSampleVisit(v) })),
+      referrals, followups, changes, recent: visits.slice(-15).reverse().map((v) => ({ id: v.id, at: v.at, name: v.name, type: v.type, via: v.via, refer: v.flags.some((f) => f.severity === "refer_now"), watch: v.flags.some((f) => f.severity === "watch"), flags: v.flags.map((f) => f.title), sample: isSampleVisit(v) })),
       totals: {
         visitsThisWeek: week.length,
         openReferrals: referrals.filter((r) => r.status === "open").length,
+        urgentReferrals: referrals.filter((r) => r.status === "open" && r.urgent).length,
+        followupsDue: followups.filter((f) => f.isDue).length,
         highRisk: people.filter((p) => p.last?.refer).length,
         dueToday: people.filter((p) => p.dueToday).length,
       },
@@ -294,6 +369,91 @@ export class Store {
 }
 
 const valid = (db) => !!(db && typeof db === "object" && Array.isArray(db.people) && Array.isArray(db.visits));
+const referralUrgent = (v) => (typeof v.referral?.urgent === "boolean" ? v.referral.urgent : v.flags.some(isUrgent));
+function logChange(v, action, by, at) { v.referral.log = [...(v.referral.log || []), { action, by, at }].slice(-20); }
+
+/** Read the joined transcript with the same reader the phone uses. */
+function readTranscript(type, said) {
+  const text = said.join(". ").trim();
+  if (!text) return { ok: false, record: { type } };
+  try { return { ok: true, record: sanitize({ ...(understand(text, type)?.record || {}), type }) }; }
+  catch (e) { console.error("Could not re-read a transcript:", e.message); return { ok: false, record: { type } }; }
+}
+/**
+ * Refer-level flags that the transcript supports but the record's flags lack. The record's own
+ * values win wherever it has them (an explicit "no fits" in the record is respected); only what
+ * the record left out is filled in from the transcript.
+ */
+function transcriptFlags(record, fromWords, have) {
+  const heard = {};
+  for (const [k, v] of Object.entries(fromWords)) if (!["type", "name", "symptoms"].includes(k) && record[k] === undefined) heard[k] = v;
+  const sym = {};
+  for (const [k, v] of Object.entries(fromWords.symptoms || {})) if (v === true && record.symptoms?.[k] === undefined) sym[k] = true;
+  if (!Object.keys(heard).length && !Object.keys(sym).length) return { flags: [], heard: null };
+  const merged = { ...fromWords, ...record };
+  if (fromWords.symptoms || record.symptoms) merged.symptoms = { ...(fromWords.symptoms || {}), ...(record.symptoms || {}) };
+  const codes = new Set(have.map((f) => f.code));
+  let flags = [];
+  try { flags = (checkRecord(merged) || []).filter((f) => f.severity === "refer_now" && !codes.has(f.code)); } catch { flags = []; }
+  if (Object.keys(sym).length) heard.symptoms = sym;
+  return {
+    flags: flags.map((f) => ({ ...flagView(f), from: "transcript", note: "said in the visit but not in the record" })),
+    heard: flags.length ? heard : null,
+  };
+}
+
+// ---------- CSV for the ANM's register ----------
+const TYPE_LABEL = { anc: "ANC (pregnancy)", pnc: "PNC (mother after delivery)", newborn: "HBNC (newborn)" };
+const istDate = (t) => new Date(t + IST).toISOString().slice(0, 10);
+const COLUMNS = [
+  ["Date of visit", (v) => istDate(v.at)],
+  ["Time", (v) => new Date(v.at + IST).toISOString().slice(11, 16)],
+  ["ASHA", (v) => v.asha],
+  ["Visit type", (v) => TYPE_LABEL[v.type] || v.type],
+  ["Name (woman, or mother of the baby)", (v) => v.name],
+  ["Register id", (v) => v.personId],
+  ["Weeks of pregnancy", (v) => v.record.weeks],
+  ["Month of pregnancy", (v) => v.record.month],
+  ["Day after delivery (PNC) or day of life (newborn)", (v) => v.record.day],
+  ["BP (mmHg)", (v) => (v.record.bp_sys != null || v.record.bp_dia != null ? `${v.record.bp_sys ?? "?"}/${v.record.bp_dia ?? "?"}` : "")],
+  ["Hb (g/dl)", (v) => v.record.hb],
+  ["Weight of mother (kg)", (v) => v.record.weight_kg],
+  ["Urine albumin", (v) => v.record.albumin],
+  ["Foetal movement", (v) => v.record.fetal_movement],
+  ["IFA tablets", (v) => v.record.ifa_tablets],
+  ["Pads per day", (v) => v.record.pads],
+  ["Temperature (C)", (v) => v.record.temp_c],
+  ["Baby weight (g)", (v) => v.record.weight_g],
+  ["Breaths per minute", (v) => v.record.resp_rate],
+  ["Breastfeeding", (v) => v.record.feeding],
+  ["Danger signs present", (v) => Object.entries(v.record.symptoms || {}).filter(([, x]) => x === true).map(([k]) => label(v.type, k)).join("; ")],
+  ["Checked, not present", (v) => Object.entries(v.record.symptoms || {}).filter(([, x]) => x === false).map(([k]) => label(v.type, k)).join("; ")],
+  ["Other readings", (v) => Object.entries(v.record).filter(([k]) => !SHOWN.has(k)).map(([k, x]) => `${k}=${x}`).join("; ")],
+  ["Flags (rule codes)", (v) => v.flags.map((f) => f.code + (f.from === "transcript" ? " (from her words)" : "")).join("; ")],
+  ["Refer", (v) => (v.referral ? "yes" : "no")],
+  ["Go now (108)", (v) => (v.referral ? (referralUrgent(v) ? "yes" : "no") : "")],
+  ["Referral status", (v) => v.referral?.status || ""],
+  ["Referral outcome", (v) => (v.referral?.outcome ? OUTCOMES[v.referral.outcome] : "")],
+  ["Outcome date", (v) => (v.referral?.outcomeAt ? istDate(v.referral.outcomeAt) : "")],
+  ["Sample data", (v) => (isSampleVisit(v) ? "yes" : "no")],
+  ["Visit id", (v) => v.id],
+];
+const SHOWN = new Set(["type", "name", "symptoms", "weeks", "month", "day", "bp_sys", "bp_dia", "hb", "weight_kg", "albumin", "fetal_movement", "ifa_tablets", "pads", "temp_c", "weight_g", "resp_rate", "feeding"]);
+function label(type, code) { try { return typeof RULES.symptomLabel === "function" ? RULES.symptomLabel(type, code) : code.replace(/_/g, " "); } catch { return code; } }
+function cell(x) {
+  let s = x == null ? "" : String(x);
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // a spreadsheet must never run a cell as a formula
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+function toCsv(db) {
+  const lines = [
+    "# Ghar Bhet village register export. Columns follow the field names of the MCP card (ANC and PNC) and the SSBSK 2026 / HBNC home-visit forms. One row per home visit, oldest first. Dates and times are IST.",
+    `# Village: ${clean(db.village?.name, 60) || "?"}${db.village?.sample ? " (sample data: made-up people)" : ""}. Rules: ${RULESET.id}. Exported ${new Date(Date.now() + IST).toISOString().slice(0, 16).replace("T", " ")} IST.`,
+    COLUMNS.map(([h]) => cell(h)).join(","),
+  ];
+  for (const v of [...db.visits].sort((a, b) => a.at - b.at)) lines.push(COLUMNS.map(([, f]) => { try { return cell(f(v)); } catch { return ""; } }).join(","));
+  return "﻿" + lines.join("\r\n") + "\r\n";
+}
 
 /** The age a visit states, in the person's own unit, with how far off it may be. */
 function spokenAge(type, r) {

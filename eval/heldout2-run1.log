@@ -1,0 +1,119 @@
+heldout2: 60 items (ruleset mohfw-2026.6)
+typed fields 91.1% recall / 95% precision · danger visits caught 36/37 (97.3%) · false alarms 1/23 · flags 93.9% recall, 96.3% precision · exact visits 58.3% · type 100%
+auto  fields 90.1% recall / 95% precision · danger visits caught 35/37 (94.6%) · false alarms 1/23 · flags 90.2% recall, 94.9% precision · exact visits 56.7% · type 96.7%
+
+h-nb-201  अरे सुनो, चंपा... नहीं नहीं, रुक्मिणी का बच्चा है, आज चौदहवाँ दिन। वजन तौला दो किलो सात सौ। दूध अच्छे से खींच रहा है, नाल सूखी और साफ है, बदन ना ठंडा ना गरम, ज़ोर से रोता है।
+   symptoms.cord_pus: want false got undefined
+   symptoms.cold_to_touch: want false got undefined
+   symptoms.hot_to_touch: want false got true
+   flags want - got nb_fever
+
+h-nb-205  पार्वती के बच्चे को आज बुखार निन्यानवे दशमलव छह, बयालीसवें दिन की आखिरी विज़िट है, वजन साढ़े तीन किलो।
+   temp_c: want 37.6 got undefined
+   symptoms.hot_to_touch: extra true
+   flags want nb_fever got nb_fever
+
+h-nb-207  उफ़, लाजवंती के लड़के की नाभि लाल हो गई है, थोड़ा मवाद भी है, पाँचवाँ दिन, वजन ढाई किलो, बाकी सब ठीक।
+   name: want "Lajwanti" got "Uf"
+   flags want nb_cord_infection got nb_cord_infection
+
+h-nb-209  तापमान पैंतीस दशमलव चार आया, बच्चा छूने में ठंडा है, वजन एक किलो छह सौ, इक्कीसवाँ दिन, माँ सरोज।
+   name: want "Saroj" got undefined
+   flags want nb_hypothermia,nb_very_low_weight got nb_hypothermia,nb_very_low_weight
+
+h-nb-210  haan toh nasreen ka baby pehla din hai aankhen thodi peeli lag rahi doodh theek pee raha weight 2 kilo 4 sau
+   name: want "Nasreen" got undefined
+   flags want nb_jaundice_early,nb_low_weight got nb_jaundice_early,nb_low_weight
+
+h-nb-212  Tarannum ka bachha, saatvan din, latrine mein khoon aa raha, ulti bhi baar baar, pet phula hua hai
+   
+   flags want nb_blood_stool,nb_vomiting got nb_blood_stool,nb_abdominal_distension,nb_vomiting
+
+h-nb-214  उज्ज्वलाताईंच्या बाळाचं वजन पावणे दोन किलो, म्हणजे सतराशे पन्नास ग्रॅम, आज सातवा दिवस, दूध कमी ओढतं।
+   name: want "Ujwala" got "Ujjvalatain"
+   flags want nb_poor_feeding,nb_very_low_weight got nb_very_low_weight,nb_poor_feeding
+
+h-nb-215  सखूबाईंचं बाळ, चौदावा दिवस, वजन तीन किलो शंभर ग्रॅम, ताप नाही, नाळ कोरडी स्वच्छ, अंगावर पुरळ नाही, बाळ छान दूध पितं.
+   name: want "Sakhubai" got "Sakhubain"
+   symptoms.skin_pustules: want false got undefined
+   flags want - got -
+
+h-nb-216  बाळ सुस्त झालंय, हलवलं तरच हलतं, अंग थंड लागतं, आज तिसरा दिवस, आई यमुना.
+   name: want "Yamuna" got undefined
+   flags want nb_hypothermia,nb_lethargy,nb_sepsis_signs got nb_lethargy,nb_hypothermia,nb_sepsis_signs
+
+h-nb-218  धनश्रीचं बाळ, एकविसावा दिवस, नाळ ओली आहे आणि भोवती लाल झालंय, अंगावर पुळ्या आल्यात, डोळ्यातून पिवळं पाणी येतं, बाकी दूध चांगलं पितं.
+   day: want 21 got undefined
+   symptoms.cord_pus: want true got undefined
+   symptoms.skin_pustules: want true got undefined
+   symptoms.jaundice: extra true
+   flags want nb_cord_infection,nb_eye_discharge,nb_skin_pustules got nb_eye_discharge
+
+h-nb-219  आईला थोडा ताप आहे, पण बाळाचं तापमान छत्तीस पूर्णांक आठ, वजन दोन किलो सहाशे, दहावा दिवस, आई मंगल.
+   name: want "Mangal" got undefined
+   flags want - got -
+
+h-nb-220  जन्मानंतर बेचाळीसावा दिवस, वजन दोन किलो दोनशे, नाही नाही चुकलं, दोन किलो सातशे, दूध व्यवस्थित, अमृताचं बाळ.
+   name: want "Amruta" got "Amrita"
+   day: want 42 got undefined
+   flags want - got -
+
+h-nb-225  बाळ limp आहे, touch केल्यावरच हलतं, feeding कमी आहे, temperature 37.8, day 9, आई कांता
+   name: want "Kanta" got undefined
+   flags want nb_fever,nb_lethargy,nb_poor_feeding,nb_sepsis_signs got nb_lethargy,nb_fever,nb_sepsis_signs,nb_poor_feeding
+
+h-nb-227  बच्चे का cry weak है, बस कुनमुनाता है, और potty में blood दिखा, week one पूरा यानी सातवाँ दिन, माँ रज़िया
+   name: want "Raziya" got undefined
+   flags want nb_blood_stool,nb_weak_cry got nb_blood_stool,nb_weak_cry
+
+h-anc-212  रंजनाताई, बत्तीस आठवडे, बीपी एकशे साठ बाय एकशे दहा, अल्ब्युमिन तीन प्लस.
+   name: want "Ranjana" got "Ranjnatai"
+   flags want anc_preeclampsia,anc_severe_hypertension got anc_severe_hypertension,anc_preeclampsia
+
+h-anc-213  गंगूबाई, सहावा महिना, बीपी एकशे वीस बाय ऐंशी, हिमोग्लोबिन बारा पूर्णांक एक, सूज कुठेच नाही.
+   symptoms.swelling_face_hands: want false got undefined
+   symptoms.swelling_feet: want false got undefined
+   flags want - got -
+
+h-anc-217  Aaj Sangitachi BP ghetli, ekshe chalis baay navvad, albumin nahi, aathva mahina
+   bp_sys: want 140 got undefined
+   bp_dia: want 90 got undefined
+   flags want anc_hypertension got -
+
+h-pnc-201  सोनाली की डिलीवरी को तीसरा दिन, दिन भर में छह पैड बदले, बुखार एक सौ एक।
+   symptoms.fever: extra true
+   symptoms.heavy_bleeding: extra true
+   flags want pnc_fever,pnc_heavy_bleeding got pnc_heavy_bleeding,pnc_fever
+
+h-pnc-202  रामप्यारी, डिलीवरी के बाद सातवाँ दिन, बुखार सौ डिग्री, नीचे से बदबूदार पानी आ रहा है।
+   symptoms.fever: extra true
+   flags want pnc_infection,pnc_low_fever got pnc_infection
+
+h-pnc-204  कमलेश की बोली अटपटी हो गई है, कुछ भी बोल रही, और आँखों से धुंधला दिखता है, दूसरा दिन।
+   symptoms.abnormal_speech: want true got undefined
+   flags want pnc_neuro got pnc_neuro
+
+h-pnc-205  Jaya ko delivery ke baad paanchva din, taap 102.4, saans phool rahi hai
+   symptoms.fever: extra true
+   flags want pnc_breathless,pnc_high_fever got pnc_high_fever,pnc_breathless
+
+h-pnc-206  Mehrunissa, das din ho gaye delivery ko, teen pad roz, bukhar nahi, chakkar nahi, doodh pilane mein koi taklif nahi
+   symptoms.breast_problem: want false got undefined
+   flags want - got -
+
+h-pnc-207  बाळंतपणानंतर चौथा दिवस, ताप एकशे दोन, म्हणजे खूप, आणि घाण वासाचं पाणी जातंय, हिराबाई.
+   symptoms.foul_discharge: want true got undefined
+   symptoms.fever: extra true
+   flags want pnc_sepsis got pnc_fever
+
+h-pnc-210  Delivery houn satva divas, Ashwini, taap nahi, raktasrav kami, divsala teen pad
+   symptoms.heavy_bleeding: want false got undefined
+   flags want - got -
+
+h-pnc-211  Postnatal day two, Lakshmi. Soaked seven pads since morning, feeling giddy, temperature ninety-eight point four.
+   symptoms.heavy_bleeding: extra true
+   flags want pnc_anaemia_signs,pnc_heavy_bleeding got pnc_heavy_bleeding,pnc_anaemia_signs
+
+h-pnc-212  Day 5 post delivery, Anjum ko fever hai, temperature 38.2, breast mein bahut dard aur lal ho gaya
+   symptoms.fever: extra true
+   flags want pnc_breast,pnc_fever got pnc_fever,pnc_breast

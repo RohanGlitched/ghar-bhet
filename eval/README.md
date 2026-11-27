@@ -125,3 +125,14 @@ What is kept from run 1: the aggregate numbers and, in `heldout-run1.json`, ever
 - the rule set id printed by `run.js`.
 
 These go in `eval/heldout2-run1.log` and `eval/heldout2-run1.sha256`, and the JSON result in `eval/heldout2-run1.json`, committed together right after the run. Any later fix is reported as a separate run, and the first run stays the headline.
+
+
+## Second held-out set (heldout2): the final sealed run
+
+`heldout2.jsonl` (60 items) stayed unopened until the end. It was run once, on 27 Nov 2026, against rule set `mohfw-2026.6` (inputs and code hashed in `heldout2-run1.sha256`, made before the run). Result, visit type given: **91.1% of fields (95% precision), 36 of 37 danger visits, 1 of 23 false alarms**; with the visit type guessed: 90.1%, 35 of 37, 1 of 23.
+
+Its expected flags had been written under an older rule table, so that run showed flag precision 76.3% (`heldout2-run1-original-flags.json` / `.log`). As for every other set, the expected flags were then recomputed from the unchanged gold records under the current rules with `check_gold.py --fix` (18 items' `flags` changed; no sentence or record changed), and the set was scored again: the field and visit numbers above are identical, flag precision 96.3% (`heldout2-run1.json`, `heldout2-run1.log`, and `public/data/eval-heldout2.json`). No reader or rule change was made after this run.
+
+## Real speech
+
+`realspeech/wispr-run1.json` and `realspeech/browser-run1.json` are the raw transcripts from the real-speech page: the builder read 12 items of `heldout.jsonl` aloud through Wispr Flow and through Chrome's mic. Scored with `node eval/run.js realspeech <file>`: Wispr Flow 70.2% of fields, 8 of 8 danger visits, 0 of 4 false alarms; Chrome 54.4%, 7 of 8, 0 of 4 (logs beside them). The same 12 as written text: 98.2%, 8 of 8. These sentences come from the first held-out set, which the reader had been tuned on, so this measures what speech-to-text costs, not the reader on new wording.

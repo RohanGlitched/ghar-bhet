@@ -1,1 +1,966 @@
-{"pending":true}
+{
+ "set": "realspeech",
+ "engine": "browser",
+ "run_at": "2026-11-27T12:43:01.565Z",
+ "ruleset": "mohfw-2026.6",
+ "heard": 12,
+ "skipped": 0,
+ "spoken": {
+  "mode": "spoken",
+  "items": 12,
+  "fields": {
+   "gold": 57,
+   "predicted": 39,
+   "correct": 31,
+   "recall": 54.4,
+   "precision": 79.5
+  },
+  "type_detected": 100,
+  "danger": {
+   "visits": 8,
+   "caught": 7,
+   "caught_pct": 87.5,
+   "normal_visits": 4,
+   "false_alarms": 0,
+   "false_alarm_pct": 0
+  },
+  "flags": {
+   "gold": 16,
+   "predicted": 14,
+   "correct": 13,
+   "recall": 81.3,
+   "precision": 92.9,
+   "refer_now_recall": 91.7
+  },
+  "exact_visits": 8.3,
+  "by_field": {
+   "name": {
+    "gold": 11,
+    "hit": 3,
+    "pred": 6,
+    "recall": 27.3,
+    "precision": 50
+   },
+   "day": {
+    "gold": 7,
+    "hit": 6,
+    "pred": 6,
+    "recall": 85.7,
+    "precision": 100
+   },
+   "weight_g": {
+    "gold": 5,
+    "hit": 2,
+    "pred": 4,
+    "recall": 40,
+    "precision": 50
+   },
+   "resp_rate": {
+    "gold": 2,
+    "hit": 1,
+    "pred": 2,
+    "recall": 50,
+    "precision": 50
+   },
+   "feeding": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_c": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 8,
+    "hit": 6,
+    "pred": 8,
+    "recall": 75,
+    "precision": 75
+   },
+   "month": {
+    "gold": 2,
+    "hit": 1,
+    "pred": 1,
+    "recall": 50,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 3,
+    "hit": 0,
+    "pred": 0,
+    "recall": 0,
+    "precision": null
+   },
+   "bp_dia": {
+    "gold": 3,
+    "hit": 0,
+    "pred": 0,
+    "recall": 0,
+    "precision": null
+   },
+   "albumin": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 2,
+    "hit": 1,
+    "pred": 1,
+    "recall": 50,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 2,
+    "hit": 1,
+    "pred": 1,
+    "recall": 50,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 2,
+    "hit": 1,
+    "pred": 1,
+    "recall": 50,
+    "precision": 100
+   },
+   "weight_kg": {
+    "gold": 1,
+    "hit": 0,
+    "pred": 0,
+    "recall": 0,
+    "precision": null
+   }
+  },
+  "by_tag": {
+   "numbers-in-words": {
+    "n": 6,
+    "ok": 0,
+    "pct": 0
+   },
+   "fahrenheit": {
+    "n": 4,
+    "ok": 0,
+    "pct": 0
+   },
+   "fraction-words": {
+    "n": 3,
+    "ok": 0,
+    "pct": 0
+   },
+   "borderline": {
+    "n": 3,
+    "ok": 0,
+    "pct": 0
+   },
+   "numbers-digits": {
+    "n": 4,
+    "ok": 0,
+    "pct": 0
+   },
+   "multi-sign": {
+    "n": 3,
+    "ok": 1,
+    "pct": 33.3
+   },
+   "local-idiom": {
+    "n": 3,
+    "ok": 1,
+    "pct": 33.3
+   },
+   "no-name": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "normal-visit": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "negation": {
+    "n": 3,
+    "ok": 0,
+    "pct": 0
+   },
+   "subject-ambiguity": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "watch-only": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "months-not-weeks": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "code-mix": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "stt-style": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   }
+  },
+  "by_lang": {
+   "hi/devanagari": {
+    "n": 6,
+    "ok": 1,
+    "pct": 16.7
+   },
+   "mr/devanagari": {
+    "n": 4,
+    "ok": 0,
+    "pct": 0
+   },
+   "en/roman": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "mix/devanagari": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   }
+  },
+  "misses": [
+   {
+    "id": "h-nb-001",
+    "said": "सुशीला का बच्चा छठे दिन का है वजन 1 किलो 900 सांस 65 1 मिनट में दूध पी रहा है ठीक से",
+    "wrong": [
+     "weight_g: want 1900 got 1000",
+     "resp_rate: want 62 got 65"
+    ],
+    "flags_want": [
+     "nb_fast_breathing",
+     "nb_low_weight"
+    ],
+    "flags_got": [
+     "nb_fast_breathing",
+     "nb_very_low_weight"
+    ]
+   },
+   {
+    "id": "h-nb-003",
+    "said": "टेंपरेचर 96 डिग्री आया बच्चा ठीक से दूध पी रहा वजन 3:45 किलो हेमलता का बच्चा तीसरा दिन",
+    "wrong": [
+     "weight_g: want 2750 got undefined"
+    ],
+    "flags_want": [
+     "nb_hypothermia"
+    ],
+    "flags_got": [
+     "nb_hypothermia"
+    ]
+   },
+   {
+    "id": "h-nb-015",
+    "said": "वृषाली चा बाळ तिसऱ्या दिवसाचा आहे वजन दीड किलो दूध पीत नाही अंग थंड लागते",
+    "wrong": [
+     "name: want \"Vrushali\" got \"Vrishali\""
+    ],
+    "flags_want": [
+     "nb_hypothermia",
+     "nb_not_feeding",
+     "nb_sepsis_signs",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "nb_not_feeding",
+     "nb_hypothermia",
+     "nb_very_low_weight",
+     "nb_sepsis_signs"
+    ]
+   },
+   {
+    "id": "h-nb-017",
+    "said": "शुभांगीला ताप आहे पण बाळाचं तापमान 99 डिग्री आहे बाळाचं अंग कर्म वाटत नाही वजन दोन किलो सातशे आहे",
+    "wrong": [
+     "symptoms.hot_to_touch: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-nb-023",
+    "said": "Device baby B4 weight 2 kilo 100 respiratory rate 58 no chase in drawing feeding good",
+    "wrong": [
+     "name: want \"Divya\" got \"Device\"",
+     "day: want 4 got undefined",
+     "weight_g: want 2100 got 2000",
+     "symptoms.chest_indrawing: want false got undefined"
+    ],
+    "flags_want": [
+     "nb_low_weight"
+    ],
+    "flags_got": [
+     "nb_low_weight"
+    ]
+   },
+   {
+    "id": "h-anc-001",
+    "said": "बीपी 160 बात 110 एल्बुमिन एक प्लस सुगंध नौवां महीना चल रहा है",
+    "wrong": [
+     "name: want \"Sugandha\" got undefined",
+     "bp_sys: want 160 got undefined",
+     "bp_dia: want 110 got undefined"
+    ],
+    "flags_want": [
+     "anc_severe_hypertension"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "h-anc-004",
+    "said": "बीपी 138 बता रहा है हिमोग्लोबिन 11 बच्चा हिल रहा है ठीक कोई तकलीफ नहीं मायाछठे महीना",
+    "wrong": [
+     "name: want \"Maya\" got undefined",
+     "month: want 6 got undefined",
+     "bp_sys: want 138 got undefined",
+     "bp_dia: want 88 got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-anc-012",
+    "said": "थोडा रक्तस्त्राव होतोय आणि पोटात खूप दुखतय मेघा 29 आठवडे",
+    "wrong": [
+     "name: want \"Megha\" got undefined"
+    ],
+    "flags_want": [
+     "anc_abdominal_pain",
+     "anc_bleeding"
+    ],
+    "flags_got": [
+     "anc_bleeding",
+     "anc_abdominal_pain"
+    ]
+   },
+   {
+    "id": "h-anc-018",
+    "said": "ब 9:30 आहे बीपी एक्स्ट्रा में 78 वेट अकाउंट पन्नास क फेटल मूवमेंट एब्नार्मल पूर्णिमा 30विक्स",
+    "wrong": [
+     "name: want \"Poornima\" got undefined",
+     "weeks: want 30 got undefined",
+     "bp_sys: want 118 got undefined",
+     "bp_dia: want 78 got undefined",
+     "hb: want 9.5 got undefined",
+     "weight_kg: want 49 got undefined",
+     "fetal_movement: want \"normal\" got undefined"
+    ],
+    "flags_want": [
+     "anc_moderate_anaemia"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "h-pnc-001",
+    "said": "डिलीवरी को चार दिन हुए बुखार 101 है नीचे से बदबू नहीं आ रहीरामप्यारी",
+    "wrong": [
+     "name: want \"Rampyari\" got undefined",
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_fever"
+    ],
+    "flags_got": [
+     "pnc_fever"
+    ]
+   },
+   {
+    "id": "h-pnc-007",
+    "said": "बालांतरपणानंतर पाचवा दिवस ताप 103 थंडी वाजते रंजना",
+    "wrong": [
+     "name: want \"Ranjana\" got \"Balantrapnanantar\"",
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_high_fever"
+    ],
+    "flags_got": [
+     "pnc_high_fever"
+    ]
+   }
+  ]
+ },
+ "written": {
+  "mode": "written",
+  "items": 12,
+  "fields": {
+   "gold": 57,
+   "predicted": 59,
+   "correct": 56,
+   "recall": 98.2,
+   "precision": 94.9
+  },
+  "type_detected": 100,
+  "danger": {
+   "visits": 8,
+   "caught": 8,
+   "caught_pct": 100,
+   "normal_visits": 4,
+   "false_alarms": 0,
+   "false_alarm_pct": 0
+  },
+  "flags": {
+   "gold": 16,
+   "predicted": 16,
+   "correct": 16,
+   "recall": 100,
+   "precision": 100,
+   "refer_now_recall": 100
+  },
+  "exact_visits": 75,
+  "by_field": {
+   "name": {
+    "gold": 11,
+    "hit": 10,
+    "pred": 11,
+    "recall": 90.9,
+    "precision": 90.9
+   },
+   "day": {
+    "gold": 7,
+    "hit": 7,
+    "pred": 7,
+    "recall": 100,
+    "precision": 100
+   },
+   "weight_g": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "resp_rate": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "feeding": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_c": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 8,
+    "hit": 8,
+    "pred": 10,
+    "recall": 100,
+    "precision": 80
+   },
+   "month": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 3,
+    "hit": 3,
+    "pred": 3,
+    "recall": 100,
+    "precision": 100
+   },
+   "albumin": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "weight_kg": {
+    "gold": 1,
+    "hit": 1,
+    "pred": 1,
+    "recall": 100,
+    "precision": 100
+   }
+  },
+  "by_tag": {
+   "numbers-in-words": {
+    "n": 6,
+    "ok": 5,
+    "pct": 83.3
+   },
+   "fahrenheit": {
+    "n": 4,
+    "ok": 2,
+    "pct": 50
+   },
+   "fraction-words": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "borderline": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "numbers-digits": {
+    "n": 4,
+    "ok": 3,
+    "pct": 75
+   },
+   "multi-sign": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "local-idiom": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "no-name": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "normal-visit": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "negation": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "subject-ambiguity": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "watch-only": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "months-not-weeks": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "code-mix": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "stt-style": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   }
+  },
+  "by_lang": {
+   "hi/devanagari": {
+    "n": 6,
+    "ok": 5,
+    "pct": 83.3
+   },
+   "mr/devanagari": {
+    "n": 4,
+    "ok": 2,
+    "pct": 50
+   },
+   "en/roman": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "mix/devanagari": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   }
+  },
+  "misses": [
+   {
+    "id": "h-nb-015",
+    "said": "वृषालीचं बाळ तिसऱ्या दिवसाचं, वजन दीड किलो, दूध पीत नाही, अंग थंड लागतंय.",
+    "wrong": [
+     "name: want \"Vrushali\" got \"Vrishali\""
+    ],
+    "flags_want": [
+     "nb_hypothermia",
+     "nb_not_feeding",
+     "nb_sepsis_signs",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "nb_not_feeding",
+     "nb_hypothermia",
+     "nb_very_low_weight",
+     "nb_sepsis_signs"
+    ]
+   },
+   {
+    "id": "h-pnc-001",
+    "said": "डिलीवरी को चार दिन हुए, बुखार 101 है, नीचे से बदबू नहीं आ रही। रामप्यारी।",
+    "wrong": [
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_fever"
+    ],
+    "flags_got": [
+     "pnc_fever"
+    ]
+   },
+   {
+    "id": "h-pnc-007",
+    "said": "बाळंतपणानंतर पाचवा दिवस, ताप एकशे तीन, थंडी वाजते. रंजना.",
+    "wrong": [
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_high_fever"
+    ],
+    "flags_got": [
+     "pnc_high_fever"
+    ]
+   }
+  ]
+ },
+ "rows": [
+  {
+   "id": "h-nb-001",
+   "heard": "सुशीला का बच्चा छठे दिन का है वजन 1 किलो 900 सांस 65 1 मिनट में दूध पी रहा है ठीक से",
+   "record": {
+    "type": "newborn",
+    "name": "Sushila",
+    "weight_g": 1000,
+    "resp_rate": 65,
+    "day": 6,
+    "feeding": "good"
+   },
+   "flags": [
+    "nb_fast_breathing",
+    "nb_very_low_weight"
+   ],
+   "flags_want": [
+    "nb_fast_breathing",
+    "nb_low_weight"
+   ],
+   "misses": [
+    "weight_g: want 1900 got 1000",
+    "resp_rate: want 62 got 65"
+   ],
+   "written_misses": []
+  },
+  {
+   "id": "h-nb-003",
+   "heard": "टेंपरेचर 96 डिग्री आया बच्चा ठीक से दूध पी रहा वजन 3:45 किलो हेमलता का बच्चा तीसरा दिन",
+   "record": {
+    "type": "newborn",
+    "name": "Hemlata",
+    "temp_c": 35.6,
+    "temp_f": 96,
+    "day": 3,
+    "feeding": "good"
+   },
+   "flags": [
+    "nb_hypothermia"
+   ],
+   "flags_want": [
+    "nb_hypothermia"
+   ],
+   "misses": [
+    "weight_g: want 2750 got undefined"
+   ],
+   "written_misses": []
+  },
+  {
+   "id": "h-nb-008",
+   "heard": "इस घर में बच्चों की टट्टी में खून है और बार-बार उल्टी कर रहा है 17 दिन काहै",
+   "record": {
+    "type": "newborn",
+    "day": 17,
+    "symptoms": {
+     "blood_stool": true,
+     "vomiting": true
+    }
+   },
+   "flags": [
+    "nb_blood_stool",
+    "nb_vomiting"
+   ],
+   "flags_want": [
+    "nb_blood_stool",
+    "nb_vomiting"
+   ],
+   "misses": [],
+   "written_misses": []
+  },
+  {
+   "id": "h-nb-015",
+   "heard": "वृषाली चा बाळ तिसऱ्या दिवसाचा आहे वजन दीड किलो दूध पीत नाही अंग थंड लागते",
+   "record": {
+    "type": "newborn",
+    "name": "Vrishali",
+    "weight_g": 1500,
+    "day": 3,
+    "feeding": "none",
+    "symptoms": {
+     "cold_to_touch": true
+    }
+   },
+   "flags": [
+    "nb_not_feeding",
+    "nb_hypothermia",
+    "nb_very_low_weight",
+    "nb_sepsis_signs"
+   ],
+   "flags_want": [
+    "nb_hypothermia",
+    "nb_not_feeding",
+    "nb_sepsis_signs",
+    "nb_very_low_weight"
+   ],
+   "misses": [
+    "name: want \"Vrushali\" got \"Vrishali\""
+   ],
+   "written_misses": [
+    "name: want \"Vrushali\" got \"Vrishali\""
+   ]
+  },
+  {
+   "id": "h-nb-017",
+   "heard": "शुभांगीला ताप आहे पण बाळाचं तापमान 99 डिग्री आहे बाळाचं अंग कर्म वाटत नाही वजन दोन किलो सातशे आहे",
+   "record": {
+    "type": "newborn",
+    "name": "Shubhangi",
+    "weight_g": 2700,
+    "temp_c": 37.2,
+    "temp_f": 99
+   },
+   "flags": [],
+   "flags_want": [],
+   "misses": [
+    "symptoms.hot_to_touch: want false got undefined"
+   ],
+   "written_misses": []
+  },
+  {
+   "id": "h-nb-023",
+   "heard": "Device baby B4 weight 2 kilo 100 respiratory rate 58 no chase in drawing feeding good",
+   "record": {
+    "type": "newborn",
+    "name": "Device",
+    "weight_g": 2000,
+    "resp_rate": 58,
+    "feeding": "good"
+   },
+   "flags": [
+    "nb_low_weight"
+   ],
+   "flags_want": [
+    "nb_low_weight"
+   ],
+   "misses": [
+    "name: want \"Divya\" got \"Device\"",
+    "day: want 4 got undefined",
+    "weight_g: want 2100 got 2000",
+    "symptoms.chest_indrawing: want false got undefined"
+   ],
+   "written_misses": []
+  },
+  {
+   "id": "h-anc-001",
+   "heard": "बीपी 160 बात 110 एल्बुमिन एक प्लस सुगंध नौवां महीना चल रहा है",
+   "record": {
+    "type": "anc",
+    "month": 9,
+    "albumin": "1"
+   },
+   "flags": [],
+   "flags_want": [
+    "anc_severe_hypertension"
+   ],
+   "misses": [
+    "name: want \"Sugandha\" got undefined",
+    "bp_sys: want 160 got undefined",
+    "bp_dia: want 110 got undefined"
+   ],
+   "written_misses": []
+  },
+  {
+   "id": "h-anc-004",
+   "heard": "बीपी 138 बता रहा है हिमोग्लोबिन 11 बच्चा हिल रहा है ठीक कोई तकलीफ नहीं मायाछठे महीना",
+   "record": {
+    "type": "anc",
+    "hb": 11,
+    "fetal_movement": "normal"
+   },
+   "flags": [],
+   "flags_want": [],
+   "misses": [
+    "name: want \"Maya\" got undefined",
+    "month: want 6 got undefined",
+    "bp_sys: want 138 got undefined",
+    "bp_dia: want 88 got undefined"
+   ],
+   "written_misses": []
+  },
+  {
+   "id": "h-anc-012",
+   "heard": "थोडा रक्तस्त्राव होतोय आणि पोटात खूप दुखतय मेघा 29 आठवडे",
+   "record": {
+    "type": "anc",
+    "weeks": 29,
+    "pain_severe": true,
+    "symptoms": {
+     "abdominal_pain": true,
+     "bleeding": true
+    }
+   },
+   "flags": [
+    "anc_bleeding",
+    "anc_abdominal_pain"
+   ],
+   "flags_want": [
+    "anc_abdominal_pain",
+    "anc_bleeding"
+   ],
+   "misses": [
+    "name: want \"Megha\" got undefined"
+   ],
+   "written_misses": []
+  },
+  {
+   "id": "h-anc-018",
+   "heard": "ब 9:30 आहे बीपी एक्स्ट्रा में 78 वेट अकाउंट पन्नास क फेटल मूवमेंट एब्नार्मल पूर्णिमा 30विक्स",
+   "record": {
+    "type": "anc"
+   },
+   "flags": [],
+   "flags_want": [
+    "anc_moderate_anaemia"
+   ],
+   "misses": [
+    "name: want \"Poornima\" got undefined",
+    "weeks: want 30 got undefined",
+    "bp_sys: want 118 got undefined",
+    "bp_dia: want 78 got undefined",
+    "hb: want 9.5 got undefined",
+    "weight_kg: want 49 got undefined",
+    "fetal_movement: want \"normal\" got undefined"
+   ],
+   "written_misses": []
+  },
+  {
+   "id": "h-pnc-001",
+   "heard": "डिलीवरी को चार दिन हुए बुखार 101 है नीचे से बदबू नहीं आ रहीरामप्यारी",
+   "record": {
+    "type": "pnc",
+    "temp_c": 38.3,
+    "temp_f": 101,
+    "day": 4,
+    "symptoms": {
+     "fever": true,
+     "foul_discharge": false
+    }
+   },
+   "flags": [
+    "pnc_fever"
+   ],
+   "flags_want": [
+    "pnc_fever"
+   ],
+   "misses": [
+    "name: want \"Rampyari\" got undefined",
+    "symptoms.fever: extra true"
+   ],
+   "written_misses": [
+    "symptoms.fever: extra true"
+   ]
+  },
+  {
+   "id": "h-pnc-007",
+   "heard": "बालांतरपणानंतर पाचवा दिवस ताप 103 थंडी वाजते रंजना",
+   "record": {
+    "type": "pnc",
+    "name": "Balantrapnanantar",
+    "temp_c": 39.4,
+    "temp_f": 103,
+    "day": 5,
+    "symptoms": {
+     "fever": true
+    }
+   },
+   "flags": [
+    "pnc_high_fever"
+   ],
+   "flags_want": [
+    "pnc_high_fever"
+   ],
+   "misses": [
+    "name: want \"Ranjana\" got \"Balantrapnanantar\"",
+    "symptoms.fever: extra true"
+   ],
+   "written_misses": [
+    "symptoms.fever: extra true"
+   ]
+  }
+ ]
+}

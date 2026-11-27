@@ -1,0 +1,68 @@
+{
+ "test": "ghar-bhet real speech",
+ "engine": "wispr",
+ "at": "2026-11-27T12:38:53.001Z",
+ "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Safari/537.36",
+ "results": [
+  {
+   "id": "h-nb-001",
+   "lang": "hi",
+   "heard": "Sushila ka bachcha chhathe din ka hai. Vajan 1 kg 900. Saans 61 ek minute mein. doodh pee raha hai theek se."
+  },
+  {
+   "id": "h-nb-003",
+   "lang": "hi",
+   "heard": "Temperature 96°. aaya, bachcha theek se doodh pee raha. vajan 1.5 kg. Hemlata ka bachcha, teesra din."
+  },
+  {
+   "id": "h-nb-008",
+   "lang": "hi",
+   "heard": "is ghar mein bachche ki tatti mein khoon hai aur baar-baar ulti kar raha hai. 17 din ka hai."
+  },
+  {
+   "id": "h-nb-015",
+   "lang": "mr",
+   "heard": "Vrishalichan bal tisra divsachan vajan dird kilo dud pith nahi anga thandla lakte."
+  },
+  {
+   "id": "h-nb-017",
+   "lang": "mr",
+   "heard": "Shubhangila, taap aahе pann baalachan taapmaan 9 vela 9° aahe. Baalachan ang karam vaatt naahi. Vajan 2 kg 7 shе."
+  },
+  {
+   "id": "h-nb-023",
+   "lang": "en",
+   "heard": "Divya's baby, day 4: weight 2 kg 100, respiratory rate 58, no chest indrawing, feeding good."
+  },
+  {
+   "id": "h-anc-001",
+   "lang": "hi",
+   "heard": "BP 160 bata, 110, albumin 1+, Sugandha, 9va mahina chal raha hai."
+  },
+  {
+   "id": "h-anc-004",
+   "lang": "hi",
+   "heard": "BP 128, bata 88, hemoglobin 11. bachcha hil raha hai theek, koi takleef nahi. Maya chahta tha mahina."
+  },
+  {
+   "id": "h-anc-012",
+   "lang": "mr",
+   "heard": "thoddaa raktastraav hotoy aanni pottaat khuup dukhatamy. meghaa ekonnatiis aatthavaddyaamcii aahe."
+  },
+  {
+   "id": "h-anc-018",
+   "lang": "hi",
+   "heard": "HB 9.5 hai, BP 118/78, weight 49 kg, fetal movement normal, Purnima, 30 weeks."
+  },
+  {
+   "id": "h-pnc-001",
+   "lang": "hi",
+   "heard": "Delivery ko 4 din hue. Bukhar 101 hai. Neeche se badbu nahi aa rahi. Ram Pyari"
+  },
+  {
+   "id": "h-pnc-007",
+   "lang": "mr",
+   "heard": "Balantpananantar, pachva divas, taap ekshetin, thandi wajate, Ranjana."
+  }
+ ]
+}

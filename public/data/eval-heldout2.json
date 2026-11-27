@@ -1,1 +1,1309 @@
-{"pending":true}
+{
+ "set": "heldout2",
+ "run_at": "2026-11-27T12:48:29.093Z",
+ "ruleset": "mohfw-2026.6",
+ "typed": {
+  "mode": "typed",
+  "items": 60,
+  "fields": {
+   "gold": 314,
+   "predicted": 301,
+   "correct": 286,
+   "recall": 91.1,
+   "precision": 95
+  },
+  "type_detected": 100,
+  "danger": {
+   "visits": 37,
+   "caught": 36,
+   "caught_pct": 97.3,
+   "normal_visits": 23,
+   "false_alarms": 1,
+   "false_alarm_pct": 4.3
+  },
+  "flags": {
+   "gold": 82,
+   "predicted": 80,
+   "correct": 77,
+   "recall": 93.9,
+   "precision": 96.3,
+   "refer_now_recall": 94.1
+  },
+  "exact_visits": 58.3,
+  "by_field": {
+   "name": {
+    "gold": 59,
+    "hit": 48,
+    "pred": 53,
+    "recall": 81.4,
+    "precision": 90.6
+   },
+   "day": {
+    "gold": 39,
+    "hit": 37,
+    "pred": 37,
+    "recall": 94.9,
+    "precision": 100
+   },
+   "weight_g": {
+    "gold": 16,
+    "hit": 16,
+    "pred": 16,
+    "recall": 100,
+    "precision": 100
+   },
+   "feeding": {
+    "gold": 16,
+    "hit": 16,
+    "pred": 16,
+    "recall": 100,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 87,
+    "hit": 75,
+    "pred": 85,
+    "recall": 86.2,
+    "precision": 88.2
+   },
+   "resp_rate": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_c": {
+    "gold": 15,
+    "hit": 14,
+    "pred": 14,
+    "recall": 93.3,
+    "precision": 100
+   },
+   "month": {
+    "gold": 10,
+    "hit": 10,
+    "pred": 10,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 12,
+    "hit": 11,
+    "pred": 11,
+    "recall": 91.7,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 12,
+    "hit": 11,
+    "pred": 11,
+    "recall": 91.7,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 11,
+    "hit": 11,
+    "pred": 11,
+    "recall": 100,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 9,
+    "hit": 9,
+    "pred": 9,
+    "recall": 100,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "ifa_tablets": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "albumin": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "weight_kg": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   }
+  },
+  "by_tag": {
+   "self-correction": {
+    "n": 4,
+    "ok": 2,
+    "pct": 50
+   },
+   "numbers-in-words": {
+    "n": 51,
+    "ok": 30,
+    "pct": 58.8
+   },
+   "negation": {
+    "n": 17,
+    "ok": 12,
+    "pct": 70.6
+   },
+   "filler": {
+    "n": 6,
+    "ok": 3,
+    "pct": 50
+   },
+   "normal-visit": {
+    "n": 19,
+    "ok": 12,
+    "pct": 63.2
+   },
+   "local-idiom": {
+    "n": 16,
+    "ok": 12,
+    "pct": 75
+   },
+   "multi-sign": {
+    "n": 23,
+    "ok": 14,
+    "pct": 60.9
+   },
+   "borderline": {
+    "n": 12,
+    "ok": 7,
+    "pct": 58.3
+   },
+   "celsius": {
+    "n": 7,
+    "ok": 3,
+    "pct": 42.9
+   },
+   "watch-only": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "fahrenheit": {
+    "n": 8,
+    "ok": 2,
+    "pct": 25
+   },
+   "fraction-words": {
+    "n": 6,
+    "ok": 3,
+    "pct": 50
+   },
+   "distractor-number": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "no-number-fever": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   },
+   "stt-style": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "numbers-digits": {
+    "n": 10,
+    "ok": 6,
+    "pct": 60
+   },
+   "subject-ambiguity": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "no-name": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "code-mix": {
+    "n": 7,
+    "ok": 4,
+    "pct": 57.1
+   },
+   "months-not-weeks": {
+    "n": 10,
+    "ok": 8,
+    "pct": 80
+   }
+  },
+  "by_lang": {
+   "hi/devanagari": {
+    "n": 21,
+    "ok": 14,
+    "pct": 66.7
+   },
+   "hi/roman": {
+    "n": 9,
+    "ok": 6,
+    "pct": 66.7
+   },
+   "mr/devanagari": {
+    "n": 15,
+    "ok": 6,
+    "pct": 40
+   },
+   "mr/roman": {
+    "n": 3,
+    "ok": 1,
+    "pct": 33.3
+   },
+   "en/roman": {
+    "n": 5,
+    "ok": 4,
+    "pct": 80
+   },
+   "mix/roman": {
+    "n": 4,
+    "ok": 3,
+    "pct": 75
+   },
+   "mix/devanagari": {
+    "n": 3,
+    "ok": 1,
+    "pct": 33.3
+   }
+  },
+  "misses": [
+   {
+    "id": "h-nb-201",
+    "said": "अरे सुनो, चंपा... नहीं नहीं, रुक्मिणी का बच्चा है, आज चौदहवाँ दिन। वजन तौला दो किलो सात सौ। दूध अच्छे से खींच रहा है, नाल सूखी और साफ है, बदन ना ठंडा ना गरम, ज़ोर से रोता है।",
+    "wrong": [
+     "symptoms.cord_pus: want false got undefined",
+     "symptoms.cold_to_touch: want false got undefined",
+     "symptoms.hot_to_touch: want false got true"
+    ],
+    "flags_want": [],
+    "flags_got": [
+     "nb_fever"
+    ]
+   },
+   {
+    "id": "h-nb-205",
+    "said": "पार्वती के बच्चे को आज बुखार निन्यानवे दशमलव छह, बयालीसवें दिन की आखिरी विज़िट है, वजन साढ़े तीन किलो।",
+    "wrong": [
+     "temp_c: want 37.6 got undefined",
+     "symptoms.hot_to_touch: extra true"
+    ],
+    "flags_want": [
+     "nb_fever"
+    ],
+    "flags_got": [
+     "nb_fever"
+    ]
+   },
+   {
+    "id": "h-nb-207",
+    "said": "उफ़, लाजवंती के लड़के की नाभि लाल हो गई है, थोड़ा मवाद भी है, पाँचवाँ दिन, वजन ढाई किलो, बाकी सब ठीक।",
+    "wrong": [
+     "name: want \"Lajwanti\" got \"Uf\""
+    ],
+    "flags_want": [
+     "nb_cord_infection"
+    ],
+    "flags_got": [
+     "nb_cord_infection"
+    ]
+   },
+   {
+    "id": "h-nb-209",
+    "said": "तापमान पैंतीस दशमलव चार आया, बच्चा छूने में ठंडा है, वजन एक किलो छह सौ, इक्कीसवाँ दिन, माँ सरोज।",
+    "wrong": [
+     "name: want \"Saroj\" got undefined"
+    ],
+    "flags_want": [
+     "nb_hypothermia",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "nb_hypothermia",
+     "nb_very_low_weight"
+    ]
+   },
+   {
+    "id": "h-nb-210",
+    "said": "haan toh nasreen ka baby pehla din hai aankhen thodi peeli lag rahi doodh theek pee raha weight 2 kilo 4 sau",
+    "wrong": [
+     "name: want \"Nasreen\" got undefined"
+    ],
+    "flags_want": [
+     "nb_jaundice_early",
+     "nb_low_weight"
+    ],
+    "flags_got": [
+     "nb_jaundice_early",
+     "nb_low_weight"
+    ]
+   },
+   {
+    "id": "h-nb-212",
+    "said": "Tarannum ka bachha, saatvan din, latrine mein khoon aa raha, ulti bhi baar baar, pet phula hua hai",
+    "wrong": [],
+    "flags_want": [
+     "nb_blood_stool",
+     "nb_vomiting"
+    ],
+    "flags_got": [
+     "nb_blood_stool",
+     "nb_abdominal_distension",
+     "nb_vomiting"
+    ]
+   },
+   {
+    "id": "h-nb-214",
+    "said": "उज्ज्वलाताईंच्या बाळाचं वजन पावणे दोन किलो, म्हणजे सतराशे पन्नास ग्रॅम, आज सातवा दिवस, दूध कमी ओढतं।",
+    "wrong": [
+     "name: want \"Ujwala\" got \"Ujjvalatain\""
+    ],
+    "flags_want": [
+     "nb_poor_feeding",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "nb_very_low_weight",
+     "nb_poor_feeding"
+    ]
+   },
+   {
+    "id": "h-nb-215",
+    "said": "सखूबाईंचं बाळ, चौदावा दिवस, वजन तीन किलो शंभर ग्रॅम, ताप नाही, नाळ कोरडी स्वच्छ, अंगावर पुरळ नाही, बाळ छान दूध पितं.",
+    "wrong": [
+     "name: want \"Sakhubai\" got \"Sakhubain\"",
+     "symptoms.skin_pustules: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-nb-216",
+    "said": "बाळ सुस्त झालंय, हलवलं तरच हलतं, अंग थंड लागतं, आज तिसरा दिवस, आई यमुना.",
+    "wrong": [
+     "name: want \"Yamuna\" got undefined"
+    ],
+    "flags_want": [
+     "nb_hypothermia",
+     "nb_lethargy",
+     "nb_sepsis_signs"
+    ],
+    "flags_got": [
+     "nb_lethargy",
+     "nb_hypothermia",
+     "nb_sepsis_signs"
+    ]
+   },
+   {
+    "id": "h-nb-218",
+    "said": "धनश्रीचं बाळ, एकविसावा दिवस, नाळ ओली आहे आणि भोवती लाल झालंय, अंगावर पुळ्या आल्यात, डोळ्यातून पिवळं पाणी येतं, बाकी दूध चांगलं पितं.",
+    "wrong": [
+     "day: want 21 got undefined",
+     "symptoms.cord_pus: want true got undefined",
+     "symptoms.skin_pustules: want true got undefined",
+     "symptoms.jaundice: extra true"
+    ],
+    "flags_want": [
+     "nb_cord_infection",
+     "nb_eye_discharge",
+     "nb_skin_pustules"
+    ],
+    "flags_got": [
+     "nb_eye_discharge"
+    ]
+   },
+   {
+    "id": "h-nb-219",
+    "said": "आईला थोडा ताप आहे, पण बाळाचं तापमान छत्तीस पूर्णांक आठ, वजन दोन किलो सहाशे, दहावा दिवस, आई मंगल.",
+    "wrong": [
+     "name: want \"Mangal\" got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-nb-220",
+    "said": "जन्मानंतर बेचाळीसावा दिवस, वजन दोन किलो दोनशे, नाही नाही चुकलं, दोन किलो सातशे, दूध व्यवस्थित, अमृताचं बाळ.",
+    "wrong": [
+     "name: want \"Amruta\" got \"Amrita\"",
+     "day: want 42 got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-nb-225",
+    "said": "बाळ limp आहे, touch केल्यावरच हलतं, feeding कमी आहे, temperature 37.8, day 9, आई कांता",
+    "wrong": [
+     "name: want \"Kanta\" got undefined"
+    ],
+    "flags_want": [
+     "nb_fever",
+     "nb_lethargy",
+     "nb_poor_feeding",
+     "nb_sepsis_signs"
+    ],
+    "flags_got": [
+     "nb_lethargy",
+     "nb_fever",
+     "nb_sepsis_signs",
+     "nb_poor_feeding"
+    ]
+   },
+   {
+    "id": "h-nb-227",
+    "said": "बच्चे का cry weak है, बस कुनमुनाता है, और potty में blood दिखा, week one पूरा यानी सातवाँ दिन, माँ रज़िया",
+    "wrong": [
+     "name: want \"Raziya\" got undefined"
+    ],
+    "flags_want": [
+     "nb_blood_stool",
+     "nb_weak_cry"
+    ],
+    "flags_got": [
+     "nb_blood_stool",
+     "nb_weak_cry"
+    ]
+   },
+   {
+    "id": "h-anc-212",
+    "said": "रंजनाताई, बत्तीस आठवडे, बीपी एकशे साठ बाय एकशे दहा, अल्ब्युमिन तीन प्लस.",
+    "wrong": [
+     "name: want \"Ranjana\" got \"Ranjnatai\""
+    ],
+    "flags_want": [
+     "anc_preeclampsia",
+     "anc_severe_hypertension"
+    ],
+    "flags_got": [
+     "anc_severe_hypertension",
+     "anc_preeclampsia"
+    ]
+   },
+   {
+    "id": "h-anc-213",
+    "said": "गंगूबाई, सहावा महिना, बीपी एकशे वीस बाय ऐंशी, हिमोग्लोबिन बारा पूर्णांक एक, सूज कुठेच नाही.",
+    "wrong": [
+     "symptoms.swelling_face_hands: want false got undefined",
+     "symptoms.swelling_feet: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-anc-217",
+    "said": "Aaj Sangitachi BP ghetli, ekshe chalis baay navvad, albumin nahi, aathva mahina",
+    "wrong": [
+     "bp_sys: want 140 got undefined",
+     "bp_dia: want 90 got undefined"
+    ],
+    "flags_want": [
+     "anc_hypertension"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "h-pnc-201",
+    "said": "सोनाली की डिलीवरी को तीसरा दिन, दिन भर में छह पैड बदले, बुखार एक सौ एक।",
+    "wrong": [
+     "symptoms.fever: extra true",
+     "symptoms.heavy_bleeding: extra true"
+    ],
+    "flags_want": [
+     "pnc_fever",
+     "pnc_heavy_bleeding"
+    ],
+    "flags_got": [
+     "pnc_heavy_bleeding",
+     "pnc_fever"
+    ]
+   },
+   {
+    "id": "h-pnc-202",
+    "said": "रामप्यारी, डिलीवरी के बाद सातवाँ दिन, बुखार सौ डिग्री, नीचे से बदबूदार पानी आ रहा है।",
+    "wrong": [
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_infection",
+     "pnc_low_fever"
+    ],
+    "flags_got": [
+     "pnc_infection"
+    ]
+   },
+   {
+    "id": "h-pnc-204",
+    "said": "कमलेश की बोली अटपटी हो गई है, कुछ भी बोल रही, और आँखों से धुंधला दिखता है, दूसरा दिन।",
+    "wrong": [
+     "symptoms.abnormal_speech: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_neuro"
+    ],
+    "flags_got": [
+     "pnc_neuro"
+    ]
+   },
+   {
+    "id": "h-pnc-205",
+    "said": "Jaya ko delivery ke baad paanchva din, taap 102.4, saans phool rahi hai",
+    "wrong": [
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_breathless",
+     "pnc_high_fever"
+    ],
+    "flags_got": [
+     "pnc_high_fever",
+     "pnc_breathless"
+    ]
+   },
+   {
+    "id": "h-pnc-206",
+    "said": "Mehrunissa, das din ho gaye delivery ko, teen pad roz, bukhar nahi, chakkar nahi, doodh pilane mein koi taklif nahi",
+    "wrong": [
+     "symptoms.breast_problem: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-pnc-207",
+    "said": "बाळंतपणानंतर चौथा दिवस, ताप एकशे दोन, म्हणजे खूप, आणि घाण वासाचं पाणी जातंय, हिराबाई.",
+    "wrong": [
+     "symptoms.foul_discharge: want true got undefined",
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_sepsis"
+    ],
+    "flags_got": [
+     "pnc_fever"
+    ]
+   },
+   {
+    "id": "h-pnc-210",
+    "said": "Delivery houn satva divas, Ashwini, taap nahi, raktasrav kami, divsala teen pad",
+    "wrong": [
+     "symptoms.heavy_bleeding: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-pnc-211",
+    "said": "Postnatal day two, Lakshmi. Soaked seven pads since morning, feeling giddy, temperature ninety-eight point four.",
+    "wrong": [
+     "symptoms.heavy_bleeding: extra true"
+    ],
+    "flags_want": [
+     "pnc_anaemia_signs",
+     "pnc_heavy_bleeding"
+    ],
+    "flags_got": [
+     "pnc_heavy_bleeding",
+     "pnc_anaemia_signs"
+    ]
+   },
+   {
+    "id": "h-pnc-212",
+    "said": "Day 5 post delivery, Anjum ko fever hai, temperature 38.2, breast mein bahut dard aur lal ho gaya",
+    "wrong": [
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_breast",
+     "pnc_fever"
+    ],
+    "flags_got": [
+     "pnc_fever",
+     "pnc_breast"
+    ]
+   }
+  ]
+ },
+ "auto": {
+  "mode": "auto",
+  "items": 60,
+  "fields": {
+   "gold": 314,
+   "predicted": 298,
+   "correct": 283,
+   "recall": 90.1,
+   "precision": 95
+  },
+  "type_detected": 96.7,
+  "danger": {
+   "visits": 37,
+   "caught": 35,
+   "caught_pct": 94.6,
+   "normal_visits": 23,
+   "false_alarms": 1,
+   "false_alarm_pct": 4.3
+  },
+  "flags": {
+   "gold": 82,
+   "predicted": 78,
+   "correct": 74,
+   "recall": 90.2,
+   "precision": 94.9,
+   "refer_now_recall": 89.7
+  },
+  "exact_visits": 56.7,
+  "by_field": {
+   "name": {
+    "gold": 59,
+    "hit": 48,
+    "pred": 53,
+    "recall": 81.4,
+    "precision": 90.6
+   },
+   "day": {
+    "gold": 39,
+    "hit": 37,
+    "pred": 37,
+    "recall": 94.9,
+    "precision": 100
+   },
+   "weight_g": {
+    "gold": 16,
+    "hit": 16,
+    "pred": 16,
+    "recall": 100,
+    "precision": 100
+   },
+   "feeding": {
+    "gold": 16,
+    "hit": 16,
+    "pred": 16,
+    "recall": 100,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 87,
+    "hit": 72,
+    "pred": 82,
+    "recall": 82.8,
+    "precision": 87.8
+   },
+   "resp_rate": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "temp_c": {
+    "gold": 15,
+    "hit": 14,
+    "pred": 14,
+    "recall": 93.3,
+    "precision": 100
+   },
+   "month": {
+    "gold": 10,
+    "hit": 10,
+    "pred": 10,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 12,
+    "hit": 11,
+    "pred": 11,
+    "recall": 91.7,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 12,
+    "hit": 11,
+    "pred": 11,
+    "recall": 91.7,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 11,
+    "hit": 11,
+    "pred": 11,
+    "recall": 100,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 9,
+    "hit": 9,
+    "pred": 9,
+    "recall": 100,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "ifa_tablets": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "albumin": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   },
+   "weight_kg": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 6,
+    "hit": 6,
+    "pred": 6,
+    "recall": 100,
+    "precision": 100
+   }
+  },
+  "by_tag": {
+   "self-correction": {
+    "n": 4,
+    "ok": 2,
+    "pct": 50
+   },
+   "numbers-in-words": {
+    "n": 51,
+    "ok": 29,
+    "pct": 56.9
+   },
+   "negation": {
+    "n": 17,
+    "ok": 12,
+    "pct": 70.6
+   },
+   "filler": {
+    "n": 6,
+    "ok": 3,
+    "pct": 50
+   },
+   "normal-visit": {
+    "n": 19,
+    "ok": 12,
+    "pct": 63.2
+   },
+   "local-idiom": {
+    "n": 16,
+    "ok": 11,
+    "pct": 68.8
+   },
+   "multi-sign": {
+    "n": 23,
+    "ok": 13,
+    "pct": 56.5
+   },
+   "borderline": {
+    "n": 12,
+    "ok": 7,
+    "pct": 58.3
+   },
+   "celsius": {
+    "n": 7,
+    "ok": 3,
+    "pct": 42.9
+   },
+   "watch-only": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "fahrenheit": {
+    "n": 8,
+    "ok": 2,
+    "pct": 25
+   },
+   "fraction-words": {
+    "n": 6,
+    "ok": 3,
+    "pct": 50
+   },
+   "distractor-number": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "no-number-fever": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "stt-style": {
+    "n": 1,
+    "ok": 0,
+    "pct": 0
+   },
+   "numbers-digits": {
+    "n": 10,
+    "ok": 6,
+    "pct": 60
+   },
+   "subject-ambiguity": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "no-name": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "code-mix": {
+    "n": 7,
+    "ok": 4,
+    "pct": 57.1
+   },
+   "months-not-weeks": {
+    "n": 10,
+    "ok": 8,
+    "pct": 80
+   }
+  },
+  "by_lang": {
+   "hi/devanagari": {
+    "n": 21,
+    "ok": 14,
+    "pct": 66.7
+   },
+   "hi/roman": {
+    "n": 9,
+    "ok": 6,
+    "pct": 66.7
+   },
+   "mr/devanagari": {
+    "n": 15,
+    "ok": 5,
+    "pct": 33.3
+   },
+   "mr/roman": {
+    "n": 3,
+    "ok": 1,
+    "pct": 33.3
+   },
+   "en/roman": {
+    "n": 5,
+    "ok": 4,
+    "pct": 80
+   },
+   "mix/roman": {
+    "n": 4,
+    "ok": 3,
+    "pct": 75
+   },
+   "mix/devanagari": {
+    "n": 3,
+    "ok": 1,
+    "pct": 33.3
+   }
+  },
+  "misses": [
+   {
+    "id": "h-nb-201",
+    "said": "अरे सुनो, चंपा... नहीं नहीं, रुक्मिणी का बच्चा है, आज चौदहवाँ दिन। वजन तौला दो किलो सात सौ। दूध अच्छे से खींच रहा है, नाल सूखी और साफ है, बदन ना ठंडा ना गरम, ज़ोर से रोता है।",
+    "wrong": [
+     "symptoms.cord_pus: want false got undefined",
+     "symptoms.cold_to_touch: want false got undefined",
+     "symptoms.hot_to_touch: want false got true"
+    ],
+    "flags_want": [],
+    "flags_got": [
+     "nb_fever"
+    ]
+   },
+   {
+    "id": "h-nb-205",
+    "said": "पार्वती के बच्चे को आज बुखार निन्यानवे दशमलव छह, बयालीसवें दिन की आखिरी विज़िट है, वजन साढ़े तीन किलो।",
+    "wrong": [
+     "temp_c: want 37.6 got undefined",
+     "symptoms.hot_to_touch: extra true"
+    ],
+    "flags_want": [
+     "nb_fever"
+    ],
+    "flags_got": [
+     "nb_fever"
+    ]
+   },
+   {
+    "id": "h-nb-207",
+    "said": "उफ़, लाजवंती के लड़के की नाभि लाल हो गई है, थोड़ा मवाद भी है, पाँचवाँ दिन, वजन ढाई किलो, बाकी सब ठीक।",
+    "wrong": [
+     "name: want \"Lajwanti\" got \"Uf\""
+    ],
+    "flags_want": [
+     "nb_cord_infection"
+    ],
+    "flags_got": [
+     "nb_cord_infection"
+    ]
+   },
+   {
+    "id": "h-nb-209",
+    "said": "तापमान पैंतीस दशमलव चार आया, बच्चा छूने में ठंडा है, वजन एक किलो छह सौ, इक्कीसवाँ दिन, माँ सरोज।",
+    "wrong": [
+     "name: want \"Saroj\" got undefined"
+    ],
+    "flags_want": [
+     "nb_hypothermia",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "nb_hypothermia",
+     "nb_very_low_weight"
+    ]
+   },
+   {
+    "id": "h-nb-210",
+    "said": "haan toh nasreen ka baby pehla din hai aankhen thodi peeli lag rahi doodh theek pee raha weight 2 kilo 4 sau",
+    "wrong": [
+     "name: want \"Nasreen\" got undefined"
+    ],
+    "flags_want": [
+     "nb_jaundice_early",
+     "nb_low_weight"
+    ],
+    "flags_got": [
+     "nb_jaundice_early",
+     "nb_low_weight"
+    ]
+   },
+   {
+    "id": "h-nb-212",
+    "said": "Tarannum ka bachha, saatvan din, latrine mein khoon aa raha, ulti bhi baar baar, pet phula hua hai",
+    "wrong": [],
+    "flags_want": [
+     "nb_blood_stool",
+     "nb_vomiting"
+    ],
+    "flags_got": [
+     "nb_blood_stool",
+     "nb_abdominal_distension",
+     "nb_vomiting"
+    ]
+   },
+   {
+    "id": "h-nb-214",
+    "said": "उज्ज्वलाताईंच्या बाळाचं वजन पावणे दोन किलो, म्हणजे सतराशे पन्नास ग्रॅम, आज सातवा दिवस, दूध कमी ओढतं।",
+    "wrong": [
+     "name: want \"Ujwala\" got \"Ujjvalatain\""
+    ],
+    "flags_want": [
+     "nb_poor_feeding",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "nb_very_low_weight",
+     "nb_poor_feeding"
+    ]
+   },
+   {
+    "id": "h-nb-215",
+    "said": "सखूबाईंचं बाळ, चौदावा दिवस, वजन तीन किलो शंभर ग्रॅम, ताप नाही, नाळ कोरडी स्वच्छ, अंगावर पुरळ नाही, बाळ छान दूध पितं.",
+    "wrong": [
+     "name: want \"Sakhubai\" got \"Sakhubain\"",
+     "symptoms.skin_pustules: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-nb-216",
+    "said": "बाळ सुस्त झालंय, हलवलं तरच हलतं, अंग थंड लागतं, आज तिसरा दिवस, आई यमुना.",
+    "wrong": [
+     "name: want \"Yamuna\" got undefined"
+    ],
+    "flags_want": [
+     "nb_hypothermia",
+     "nb_lethargy",
+     "nb_sepsis_signs"
+    ],
+    "flags_got": [
+     "nb_lethargy",
+     "nb_hypothermia",
+     "nb_sepsis_signs"
+    ]
+   },
+   {
+    "id": "h-nb-218",
+    "said": "धनश्रीचं बाळ, एकविसावा दिवस, नाळ ओली आहे आणि भोवती लाल झालंय, अंगावर पुळ्या आल्यात, डोळ्यातून पिवळं पाणी येतं, बाकी दूध चांगलं पितं.",
+    "wrong": [
+     "day: want 21 got undefined",
+     "symptoms.cord_pus: want true got undefined",
+     "symptoms.skin_pustules: want true got undefined",
+     "symptoms.jaundice: extra true"
+    ],
+    "flags_want": [
+     "nb_cord_infection",
+     "nb_eye_discharge",
+     "nb_skin_pustules"
+    ],
+    "flags_got": [
+     "nb_eye_discharge"
+    ]
+   },
+   {
+    "id": "h-nb-219",
+    "said": "आईला थोडा ताप आहे, पण बाळाचं तापमान छत्तीस पूर्णांक आठ, वजन दोन किलो सहाशे, दहावा दिवस, आई मंगल.",
+    "wrong": [
+     "name: want \"Mangal\" got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-nb-220",
+    "said": "जन्मानंतर बेचाळीसावा दिवस, वजन दोन किलो दोनशे, नाही नाही चुकलं, दोन किलो सातशे, दूध व्यवस्थित, अमृताचं बाळ.",
+    "wrong": [
+     "name: want \"Amruta\" got \"Amrita\"",
+     "day: want 42 got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-nb-225",
+    "said": "बाळ limp आहे, touch केल्यावरच हलतं, feeding कमी आहे, temperature 37.8, day 9, आई कांता",
+    "wrong": [
+     "name: want \"Kanta\" got undefined"
+    ],
+    "flags_want": [
+     "nb_fever",
+     "nb_lethargy",
+     "nb_poor_feeding",
+     "nb_sepsis_signs"
+    ],
+    "flags_got": [
+     "nb_lethargy",
+     "nb_fever",
+     "nb_sepsis_signs",
+     "nb_poor_feeding"
+    ]
+   },
+   {
+    "id": "h-nb-227",
+    "said": "बच्चे का cry weak है, बस कुनमुनाता है, और potty में blood दिखा, week one पूरा यानी सातवाँ दिन, माँ रज़िया",
+    "wrong": [
+     "name: want \"Raziya\" got undefined"
+    ],
+    "flags_want": [
+     "nb_blood_stool",
+     "nb_weak_cry"
+    ],
+    "flags_got": [
+     "nb_blood_stool",
+     "nb_weak_cry"
+    ]
+   },
+   {
+    "id": "h-anc-212",
+    "said": "रंजनाताई, बत्तीस आठवडे, बीपी एकशे साठ बाय एकशे दहा, अल्ब्युमिन तीन प्लस.",
+    "wrong": [
+     "name: want \"Ranjana\" got \"Ranjnatai\""
+    ],
+    "flags_want": [
+     "anc_preeclampsia",
+     "anc_severe_hypertension"
+    ],
+    "flags_got": [
+     "anc_severe_hypertension",
+     "anc_preeclampsia"
+    ]
+   },
+   {
+    "id": "h-anc-213",
+    "said": "गंगूबाई, सहावा महिना, बीपी एकशे वीस बाय ऐंशी, हिमोग्लोबिन बारा पूर्णांक एक, सूज कुठेच नाही.",
+    "wrong": [
+     "symptoms.swelling_face_hands: want false got undefined",
+     "symptoms.swelling_feet: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-anc-217",
+    "said": "Aaj Sangitachi BP ghetli, ekshe chalis baay navvad, albumin nahi, aathva mahina",
+    "wrong": [
+     "bp_sys: want 140 got undefined",
+     "bp_dia: want 90 got undefined"
+    ],
+    "flags_want": [
+     "anc_hypertension"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "h-pnc-201",
+    "said": "सोनाली की डिलीवरी को तीसरा दिन, दिन भर में छह पैड बदले, बुखार एक सौ एक।",
+    "wrong": [
+     "symptoms.fever: extra true",
+     "symptoms.heavy_bleeding: extra true"
+    ],
+    "flags_want": [
+     "pnc_fever",
+     "pnc_heavy_bleeding"
+    ],
+    "flags_got": [
+     "pnc_heavy_bleeding",
+     "pnc_fever"
+    ]
+   },
+   {
+    "id": "h-pnc-202",
+    "said": "रामप्यारी, डिलीवरी के बाद सातवाँ दिन, बुखार सौ डिग्री, नीचे से बदबूदार पानी आ रहा है।",
+    "wrong": [
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_infection",
+     "pnc_low_fever"
+    ],
+    "flags_got": [
+     "pnc_infection"
+    ]
+   },
+   {
+    "id": "h-pnc-204",
+    "said": "कमलेश की बोली अटपटी हो गई है, कुछ भी बोल रही, और आँखों से धुंधला दिखता है, दूसरा दिन।",
+    "wrong": [
+     "symptoms.abnormal_speech: want true got undefined",
+     "symptoms.blurred_vision: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_neuro"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "h-pnc-205",
+    "said": "Jaya ko delivery ke baad paanchva din, taap 102.4, saans phool rahi hai",
+    "wrong": [
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_breathless",
+     "pnc_high_fever"
+    ],
+    "flags_got": [
+     "pnc_high_fever",
+     "pnc_breathless"
+    ]
+   },
+   {
+    "id": "h-pnc-206",
+    "said": "Mehrunissa, das din ho gaye delivery ko, teen pad roz, bukhar nahi, chakkar nahi, doodh pilane mein koi taklif nahi",
+    "wrong": [
+     "symptoms.breast_problem: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-pnc-207",
+    "said": "बाळंतपणानंतर चौथा दिवस, ताप एकशे दोन, म्हणजे खूप, आणि घाण वासाचं पाणी जातंय, हिराबाई.",
+    "wrong": [
+     "symptoms.foul_discharge: want true got undefined",
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_sepsis"
+    ],
+    "flags_got": [
+     "pnc_fever"
+    ]
+   },
+   {
+    "id": "h-pnc-209",
+    "said": "ज्योत्स्नाला काल रात्री आकडी आली, आता शुद्धीवर आहे, तिसरा दिवस, अंग गरम लागतंय.",
+    "wrong": [
+     "symptoms.convulsions: want true got undefined",
+     "symptoms.fever: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_convulsions",
+     "pnc_fever"
+    ],
+    "flags_got": [
+     "nb_fever"
+    ]
+   },
+   {
+    "id": "h-pnc-210",
+    "said": "Delivery houn satva divas, Ashwini, taap nahi, raktasrav kami, divsala teen pad",
+    "wrong": [
+     "symptoms.heavy_bleeding: want false got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-pnc-211",
+    "said": "Postnatal day two, Lakshmi. Soaked seven pads since morning, feeling giddy, temperature ninety-eight point four.",
+    "wrong": [
+     "symptoms.heavy_bleeding: extra true"
+    ],
+    "flags_want": [
+     "pnc_anaemia_signs",
+     "pnc_heavy_bleeding"
+    ],
+    "flags_got": [
+     "pnc_heavy_bleeding",
+     "pnc_anaemia_signs"
+    ]
+   },
+   {
+    "id": "h-pnc-212",
+    "said": "Day 5 post delivery, Anjum ko fever hai, temperature 38.2, breast mein bahut dard aur lal ho gaya",
+    "wrong": [
+     "symptoms.fever: extra true"
+    ],
+    "flags_want": [
+     "pnc_breast",
+     "pnc_fever"
+    ],
+    "flags_got": [
+     "pnc_fever",
+     "pnc_breast"
+    ]
+   }
+  ]
+ }
+}

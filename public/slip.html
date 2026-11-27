@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Referral slip · Ghar Bhet</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@500&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+  .slip { max-width: 680px; margin: 26px auto 60px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 28px; position: relative; }
+  .slip h1 { font-family: var(--serif); font-size: 30px; margin: 0 0 4px; font-weight: 600; }
+  .slip .stamp { position: absolute; right: 24px; top: 24px; font-size: 20px; }
+  .kv { display: grid; grid-template-columns: 180px 1fr; gap: 6px 14px; margin: 18px 0; font-size: 16px; }
+  .kv dt { color: var(--ink-3); } .kv dd { margin: 0; font-family: var(--hand); font-size: 22px; color: var(--reg-ink); line-height: 1.2; }
+  .why { border-top: 2px solid var(--ink); padding-top: 14px; }
+  .why li { margin-bottom: 8px; }
+  .said-q { font-family: var(--serif); font-size: 18px; color: var(--ink-2); border-left: 3px solid var(--voice); padding-left: 12px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+  @media print { .top, .bottom-bar, .actions, footer, .totop { display: none !important; } body { background: #fff; } .slip { border: 0; margin: 0; } }
+  @media (max-width: 560px) { .kv { grid-template-columns: 1fr; } .slip .stamp { position: static; margin-bottom: 10px; } }
+</style>
+</head>
+<body>
+<header id="top"></header>
+<main class="wrap"><article class="slip" id="slip"><p class="muted">Loading the referral…</p></article></main>
+<script type="module">
+import { mountChrome, api, esc } from "/js/ui.js";
+import { romanize } from "/js/understand.js";
+mountChrome("");
+const id = location.pathname.split("/")[2] || new URLSearchParams(location.search).get("id");
+const T = { newborn: "Newborn", anc: "Pregnancy", pnc: "Mother after birth" };
+const F = (r) => [
+  ["Name", r.type === "newborn" && r.name ? `${r.name}'s baby` : r.name], ["Day of life", r.type === "newborn" ? r.day : null], ["Days since birth", r.type === "pnc" ? r.day : null],
+  ["Pregnancy", r.weeks != null ? `${r.weeks} weeks` : r.month != null ? `month ${r.month}` : null], ["Blood pressure", r.bp_sys != null ? `${r.bp_sys}/${r.bp_dia ?? "?"}` : null], ["Hb", r.hb != null ? `${r.hb} g/dl` : null],
+  ["Urine albumin", r.albumin], ["Weight", r.weight_g != null ? `${r.weight_g} g` : r.weight_kg != null ? `${r.weight_kg} kg` : null], ["Temperature", r.temp_c != null ? `${r.temp_c} °C` : null],
+  ["Breaths a minute", r.resp_rate], ["Feeding", r.feeding], ["Pads a day", r.pads], ["Baby moving", r.fetal_movement],
+].filter(([, v]) => v != null && v !== "");
+try {
+  const v = await api(`/api/visits/${encodeURIComponent(id)}`);
+  const refer = v.flags.filter((f) => f.severity === "refer_now"), watch = v.flags.filter((f) => f.severity === "watch");
+  document.title = `Referral slip: ${v.name} · Ghar Bhet`;
+  document.getElementById("slip").innerHTML = `
+    ${refer.length ? `<span class="stamp">REFER TODAY</span>` : ""}
+    <h1>Referral slip</h1>
+    <p class="muted" style="margin:0">${esc(T[v.type])} visit · ${new Date(v.at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} · ${esc(v.village?.name || "")}${v.person?.sample ? " (sample)" : ""}</p>
+    <dl class="kv">${F(v.record).map(([k, x]) => `<dt>${esc(k)}</dt><dd>${esc(x)}</dd>`).join("")}</dl>
+    <section class="why"><h2 style="font-size:17px;margin:0 0 6px">Why this referral</h2>
+      ${refer.length ? `<ul>${refer.map((f) => `<li><b>${esc(f.title)}.</b> ${esc(f.why)} <b>${esc(f.action)}</b><br><span class="faint">${esc(f.source)} · rule ${esc(f.code)}</span></li>`).join("")}</ul>` : `<p>No danger sign found in this visit.</p>`}
+      ${watch.length ? `<p class="faint" style="margin:4px 0">Also watch: ${watch.map((f) => esc(f.title)).join(", ")}.</p>` : ""}
+    </section>
+    ${v.said?.length ? `<p class="faint" style="margin:16px 0 4px">What the ASHA said (in Roman letters)</p>${v.said.map((s) => `<p class="said-q">${esc(romanize(s))}</p>`).join("")}` : ""}
+    <p class="faint">Flags come from fixed rules (${esc(v.ruleset)}); they support the ANM's and doctor's judgement and never replace it. Free transport under JSSK: call 108 or 102.</p>
+    <div class="actions"><button class="btn" onclick="print()">Print the slip</button><a class="btn ghost" href="tel:108">Call 108</a><a class="btn ghost" href="/anm">Nurse's board</a></div>`;
+} catch (e) {
+  document.getElementById("slip").innerHTML = `<h1>Referral not found</h1><p class="muted">${esc(e.message)} Open the <a href="/anm">nurse's board</a> to see today's referrals.</p>`;
+}
+</script>
+</body>
+</html>

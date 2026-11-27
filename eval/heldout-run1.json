@@ -1,0 +1,873 @@
+{
+ "set": "heldout",
+ "run_at": "2026-11-27T07:13:33.910Z",
+ "ruleset": "mohfw-2026.1",
+ "typed": {
+  "mode": "typed",
+  "items": 60,
+  "fields": {
+   "gold": 291,
+   "predicted": 285,
+   "correct": 281,
+   "recall": 96.6,
+   "precision": 98.6
+  },
+  "type_detected": 100,
+  "danger": {
+   "visits": 38,
+   "caught": 37,
+   "caught_pct": 97.4,
+   "normal_visits": 22,
+   "false_alarms": 1,
+   "false_alarm_pct": 4.5
+  },
+  "flags": {
+   "gold": 72,
+   "predicted": 71,
+   "correct": 70,
+   "recall": 97.2,
+   "precision": 98.6,
+   "refer_now_recall": 96.2
+  },
+  "exact_visits": 86.7,
+  "by_field": {
+   "name": {
+    "gold": 59,
+    "hit": 56,
+    "pred": 59,
+    "recall": 94.9,
+    "precision": 94.9
+   },
+   "day": {
+    "gold": 38,
+    "hit": 37,
+    "pred": 37,
+    "recall": 97.4,
+    "precision": 100
+   },
+   "weight_g": {
+    "gold": 15,
+    "hit": 15,
+    "pred": 15,
+    "recall": 100,
+    "precision": 100
+   },
+   "resp_rate": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "feeding": {
+    "gold": 14,
+    "hit": 14,
+    "pred": 14,
+    "recall": 100,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 73,
+    "hit": 68,
+    "pred": 68,
+    "recall": 93.2,
+    "precision": 100
+   },
+   "temp_c": {
+    "gold": 15,
+    "hit": 15,
+    "pred": 15,
+    "recall": 100,
+    "precision": 100
+   },
+   "month": {
+    "gold": 10,
+    "hit": 10,
+    "pred": 10,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 12,
+    "hit": 12,
+    "pred": 12,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 12,
+    "hit": 12,
+    "pred": 12,
+    "recall": 100,
+    "precision": 100
+   },
+   "albumin": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 11,
+    "hit": 11,
+    "pred": 11,
+    "recall": 100,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 9,
+    "hit": 9,
+    "pred": 9,
+    "recall": 100,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "weight_kg": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "ifa_tablets": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 5,
+    "hit": 4,
+    "pred": 5,
+    "recall": 80,
+    "precision": 80
+   }
+  },
+  "by_tag": {
+   "numbers-in-words": {
+    "n": 26,
+    "ok": 24,
+    "pct": 92.3
+   },
+   "filler": {
+    "n": 8,
+    "ok": 7,
+    "pct": 87.5
+   },
+   "local-idiom": {
+    "n": 20,
+    "ok": 16,
+    "pct": 80
+   },
+   "negation": {
+    "n": 24,
+    "ok": 21,
+    "pct": 87.5
+   },
+   "fahrenheit": {
+    "n": 8,
+    "ok": 7,
+    "pct": 87.5
+   },
+   "fraction-words": {
+    "n": 7,
+    "ok": 6,
+    "pct": 85.7
+   },
+   "borderline": {
+    "n": 18,
+    "ok": 16,
+    "pct": 88.9
+   },
+   "normal-visit": {
+    "n": 11,
+    "ok": 10,
+    "pct": 90.9
+   },
+   "numbers-digits": {
+    "n": 21,
+    "ok": 16,
+    "pct": 76.2
+   },
+   "multi-sign": {
+    "n": 21,
+    "ok": 17,
+    "pct": 81
+   },
+   "distractor-number": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "watch-only": {
+    "n": 11,
+    "ok": 10,
+    "pct": 90.9
+   },
+   "celsius": {
+    "n": 7,
+    "ok": 6,
+    "pct": 85.7
+   },
+   "no-name": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "self-correction": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "no-number-fever": {
+    "n": 2,
+    "ok": 1,
+    "pct": 50
+   },
+   "subject-ambiguity": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "code-mix": {
+    "n": 6,
+    "ok": 5,
+    "pct": 83.3
+   },
+   "months-not-weeks": {
+    "n": 10,
+    "ok": 10,
+    "pct": 100
+   },
+   "stt-style": {
+    "n": 6,
+    "ok": 5,
+    "pct": 83.3
+   }
+  },
+  "by_lang": {
+   "hi/devanagari": {
+    "n": 21,
+    "ok": 20,
+    "pct": 95.2
+   },
+   "hi/roman": {
+    "n": 9,
+    "ok": 7,
+    "pct": 77.8
+   },
+   "mr/devanagari": {
+    "n": 15,
+    "ok": 13,
+    "pct": 86.7
+   },
+   "mr/roman": {
+    "n": 3,
+    "ok": 1,
+    "pct": 33.3
+   },
+   "en/roman": {
+    "n": 6,
+    "ok": 6,
+    "pct": 100
+   },
+   "mix/devanagari": {
+    "n": 4,
+    "ok": 4,
+    "pct": 100
+   },
+   "mix/roman": {
+    "n": 2,
+    "ok": 1,
+    "pct": 50
+   }
+  },
+  "misses": [
+   {
+    "id": "h-nb-010",
+    "said": "गुड़िया की बच्ची इक्कीस दिन की है, आँख से पानी और कीचड़ आ रहा, बदन भी गरम है, पर रोती ज़ोर से है।",
+    "wrong": [
+     "name: want \"Gudiya\" got \"Guriya\"",
+     "symptoms.weak_cry: want false got undefined"
+    ],
+    "flags_want": [
+     "nb_fever"
+    ],
+    "flags_got": [
+     "nb_fever"
+    ]
+   },
+   {
+    "id": "h-nb-015",
+    "said": "वृषालीचं बाळ तिसऱ्या दिवसाचं, वजन दीड किलो, दूध पीत नाही, अंग थंड लागतंय.",
+    "wrong": [
+     "name: want \"Vrushali\" got \"Vrishali\""
+    ],
+    "flags_want": [
+     "nb_hypothermia",
+     "nb_not_feeding",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "nb_not_feeding",
+     "nb_hypothermia",
+     "nb_very_low_weight"
+    ]
+   },
+   {
+    "id": "h-nb-021",
+    "said": "बाळ फक्त हात लावला तरच हलतं, रडणं कमी, जुलाब पण होतायत. अनुराधाचं बाळ, सहावा दिवस, वजन दोन किलो.",
+    "wrong": [
+     "symptoms.lethargy: want true got undefined",
+     "symptoms.weak_cry: want true got undefined"
+    ],
+    "flags_want": [
+     "nb_lethargy",
+     "nb_low_weight"
+    ],
+    "flags_got": [
+     "nb_low_weight"
+    ]
+   },
+   {
+    "id": "h-nb-022",
+    "said": "Jayashree cha bal, chauda divas, vajan don kilo charshe, taap nahi, pan shwas 64 ahe minitala, dudh kami pitay",
+    "wrong": [
+     "day: want 14 got undefined"
+    ],
+    "flags_want": [
+     "nb_fast_breathing",
+     "nb_low_weight",
+     "nb_poor_feeding"
+    ],
+    "flags_got": [
+     "nb_fast_breathing",
+     "nb_poor_feeding",
+     "nb_low_weight"
+    ]
+   },
+   {
+    "id": "h-anc-010",
+    "said": "BP 170 by 115, chehra suja hua, albumin teen plus, 36 hafte, Champa",
+    "wrong": [
+     "symptoms.swelling_face_hands: want true got undefined"
+    ],
+    "flags_want": [
+     "anc_imminent_eclampsia",
+     "anc_preeclampsia",
+     "anc_swelling"
+    ],
+    "flags_got": [
+     "anc_imminent_eclampsia",
+     "anc_preeclampsia"
+    ]
+   },
+   {
+    "id": "h-anc-020",
+    "said": "Umm, Tabassum ka BP 140 by 88 hai, swelling kahin nahi, headache nahi, 27 weeks",
+    "wrong": [
+     "name: want \"Tabassum\" got \"Umm\""
+    ],
+    "flags_want": [
+     "anc_hypertension"
+    ],
+    "flags_got": [
+     "anc_hypertension"
+    ]
+   },
+   {
+    "id": "h-pnc-006",
+    "said": "Temperature 38.9 hai, bas, aur kuch nahi. Paanch pad lag rahe hain din mein... nahi, chaar. Day 5, Jamuna.",
+    "wrong": [
+     "pads: want 4 got 5"
+    ],
+    "flags_want": [
+     "pnc_fever"
+    ],
+    "flags_got": [
+     "pnc_heavy_bleeding",
+     "pnc_fever"
+    ]
+   },
+   {
+    "id": "h-pnc-010",
+    "said": "Shalan tai, chautha divas, taap 99 degree, srav la vas yeto",
+    "wrong": [
+     "symptoms.foul_discharge: want true got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   }
+  ]
+ },
+ "auto": {
+  "mode": "auto",
+  "items": 60,
+  "fields": {
+   "gold": 291,
+   "predicted": 280,
+   "correct": 273,
+   "recall": 93.8,
+   "precision": 97.5
+  },
+  "type_detected": 91.7,
+  "danger": {
+   "visits": 38,
+   "caught": 35,
+   "caught_pct": 92.1,
+   "normal_visits": 22,
+   "false_alarms": 1,
+   "false_alarm_pct": 4.5
+  },
+  "flags": {
+   "gold": 72,
+   "predicted": 70,
+   "correct": 66,
+   "recall": 91.7,
+   "precision": 94.3,
+   "refer_now_recall": 88.7
+  },
+  "exact_visits": 80,
+  "by_field": {
+   "name": {
+    "gold": 59,
+    "hit": 56,
+    "pred": 59,
+    "recall": 94.9,
+    "precision": 94.9
+   },
+   "day": {
+    "gold": 38,
+    "hit": 36,
+    "pred": 36,
+    "recall": 94.7,
+    "precision": 100
+   },
+   "weight_g": {
+    "gold": 15,
+    "hit": 15,
+    "pred": 15,
+    "recall": 100,
+    "precision": 100
+   },
+   "resp_rate": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "feeding": {
+    "gold": 14,
+    "hit": 14,
+    "pred": 14,
+    "recall": 100,
+    "precision": 100
+   },
+   "symptoms": {
+    "gold": 73,
+    "hit": 61,
+    "pred": 64,
+    "recall": 83.6,
+    "precision": 95.3
+   },
+   "temp_c": {
+    "gold": 15,
+    "hit": 15,
+    "pred": 15,
+    "recall": 100,
+    "precision": 100
+   },
+   "month": {
+    "gold": 10,
+    "hit": 10,
+    "pred": 10,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_sys": {
+    "gold": 12,
+    "hit": 12,
+    "pred": 12,
+    "recall": 100,
+    "precision": 100
+   },
+   "bp_dia": {
+    "gold": 12,
+    "hit": 12,
+    "pred": 12,
+    "recall": 100,
+    "precision": 100
+   },
+   "albumin": {
+    "gold": 5,
+    "hit": 5,
+    "pred": 5,
+    "recall": 100,
+    "precision": 100
+   },
+   "weeks": {
+    "gold": 11,
+    "hit": 11,
+    "pred": 11,
+    "recall": 100,
+    "precision": 100
+   },
+   "hb": {
+    "gold": 9,
+    "hit": 9,
+    "pred": 9,
+    "recall": 100,
+    "precision": 100
+   },
+   "fetal_movement": {
+    "gold": 4,
+    "hit": 4,
+    "pred": 4,
+    "recall": 100,
+    "precision": 100
+   },
+   "weight_kg": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "ifa_tablets": {
+    "gold": 2,
+    "hit": 2,
+    "pred": 2,
+    "recall": 100,
+    "precision": 100
+   },
+   "pads": {
+    "gold": 5,
+    "hit": 4,
+    "pred": 5,
+    "recall": 80,
+    "precision": 80
+   }
+  },
+  "by_tag": {
+   "numbers-in-words": {
+    "n": 26,
+    "ok": 24,
+    "pct": 92.3
+   },
+   "filler": {
+    "n": 8,
+    "ok": 7,
+    "pct": 87.5
+   },
+   "local-idiom": {
+    "n": 20,
+    "ok": 13,
+    "pct": 65
+   },
+   "negation": {
+    "n": 24,
+    "ok": 19,
+    "pct": 79.2
+   },
+   "fahrenheit": {
+    "n": 8,
+    "ok": 7,
+    "pct": 87.5
+   },
+   "fraction-words": {
+    "n": 7,
+    "ok": 6,
+    "pct": 85.7
+   },
+   "borderline": {
+    "n": 18,
+    "ok": 16,
+    "pct": 88.9
+   },
+   "normal-visit": {
+    "n": 11,
+    "ok": 10,
+    "pct": 90.9
+   },
+   "numbers-digits": {
+    "n": 21,
+    "ok": 15,
+    "pct": 71.4
+   },
+   "multi-sign": {
+    "n": 21,
+    "ok": 15,
+    "pct": 71.4
+   },
+   "distractor-number": {
+    "n": 2,
+    "ok": 2,
+    "pct": 100
+   },
+   "watch-only": {
+    "n": 11,
+    "ok": 10,
+    "pct": 90.9
+   },
+   "celsius": {
+    "n": 7,
+    "ok": 6,
+    "pct": 85.7
+   },
+   "no-name": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "self-correction": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   },
+   "no-number-fever": {
+    "n": 2,
+    "ok": 0,
+    "pct": 0
+   },
+   "subject-ambiguity": {
+    "n": 1,
+    "ok": 1,
+    "pct": 100
+   },
+   "code-mix": {
+    "n": 6,
+    "ok": 4,
+    "pct": 66.7
+   },
+   "months-not-weeks": {
+    "n": 10,
+    "ok": 10,
+    "pct": 100
+   },
+   "stt-style": {
+    "n": 6,
+    "ok": 5,
+    "pct": 83.3
+   }
+  },
+  "by_lang": {
+   "hi/devanagari": {
+    "n": 21,
+    "ok": 19,
+    "pct": 90.5
+   },
+   "hi/roman": {
+    "n": 9,
+    "ok": 6,
+    "pct": 66.7
+   },
+   "mr/devanagari": {
+    "n": 15,
+    "ok": 12,
+    "pct": 80
+   },
+   "mr/roman": {
+    "n": 3,
+    "ok": 1,
+    "pct": 33.3
+   },
+   "en/roman": {
+    "n": 6,
+    "ok": 6,
+    "pct": 100
+   },
+   "mix/devanagari": {
+    "n": 4,
+    "ok": 3,
+    "pct": 75
+   },
+   "mix/roman": {
+    "n": 2,
+    "ok": 1,
+    "pct": 50
+   }
+  },
+  "misses": [
+   {
+    "id": "h-nb-010",
+    "said": "गुड़िया की बच्ची इक्कीस दिन की है, आँख से पानी और कीचड़ आ रहा, बदन भी गरम है, पर रोती ज़ोर से है।",
+    "wrong": [
+     "name: want \"Gudiya\" got \"Guriya\"",
+     "symptoms.weak_cry: want false got undefined"
+    ],
+    "flags_want": [
+     "nb_fever"
+    ],
+    "flags_got": [
+     "nb_fever"
+    ]
+   },
+   {
+    "id": "h-nb-015",
+    "said": "वृषालीचं बाळ तिसऱ्या दिवसाचं, वजन दीड किलो, दूध पीत नाही, अंग थंड लागतंय.",
+    "wrong": [
+     "name: want \"Vrushali\" got \"Vrishali\""
+    ],
+    "flags_want": [
+     "nb_hypothermia",
+     "nb_not_feeding",
+     "nb_very_low_weight"
+    ],
+    "flags_got": [
+     "nb_not_feeding",
+     "nb_hypothermia",
+     "nb_very_low_weight"
+    ]
+   },
+   {
+    "id": "h-nb-021",
+    "said": "बाळ फक्त हात लावला तरच हलतं, रडणं कमी, जुलाब पण होतायत. अनुराधाचं बाळ, सहावा दिवस, वजन दोन किलो.",
+    "wrong": [
+     "symptoms.lethargy: want true got undefined",
+     "symptoms.weak_cry: want true got undefined"
+    ],
+    "flags_want": [
+     "nb_lethargy",
+     "nb_low_weight"
+    ],
+    "flags_got": [
+     "nb_low_weight"
+    ]
+   },
+   {
+    "id": "h-nb-022",
+    "said": "Jayashree cha bal, chauda divas, vajan don kilo charshe, taap nahi, pan shwas 64 ahe minitala, dudh kami pitay",
+    "wrong": [
+     "day: want 14 got undefined"
+    ],
+    "flags_want": [
+     "nb_fast_breathing",
+     "nb_low_weight",
+     "nb_poor_feeding"
+    ],
+    "flags_got": [
+     "nb_fast_breathing",
+     "nb_poor_feeding",
+     "nb_low_weight"
+    ]
+   },
+   {
+    "id": "h-anc-010",
+    "said": "BP 170 by 115, chehra suja hua, albumin teen plus, 36 hafte, Champa",
+    "wrong": [
+     "symptoms.swelling_face_hands: want true got undefined"
+    ],
+    "flags_want": [
+     "anc_imminent_eclampsia",
+     "anc_preeclampsia",
+     "anc_swelling"
+    ],
+    "flags_got": [
+     "anc_imminent_eclampsia",
+     "anc_preeclampsia"
+    ]
+   },
+   {
+    "id": "h-anc-020",
+    "said": "Umm, Tabassum ka BP 140 by 88 hai, swelling kahin nahi, headache nahi, 27 weeks",
+    "wrong": [
+     "name: want \"Tabassum\" got \"Umm\""
+    ],
+    "flags_want": [
+     "anc_hypertension"
+    ],
+    "flags_got": [
+     "anc_hypertension"
+    ]
+   },
+   {
+    "id": "h-pnc-003",
+    "said": "बुखार है, कंपकंपी है, और नीचे से बदबूदार स्राव आ रहा है। छठा दिन, मुन्नी।",
+    "wrong": [
+     "symptoms.fever: want true got undefined",
+     "symptoms.foul_discharge: want true got undefined",
+     "symptoms.hot_to_touch: extra true"
+    ],
+    "flags_want": [
+     "pnc_infection"
+    ],
+    "flags_got": [
+     "nb_fever"
+    ]
+   },
+   {
+    "id": "h-pnc-005",
+    "said": "Afsana ki saans phool rahi hai, seene mein dard hai, teesra din, bukhar nahi",
+    "wrong": [
+     "symptoms.breathless: want true got undefined",
+     "symptoms.fever: want false got undefined",
+     "symptoms.hot_to_touch: extra false"
+    ],
+    "flags_want": [
+     "pnc_breathless"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "h-pnc-006",
+    "said": "Temperature 38.9 hai, bas, aur kuch nahi. Paanch pad lag rahe hain din mein... nahi, chaar. Day 5, Jamuna.",
+    "wrong": [
+     "pads: want 4 got 5"
+    ],
+    "flags_want": [
+     "pnc_fever"
+    ],
+    "flags_got": [
+     "pnc_heavy_bleeding",
+     "pnc_fever"
+    ]
+   },
+   {
+    "id": "h-pnc-008",
+    "said": "तिचं बोलणं अडखळतंय, गोंधळलेली आहे, डोळ्यांना धूसर दिसतं. तिसरा दिवस. शोभा.",
+    "wrong": [
+     "symptoms.abnormal_speech: want true got undefined",
+     "symptoms.blurred_vision: want true got undefined"
+    ],
+    "flags_want": [
+     "pnc_neuro"
+    ],
+    "flags_got": []
+   },
+   {
+    "id": "h-pnc-010",
+    "said": "Shalan tai, chautha divas, taap 99 degree, srav la vas yeto",
+    "wrong": [
+     "symptoms.foul_discharge: want true got undefined"
+    ],
+    "flags_want": [],
+    "flags_got": []
+   },
+   {
+    "id": "h-pnc-012",
+    "said": "Day 2 है, she had a fit early morning, BP check नहीं किया, bleeding normal है। नाम मालती।",
+    "wrong": [
+     "day: want 2 got undefined",
+     "symptoms.heavy_bleeding: want false got undefined",
+     "symptoms.bleeding: extra true"
+    ],
+    "flags_want": [
+     "pnc_convulsions"
+    ],
+    "flags_got": [
+     "anc_bleeding",
+     "anc_convulsions"
+    ]
+   }
+  ]
+ }
+}

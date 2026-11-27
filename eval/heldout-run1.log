@@ -1,0 +1,3 @@
+heldout: 60 items
+typed fields 96.6% recall / 98.6% precision · danger visits caught 37/38 (97.4%) · false alarms 1/22 · flags 97.2% recall, 98.6% precision · exact visits 86.7% · type 100%
+auto  fields 93.8% recall / 97.5% precision · danger visits caught 35/38 (92.1%) · false alarms 1/22 · flags 91.7% recall, 94.3% precision · exact visits 80% · type 91.7%

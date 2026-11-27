@@ -1,0 +1,1 @@
+{ "name": "Ghar Bhet", "short_name": "Ghar Bhet", "description": "Speak a home visit; the record fills itself and danger signs are flagged.", "start_url": "/visit", "display": "standalone", "background_color": "#f4f1e8", "theme_color": "#16191d", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] }

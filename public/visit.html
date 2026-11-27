@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Speak a visit · Ghar Bhet</title>
+<meta name="description" content="Speak a home visit in Hindi, Marathi or English. The visit record fills itself and danger signs are flagged by fixed government rules.">
+<meta name="theme-color" content="#f4f1e8">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:image" content="/og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@500&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/visit.css">
+</head>
+<body>
+<header id="top"></header>
+<main class="wrap v-wrap">
+  <div class="v-grid">
+    <section class="v-app" aria-label="The visit">
+      <div class="v-pick">
+        <div class="seg" role="group" aria-label="Who is this visit for">
+          <button data-type="newborn" aria-pressed="true">Newborn</button><button data-type="anc" aria-pressed="false">Pregnancy</button><button data-type="pnc" aria-pressed="false">After birth</button>
+        </div>
+        <div class="seg small-seg" role="group" aria-label="Language you speak">
+          <button data-lang="hi" aria-pressed="true">Hindi</button><button data-lang="mr" aria-pressed="false">Marathi</button><button data-lang="en" aria-pressed="false">English</button>
+        </div>
+      </div>
+
+      <div class="v-mic">
+        <button class="mic" id="mic" aria-label="Start speaking the visit"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button>
+        <div class="v-mic-text">
+          <p class="v-status" id="status">Tap the mic and say the visit, the way you would tell the ANM.</p>
+          <div class="wave" id="wave" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <div class="card v-said">
+        <div class="v-said-head"><h2>What you said</h2><span class="faint" id="said-note">Shown in Roman letters</span></div>
+        <div id="said" aria-live="polite"><p class="said faint" id="said-empty">Nothing yet. Speak, type below, or try an example.</p></div>
+      </div>
+
+      <div class="v-record">
+        <div class="v-said-head"><h2 id="record-title">Newborn visit</h2><span class="faint" id="filled-count"></span></div>
+        <div class="tiles" id="tiles"></div>
+        <div class="sym-row" id="syms" aria-label="Signs said"></div>
+      </div>
+
+      <div id="ask" class="v-ask" hidden></div>
+      <div id="alert" aria-live="assertive"></div>
+
+      <div class="v-actions">
+        <button class="btn voice" id="save" disabled>Save visit</button>
+        <button class="btn ghost" id="readback" disabled>Read it back</button>
+        <button class="btn ghost" id="clear">New visit</button>
+      </div>
+      <div id="saved"></div>
+
+      <details class="card v-type" id="type-box">
+        <summary>Type instead of speaking</summary>
+        <label class="sr" for="typed">The visit, typed</label>
+        <textarea id="typed" rows="3" placeholder="For example: Sunita ka baby, 7 din ka, wajan 1 kilo 700 gram, doodh kam pee raha"></textarea>
+        <div class="v-type-row"><button class="btn small" id="typed-go">Read this</button><span class="faint">Works in any browser, with no microphone.</span></div>
+      </details>
+
+      <div class="card v-examples">
+        <h2>Try an example</h2>
+        <p class="faint" style="margin-top:-4px">Real sentences in the style ASHAs speak. Each one runs through the same reader and rules.</p>
+        <div class="ex-row" id="examples"></div>
+      </div>
+    </section>
+
+    <aside class="v-side" aria-label="How this visit was read">
+      <div class="card">
+        <h2>How it reads you</h2>
+        <ol class="steps">
+          <li><b>Speak in your own words.</b> Hindi, Marathi or English, numbers as digits or words: "डेढ़ सौ", "साढ़े आठ", "ek kilo saat sau gram".</li>
+          <li><b>Every value shows the words it came from.</b> Tap a tile to light up its words. Nothing is guessed.</li>
+          <li><b>Danger signs come from fixed rules</b>, the ones in the MoHFW manuals and the 2026 newborn guidelines, never from a model.</li>
+          <li><b>Correct it by voice.</b> "Nahi nahi, 150 by 100": the last value said wins.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h2>Rules that fired</h2>
+        <div id="fired"><p class="faint">None yet.</p></div>
+      </div>
+      <div class="card">
+        <h2>This village today</h2>
+        <div id="village"><p class="faint">Loading the register…</p></div>
+        <a class="btn ghost small" href="/anm" style="margin-top:10px">Open the nurse's board</a>
+      </div>
+    </aside>
+  </div>
+</main>
+<footer id="foot"></footer>
+<script type="module" src="/js/visit.js"></script>
+</body>
+</html>

@@ -18,7 +18,7 @@
 - **Measured accuracy, first run on 60 visit transcripts it had never seen** (written the way ASHAs speak, not recorded): **96.6%** of record fields read correctly (281 of 291), **98.6%** precision, **37 of 38** danger visits flagged (against our own rule table), **1 of 22** normal visits wrongly flagged. On a harder independent set of 100 tricky visits, written by a separate agent that never saw the code, the first run read 88.3% of fields and caught 50 of 59 danger visits (7 of 41 false alarms); on a second independent set of 60 in mostly English clinical shorthand it read 80.3% of fields and caught 36 of 39 danger visits, but raised 9 false alarms in 21 normal visits. [Every result and every miss](https://ghar-bhet-194851097912.us-central1.run.app/evidence).
 - **Final sealed test, run once:** 60 visits written after all the fixes and kept unopened until the end: 91.1% of fields, 36 of 37 danger visits flagged, 1 of 23 normal visits wrongly flagged.
 - **Real speech (12 visits read aloud through Wispr Flow):** 8 of 8 danger visits flagged, 70.2% of fields read right.
-- **Run it in one command:** `docker compose up`, then open http://localhost:8080. No API keys, no accounts, no AI model of our own.
+- **Run it in one command:** `docker compose up`, then open http://localhost:8080. No API keys, no accounts, no AI model of our own. Every setting is optional; see [.env.example](.env.example).
 - **Demo video (2:49):** https://youtu.be/vGSeAeO3o6s
 - **Live demo:** https://ghar-bhet-194851097912.us-central1.run.app (no login). Without a microphone: https://ghar-bhet-194851097912.us-central1.run.app/visit?example=1
 

@@ -5,7 +5,7 @@ import http from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { join, extname, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
-import { Store } from "./store.js";
+import { Store, levelOf } from "./store.js";
 import { RULE_TABLE, RULESET } from "../public/js/rules.js";
 
 const ROOT = fileURLToPath(new URL("../public/", import.meta.url));
@@ -129,7 +129,7 @@ async function api(req, res, url) {
   }
   if (p.startsWith("/api/visits/") && req.method === "GET") {
     const v = store.visit(p.split("/")[3]);
-    return v ? send(res, 200, { ...v, person: store.person(v.personId), village: store.db.village }) : send(res, 404, { error: "No visit with that id." });
+    return v ? send(res, 200, { ...v, level: levelOf(v.flags), count: v.count || 1, person: store.person(v.personId), village: store.db.village }) : send(res, 404, { error: "No visit with that id." });
   }
   const ref = p.match(/^\/api\/referrals\/([^/]+)\/(seen|open|outcome)$/);
   if (ref && req.method === "POST") {

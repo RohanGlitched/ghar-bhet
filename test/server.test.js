@@ -42,7 +42,7 @@ test("the sample village has referrals and visits due, marked as sample", async 
   assert.equal(s.village.sample, true);
   assert.ok(s.people.every((p) => p.sample === true));
   assert.ok(s.referrals.every((r) => r.sample === true));
-  assert.ok(s.referrals.some((r) => r.status === "seen" && r.seenBy === "ANM" && r.seenAt));
+  assert.ok(s.referrals.some((r) => r.status === "seen" && r.seenBy === "Nurse" && r.seenAt));
 });
 
 test("a saved visit is re-checked by the server and becomes a referral", async () => {
@@ -196,11 +196,42 @@ test("a danger sign in the ASHA's words but not in the record is added as a serv
   assert.ok(slip.flags.some((f) => f.from === "transcript"));
 });
 
-test("the transcript never removes the record's flags, and the record's explicit answers win", async () => {
-  // record says no fits (asked and answered on screen); words say fits: the record wins, fever is still added
-  const a = await (await post(BASE, "/api/visits", { type: "newborn", record: { name: "Trans", day: 5, weight_g: 3000, symptoms: { convulsions: false } }, said: [FITS] })).json();
-  assert.ok(!a.flags.some((f) => f.code === "nb_convulsions"));
-  assert.ok(a.flags.some((f) => f.code === "nb_fever" && f.from === "transcript"));
+const DISAGREES = "said in the visit, record disagrees — nurse to check";
+
+test("a record that disagrees with the ASHA's words can't erase a spoken danger sign", async () => {
+  // record says no fits; she said fits: the record's value is kept, the flag is added as a conflict
+  const a = await (await post(BASE, "/api/visits", { type: "newborn", record: { name: "Conflicta", day: 5, weight_g: 3000, symptoms: { convulsions: false } }, said: ["baby ko jhatke aa rahe hain"] })).json();
+  const fits = a.flags.find((f) => f.code === "nb_convulsions");
+  assert.ok(fits && fits.from === "transcript" && fits.conflict === true && fits.note === DISAGREES);
+  assert.equal(a.record.symptoms.convulsions, false, "the record is kept as saved");
+  assert.equal(a.referral.status, "open");
+  assert.deepEqual(a.transcript.conflicts, ["nb_convulsions"]);
+  assert.deepEqual(a.transcript.disagree["symptoms.convulsions"], { record: false, said: true });
+  // record 37 °C; she said 39
+  const b = await (await post(BASE, "/api/visits", { type: "newborn", record: { name: "Conflictb", day: 4, temp_c: 37 }, said: ["baby ka temperature 39 hai"] })).json();
+  const fever = b.flags.find((f) => f.code === "nb_fever");
+  assert.ok(fever && fever.conflict && fever.note === DISAGREES);
+  assert.equal(b.record.temp_c, 37);
+  assert.deepEqual(b.transcript.disagree.temp_c, { record: 37, said: 39 });
+  assert.equal(b.referral.status, "open");
+  // record BP 120/80; she said 170/115 and fits: fits added (not in record), severe BP added as a conflict
+  const c = await (await post(BASE, "/api/visits", { type: "anc", record: { name: "Conflictc", weeks: 32, bp_sys: 120, bp_dia: 80 }, said: ["BP 170 by 115, jhatke aaye"] })).json();
+  assert.ok(c.flags.some((f) => f.code === "anc_convulsions" && f.from === "transcript" && !f.conflict && f.note === "said in the visit but not in the record"));
+  const bp = c.flags.filter((f) => f.conflict && /^anc_(imminent_eclampsia|severe_hypertension)/.test(f.code));
+  assert.ok(bp.length >= 1, c.flags.map((f) => f.code).join());
+  assert.ok(bp.every((f) => f.urgent));
+  assert.deepEqual(c.transcript.disagree.bp_dia, { record: 80, said: 115 });
+  assert.equal(c.referral.urgent, true);
+  assert.equal(c.record.bp_sys, 120);
+  const r = (await state(BASE)).referrals.find((x) => x.id === c.id);
+  assert.equal(r.conflict, true);
+  assert.ok(r.flags.some((f) => f.conflict && f.note === DISAGREES));
+  // a correction across sentences is not a conflict: the words end on the value the record has
+  const d = await (await post(BASE, "/api/visits", { type: "newborn", record: { name: "Conflictd", day: 5, weight_g: 2800, temp_c: 37 }, said: ["Sunita ka baby 5 din ka, wajan 2800 gram, temperature 38", "nahi nahi, 37"] })).json();
+  assert.deepEqual(d.flags, []);
+});
+
+test("the transcript never removes the record's flags", async () => {
   // a record flag stays even when the words are calm
   const b = await (await post(BASE, "/api/visits", { type: "newborn", record: { name: "Trans", day: 5, weight_g: 1600 }, said: ["baby theek hai, doodh pee raha hai"] })).json();
   assert.ok(b.flags.some((f) => f.code === "nb_very_low_weight" && !f.from));
@@ -284,6 +315,77 @@ test("the register exports as CSV for the ANM's monthly register", async () => {
   assert.ok(row.includes("'=HYPERLINK(evil)"), "a cell that looks like a formula is defused");
   assert.ok(/anc_/.test(row) && row.includes(",open,"));
   assert.ok(lines.filter((l) => l && !l.startsWith("#")).length >= 14);
+});
+
+test("said must be a list of strings; anything else is ignored or refused, never a 500", async () => {
+  const a = await post(BASE, "/api/visits", { type: "newborn", record: { name: "Saidbaby", day: 4 }, said: [{ toString: 1 }, 5, "baby theek hai"] });
+  assert.equal(a.status, 200);
+  assert.deepEqual((await a.json()).said, ["baby theek hai"]);
+  assert.equal((await post(BASE, "/api/visits", { type: "newborn", record: { day: 4 }, said: "text" })).status, 400);
+});
+
+test("only symptom codes the rules know are kept", async () => {
+  const v = await (await post(BASE, "/api/visits", { type: "newborn", record: { name: "Symbaby", day: 6, symptoms: { call_helpline_now_pay_upi: true, convulsions: true } } })).json();
+  assert.deepEqual(v.record.symptoms, { convulsions: true });
+  assert.ok(!v.noted.some((n) => /helpline/.test(n.code)));
+});
+
+test("the same save again within 10 minutes is one visit with a count", async () => {
+  const body = { type: "newborn", record: { name: "Repeatbaby", day: 6, weight_g: 1700 }, said: ["Repeatbaby 6 din, wajan 1700 gram"] };
+  const a = await (await post(BASE, "/api/visits", body)).json();
+  const b = await (await post(BASE, "/api/visits", body)).json();
+  assert.equal(a.matched, "new"); assert.equal(a.count, 1);
+  assert.equal(b.id, a.id); assert.equal(b.matched, "repeat"); assert.equal(b.count, 2); assert.ok(b.lastAt >= a.at);
+  const s = await state(BASE);
+  assert.equal(s.people.filter((p) => p.name === "Repeatbaby").length, 1);
+  assert.equal(s.people.find((p) => p.name === "Repeatbaby").visits, 1);
+  assert.equal(s.recent.find((r) => r.id === a.id).count, 2);
+  assert.equal(s.referrals.filter((r) => r.name === "Repeatbaby").length, 1);
+  // a different reading is a new visit
+  const c = await (await post(BASE, "/api/visits", { ...body, record: { ...body.record, weight_g: 1750 } })).json();
+  assert.notEqual(c.id, a.id);
+});
+
+test("every person's last result has one of four levels", async () => {
+  const mk = async (name, rec) => (await (await post(BASE, "/api/visits", { type: "anc", record: { name, weeks: 26, ...rec } })).json()).personId;
+  const ids = { go_now: await mk("Levelgo", { bp_sys: 165, bp_dia: 115 }), refer_today: await mk("Levelrefer", { bp_sys: 142, bp_dia: 92 }), watch: await mk("Levelwatch", { hb: 9.5 }), fine: await mk("Levelfine", { hb: 12.5 }) };
+  const s = await state(BASE);
+  for (const [level, pid] of Object.entries(ids)) assert.equal(s.people.find((p) => p.id === pid).last.level, level, level);
+  assert.ok(s.people.every((p) => !p.last || ["go_now", "refer_today", "watch", "fine"].includes(p.last.level)));
+  assert.ok(s.recent.every((r) => ["go_now", "refer_today", "watch", "fine"].includes(r.level)));
+  assert.equal(s.demoNote, null, "no clearing on a laptop unless asked");
+});
+
+test("server text says nurse, and Saroj's refusal asks the ASHA to go again today", async () => {
+  const { Store } = await import("../server/store.js"); // a fresh sample village (an earlier test visited Saroj, which closes her follow-up)
+  const st = new Store(mkdtempSync(join(tmpdir(), "gbn-")), { bucket: "" });
+  await st.load(); clearTimeout(st.timer);
+  const s = st.state();
+  const saroj = s.followups.find((f) => f.name === "Saroj");
+  assert.equal(saroj.reason, "The family refused to go. Ask the ASHA to visit again today and talk to the family; if they still refuse, the nurse visits.");
+  assert.ok(!JSON.stringify({ f: s.followups, r: s.referrals.map((r) => r.seenBy) }).includes("ANM"));
+});
+
+test("on the public demo, visitors' visits are cleared after the TTL and the sample village is restored", async () => {
+  const { base } = await start({ DEMO_TTL_HOURS: "0.0008", RATE_PER_MIN: "1000" }); // about 3 seconds
+  let s = await state(base);
+  assert.equal(s.demoNote, "Visits saved by visitors are cleared after 0.0008 hours.");
+  const sunita = s.people.find((p) => p.name === "Sunita" && p.kind === "baby");
+  const sudhaRef = s.referrals.find((r) => r.name === "Sudha" && r.status === "open");
+  const v = await (await post(base, "/api/visits", { type: "newborn", personId: sunita.id, record: { name: "Sunita", day: 3, weight_g: 2900 } })).json();
+  await post(base, "/api/visits", { type: "anc", record: { name: "Visitorwoman", weeks: 20, hb: 12 } });
+  await post(base, `/api/referrals/${sudhaRef.id}/seen`, { by: "Stranger" });
+  s = await state(base);
+  assert.equal(s.people.find((p) => p.id === sunita.id).dayOfLife, 3);
+  assert.equal(s.referrals.find((r) => r.id === sudhaRef.id).status, "seen");
+  assert.ok(s.people.some((p) => p.name === "Visitorwoman"));
+  await wait(3500);
+  s = await state(base);
+  assert.ok(!s.recent.some((r) => r.id === v.id), "the visitor's visit is gone");
+  assert.ok(!s.people.some((p) => p.name === "Visitorwoman"), "and the person it created");
+  assert.equal(s.people.length, 15);
+  assert.equal(s.people.find((p) => p.id === sunita.id).dayOfLife, 7, "the sample baby is back to her seeded age");
+  assert.equal(s.referrals.find((r) => r.id === sudhaRef.id).status, "open", "the sample referral is open again");
 });
 
 test("the ASHA name is cleaned and ids are random", async () => {

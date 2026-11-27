@@ -54,7 +54,7 @@ export function seedVillage(now) {
     const at = now - hoursAgo * HOUR;
     return {
       id: "v" + (i + 1), sample: true, at, type, personId: person.id, name, record, flags, ruleset: RULESET.id, said: [said], lang, via: "voice", asha: "Sample ASHA",
-      referral: refer ? (hoursAgo > 40 ? { status: "seen", at, urgent, seenAt: at + 5 * HOUR, seenBy: "ANM" } : { status: "open", at, urgent }) : null,
+      referral: refer ? (hoursAgo > 40 ? { status: "seen", at, urgent, seenAt: at + 5 * HOUR, seenBy: "Nurse" } : { status: "open", at, urgent }) : null,
     };
   }).sort((a, b) => a.at - b.at);
   // a few referral outcomes, so the board shows the whole loop: reached, and a refusal to follow up
@@ -63,5 +63,5 @@ export function seedVillage(now) {
     const v = visits.find((x) => x.name === name && x.referral);
     if (v) Object.assign(v.referral, { outcome, outcomeAt: v.at + hoursAfter * HOUR, outcomeBy: "Sample ASHA", changedAt: v.at + hoursAfter * HOUR });
   }
-  return { village: { name: "Sample village", block: "Pune district", sample: true, asha: "Sample ASHA", anmPhone: "" }, people, visits };
+  return { village: { name: "Sample village", block: "Pune district", sample: true, asha: "Sample ASHA", anmPhone: "" }, people, visits, seedAt: now };
 }

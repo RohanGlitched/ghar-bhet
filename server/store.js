@@ -17,7 +17,7 @@ const id = () => [...randomBytes(10)].map((b) => ID_CHARS[b % 32]).join(""); // 
 const clean = (x, n) => String(x ?? "").replace(/[<>"'`&]/g, "").trim().slice(0, n);
 const URGENT_CODES = new Set((RULES.RULE_TABLE || []).filter((r) => r.urgent).map((r) => r.code));
 const isUrgent = (f) => f.severity === "refer_now" && (f.urgent === true || (f.urgent === undefined && URGENT_CODES.has(f.code)));
-const flagView = ({ code, severity, urgent, title, why, action, source, from, note }) => ({ code, severity, urgent: !!urgent, title, why, action, source, ...(from ? { from, note } : {}) });
+const flagView = ({ code, severity, urgent, title, why, action, source, from, note, conflict }) => ({ code, severity, urgent: !!urgent, title, why, action, source, ...(from ? { from, note } : {}), ...(conflict ? { conflict: true } : {}) });
 export const OUTCOMES = { reached: "Reached the facility", admitted: "Admitted", refused: "Family refused to go", not_reachable: "Could not be reached" };
 const IST = 5.5 * 3600 * 1000;
 const istDayStart = (t) => Math.floor((t + IST) / DAY) * DAY - IST;
@@ -38,6 +38,16 @@ const AGE_FIT = { babyDays: 2, pncDays: 2, weeks: 3, months: 1 };
 const MONTH = 30.4 * DAY;
 
 const isSampleVisit = (v) => v.sample === true || (/^v\d+$/.test(v.id) && v.asha === "Sample ASHA");
+
+// The public demo: visitors' visits are cleared after DEMO_TTL_HOURS (default 6 on Cloud Run,
+// off elsewhere so a laptop's register is kept); set DEMO_TTL_HOURS=0 to turn it off.
+const TTL_HOURS = process.env.DEMO_TTL_HOURS != null && process.env.DEMO_TTL_HOURS !== "" ? Number(process.env.DEMO_TTL_HOURS) : process.env.K_SERVICE ? 6 : 0;
+const DEMO_TTL = Number.isFinite(TTL_HOURS) && TTL_HOURS > 0 ? TTL_HOURS * 3600 * 1000 : 0;
+const SEED_REFRESH = 24 * 3600 * 1000;
+const REPEAT_WINDOW = 10 * 60 * 1000;
+const stable = (x) => JSON.stringify(x, (k, v) => (v && typeof v === "object" && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => (a < b ? -1 : 1))) : v));
+/** One word for how serious a visit's result is: go_now | refer_today | watch | fine. */
+export const levelOf = (flags = []) => (flags.some(isUrgent) ? "go_now" : flags.some((f) => f.severity === "refer_now") ? "refer_today" : flags.length ? "watch" : "fine");
 
 export class Store {
   constructor(dir, { bucket = process.env.GCS_BUCKET, object = process.env.GCS_OBJECT || "register.json", token = process.env.GCS_TOKEN } = {}) {
@@ -64,7 +74,9 @@ export class Store {
     if (!valid(db)) { db = seedVillage(Date.now()); this.source = "seed"; }
     this.db = db;
     this.prune();
+    this.tidy(Date.now(), true);
     this.save();
+    if (DEMO_TTL && !this.tidyTimer) { this.tidyTimer = setInterval(() => this.tidy(), 10 * 60_000); this.tidyTimer.unref?.(); }
     return this.source;
   }
   reset() { this.db = seedVillage(Date.now()); this.save(); }
@@ -179,12 +191,31 @@ export class Store {
     const rec = body?.record && typeof body.record === "object" && !Array.isArray(body.record) ? body.record : null;
     if (!type || !rec) throw badRequest("This visit needs a type (anc, pnc or newborn) and a record.");
     const record = sanitize({ ...rec, type });
-    const said = Array.isArray(body.said) ? body.said.slice(0, 12).map((s) => String(s).slice(0, 600)) : [];
+    if (body.said != null && !Array.isArray(body.said)) throw badRequest("said must be a list of the sentences spoken.");
+    const said = (body.said || []).filter((s) => typeof s === "string").slice(0, 12).map((s) => s.slice(0, 600));
     const heard = readTranscript(type, said);
     const hasData = (r) => Object.keys(r).some((k) => k !== "type" && k !== "name");
     if (!hasData(record) && !hasData(heard.record)) throw badRequest("This visit has nothing in it yet. Say or type at least one reading or sign (for example the day, weight, BP or a danger sign) before saving.");
     const pid = typeof body.personId === "string" && /^[A-Za-z0-9_-]{1,24}$/.test(body.personId) ? body.personId : null;
     const now = Date.now();
+    this.tidy(now);
+    let flags = [];
+    try { flags = (checkRecord(record) || []).map(flagView); }
+    catch (e) { console.error("The rules could not check a visit:", e.message); }
+    // Re-read what the ASHA said. A refer-level sign in her words is never lost: if the record
+    // lacks it, it is added; if the record disagrees, the record's value is kept and the flag is
+    // added marked as a conflict for the nurse to check. Nothing the record has is removed.
+    const extra = transcriptFlags(record, heard.record, flags);
+    flags = [...flags, ...extra.flags];
+
+    // The same save again within 10 minutes (same person, type, record and result) is one visit.
+    const repeat = this.findRepeat(type, record, flags, pid, now);
+    if (repeat) {
+      repeat.count = (repeat.count || 1) + 1; repeat.lastAt = now;
+      this.save();
+      return { visit: repeat, person: this.person(repeat.personId), matched: "repeat" };
+    }
+
     const { person, matched } = this.personFor(type, record, pid, now);
     // keep the person's clock in step with the newest visit, so the board shows today's day
     if (type === "newborn" && Number.isFinite(record.day)) person.dob = now - record.day * DAY;
@@ -192,24 +223,16 @@ export class Store {
     if (type === "anc" && Number.isFinite(record.weeks)) person.lmp = now - record.weeks * 7 * DAY;
     else if (type === "anc" && Number.isFinite(record.month)) person.lmp = now - (record.month - 0.5) * MONTH;
     person.updatedAt = now;
-    let flags = [];
-    try { flags = (checkRecord(record) || []).map(flagView); }
-    catch (e) { console.error("The rules could not check a visit:", e.message); }
-    // Re-read what the ASHA said. A refer-level sign in her words that the record lacks is added
-    // as a server flag (never removing what the record has), so a slip can't say "no danger
-    // sign" above words that say fits.
-    const extra = transcriptFlags(record, heard.record, flags);
-    flags = [...flags, ...extra.flags];
     const refer = flags.some((f) => f.severity === "refer_now");
     const urgent = flags.some(isUrgent);
     let notes = [];
     try { if (typeof RULES.noted === "function") notes = (RULES.noted(record, flags) || []).slice(0, 20); } catch { notes = []; }
     const visit = {
-      id: id(), at: now, type, personId: person.id, name: person.name, record, flags, ruleset: RULESET.id,
+      id: id(), at: now, type, personId: person.id, name: person.name, record, flags, level: levelOf(flags), ruleset: RULESET.id,
       said, lang: ["hi", "mr", "en"].includes(body.lang) ? body.lang : "hi", via: body.via === "typed" ? "typed" : "voice",
       asha: clean(body.asha, 40) || "Asha worker",
-      noted: notes,
-      transcript: { checked: heard.ok, added: extra.flags.map((f) => f.code), heard: extra.heard },
+      noted: notes, count: 1,
+      transcript: { checked: heard.ok, added: extra.flags.map((f) => f.code), conflicts: extra.flags.filter((f) => f.conflict).map((f) => f.code), heard: extra.heard, disagree: extra.disagree },
       referral: refer ? { status: "open", at: now, urgent } : null,
     };
     if (type === "newborn" && refer) person.atRisk = true;
@@ -218,6 +241,53 @@ export class Store {
     this.prune();
     this.save();
     return { visit, person, matched };
+  }
+
+  /** A visitor's identical save of the same visit in the last 10 minutes, if any. */
+  findRepeat(type, record, flags, pid, now) {
+    const key = stable(record), codes = flags.map((f) => f.code).sort().join();
+    for (let i = this.db.visits.length - 1; i >= 0; i--) {
+      const v = this.db.visits[i];
+      if (now - (v.lastAt || v.at) > REPEAT_WINDOW) { if (now - v.at > REPEAT_WINDOW * 3) break; continue; }
+      if (v.type !== type || isSampleVisit(v) || stable(v.record) !== key || v.flags.map((f) => f.code).sort().join() !== codes) continue;
+      if (pid ? v.personId === pid : sound(v.record.name || "") === sound(record.name || "")) return v;
+    }
+    return null;
+  }
+
+  /**
+   * Keep the public demo tidy (DEMO_TTL_HOURS; on by default on Cloud Run): visitors' visits, and
+   * the people they added, go after the TTL; sample people and referrals that visitors changed go
+   * back to how they were seeded; and the sample village is seeded afresh once a day so its
+   * babies stay the same age. Runs at most once a minute, from reads, writes and a timer.
+   */
+  tidy(now = Date.now(), force = false) {
+    if (!DEMO_TTL || (!force && now - (this.lastTidy || 0) < Math.min(60_000, DEMO_TTL / 4))) return false;
+    this.lastTidy = now;
+    const db = this.db, before = stable({ p: db.people, v: db.visits });
+    // 1. sample data: fresh once a day, and back to the seed wherever a visitor changed it
+    if (!db.seedAt || now - db.seedAt > SEED_REFRESH) this.reseedSample(now);
+    else {
+      const seed = seedVillage(db.seedAt);
+      const old = (t) => t && t > db.seedAt && now - t > DEMO_TTL;
+      db.people = db.people.map((p) => (p.sample && old(p.updatedAt) ? seed.people.find((s) => s.id === p.id) || p : p));
+      db.visits = db.visits.map((v) => (isSampleVisit(v) && old(v.referral?.changedAt) ? seed.visits.find((s) => s.id === v.id) || v : v));
+    }
+    // 2. visitors' visits after the TTL, and the people only they created
+    db.visits = db.visits.filter((v) => isSampleVisit(v) || now - (v.lastAt || v.at) <= DEMO_TTL);
+    const used = new Set(db.visits.map((v) => v.personId));
+    db.people = db.people.filter((p) => p.sample || used.has(p.id));
+    const changed = stable({ p: db.people, v: db.visits }) !== before;
+    if (changed) this.save();
+    return changed;
+  }
+  /** Replace the sample people and visits with a fresh seed; visitors' entries stay. */
+  reseedSample(now) {
+    const seed = seedVillage(now), db = this.db;
+    db.people = [...seed.people, ...db.people.filter((p) => !p.sample)];
+    db.visits = [...seed.visits, ...db.visits.filter((v) => !isSampleVisit(v))].sort((a, b) => a.at - b.at);
+    db.village = seed.village;
+    db.seedAt = now;
   }
 
   /** Drop the oldest entries that are not sample data once the register passes LIMITS. */
@@ -247,7 +317,7 @@ export class Store {
     const v = this.visit(vid);
     if (!v || !v.referral) return null;
     const now = Date.now();
-    const who = clean(by, 40) || "ANM";
+    const who = clean(by, 40) || "Nurse";
     v.referral = { ...v.referral, status: "seen", seenAt: now, seenBy: who, changedAt: now };
     delete v.referral.by;
     logChange(v, "seen", who, now);
@@ -260,7 +330,7 @@ export class Store {
     if (!v || !v.referral) return null;
     const now = Date.now();
     const { seenAt, seenBy, by: oldBy, ...rest } = v.referral;
-    const who = clean(by, 40) || "ANM";
+    const who = clean(by, 40) || "Nurse";
     v.referral = { ...rest, status: "open", reopenedAt: now, reopenedBy: who, changedAt: now };
     logChange(v, "reopened", who, now);
     this.save();
@@ -293,12 +363,12 @@ export class Store {
       if (r.outcome === "refused" || r.outcome === "not_reachable") {
         if ((lastVisit.get(v.personId) || 0) > r.outcomeAt) continue;
         due = istDayStart(r.outcomeAt) + DAY;
-        reason = r.outcome === "refused" ? "The family refused to go. Visit again, counsel them and tell the ANM." : "The family could not be reached. Visit again.";
+        reason = r.outcome === "refused" ? "The family refused to go. Ask the ASHA to visit again today and talk to the family; if they still refuse, the nurse visits." : "The family could not be reached. Ask the ASHA to visit again today.";
       } else if (!r.outcome) {
         if ((lastVisit.get(v.personId) || 0) > r.at) continue;
         due = r.at + DAY;
         if (now < due) continue;
-        reason = "No outcome recorded 24 hours after the referral. Find out whether she reached the facility.";
+        reason = "No outcome recorded 24 hours after the referral. Ask the ASHA whether the family reached the facility.";
       } else continue;
       out.push({ referralId: v.id, personId: v.personId, name: v.name, type: v.type, due, isDue: now >= due, reason, outcome: r.outcome || null, urgent: referralUrgent(v), sample: isSampleVisit(v) });
     }
@@ -310,6 +380,7 @@ export class Store {
 
   state() {
     const now = Date.now();
+    this.tidy(now);
     const visits = this.db.visits;
     const byPerson = new Map();
     for (const v of visits) { if (!byPerson.has(v.personId)) byPerson.set(v.personId, []); byPerson.get(v.personId).push(v); }
@@ -317,7 +388,7 @@ export class Store {
     const people = this.db.people.map((p) => {
       const vs = (byPerson.get(p.id) || []).slice().sort((a, b) => a.at - b.at);
       const last = vs[vs.length - 1] || null;
-      const out = { ...p, sample: !!p.sample, visits: vs.length, last: last ? { id: last.id, at: last.at, flags: last.flags.map((f) => f.code), refer: last.flags.some((f) => f.severity === "refer_now"), watch: last.flags.some((f) => f.severity === "watch") } : null };
+      const out = { ...p, sample: !!p.sample, visits: vs.length, last: last ? { id: last.id, at: last.at, level: levelOf(last.flags), flags: last.flags.map((f) => f.code), refer: last.flags.some((f) => f.severity === "refer_now"), watch: last.flags.some((f) => f.severity === "watch") } : null };
       if (p.kind === "baby" && p.dob) {
         out.dayOfLife = Math.floor((now - p.dob) / DAY);
         const plan = p.atRisk ? NB_AT_RISK : NB_HEALTHY;
@@ -344,8 +415,8 @@ export class Store {
       id: v.id, at: v.at, name: v.name, type: v.type, personId: v.personId, status: v.referral.status, urgent: referralUrgent(v),
       seenAt: v.referral.seenAt || null, seenBy: v.referral.seenBy || v.referral.by || null, reopenedAt: v.referral.reopenedAt || null,
       outcome: v.referral.outcome || null, outcomeAt: v.referral.outcomeAt || null, outcomeBy: v.referral.outcomeBy || null,
-      flags: v.flags.filter((f) => f.severity === "refer_now").map((f) => ({ code: f.code, urgent: isUrgent(f), title: f.title, why: f.why, action: f.action, ...(f.from ? { from: f.from, note: f.note } : {}) })),
-      fromTranscript: (v.transcript?.added || []).length > 0,
+      flags: v.flags.filter((f) => f.severity === "refer_now").map((f) => ({ code: f.code, urgent: isUrgent(f), title: f.title, why: f.why, action: f.action, ...(f.from ? { from: f.from, note: f.note } : {}), ...(f.conflict ? { conflict: true } : {}) })),
+      fromTranscript: (v.transcript?.added || []).length > 0, conflict: (v.transcript?.conflicts || []).length > 0, count: v.count || 1, level: levelOf(v.flags),
       sample: sampleIds.has(v.personId) && isSampleVisit(v), samplePerson: sampleIds.has(v.personId),
     }));
     const followups = this.followups(now);
@@ -354,7 +425,7 @@ export class Store {
     const week = visits.filter((v) => now - v.at < 7 * DAY);
     return {
       village: this.db.village, ruleset: RULESET, now, people,
-      referrals, followups, changes, recent: visits.slice(-15).reverse().map((v) => ({ id: v.id, at: v.at, name: v.name, type: v.type, via: v.via, refer: v.flags.some((f) => f.severity === "refer_now"), watch: v.flags.some((f) => f.severity === "watch"), flags: v.flags.map((f) => f.title), sample: isSampleVisit(v) })),
+      referrals, followups, changes, recent: visits.slice(-15).reverse().map((v) => ({ id: v.id, at: v.at, lastAt: v.lastAt || v.at, count: v.count || 1, name: v.name, type: v.type, via: v.via, level: levelOf(v.flags), refer: v.flags.some((f) => f.severity === "refer_now"), watch: v.flags.some((f) => f.severity === "watch"), flags: v.flags.map((f) => f.title), sample: isSampleVisit(v) })),
       totals: {
         visitsThisWeek: week.length,
         openReferrals: referrals.filter((r) => r.status === "open").length,
@@ -364,6 +435,7 @@ export class Store {
         dueToday: people.filter((p) => p.dueToday).length,
       },
       limits: LIMITS,
+      demoNote: DEMO_TTL ? `Visits saved by visitors are cleared after ${TTL_HOURS} hour${TTL_HOURS === 1 ? "" : "s"}.` : null,
     };
   }
 }
@@ -379,27 +451,53 @@ function readTranscript(type, said) {
   try { return { ok: true, record: sanitize({ ...(understand(text, type)?.record || {}), type }) }; }
   catch (e) { console.error("Could not re-read a transcript:", e.message); return { ok: false, record: { type } }; }
 }
+// Readings that only make sense together: take the whole group from one side.
+const GROUPS = [["temp_c", "temp_f"], ["bp_sys", "bp_dia"], ["weeks", "month"]];
+const NOT_IN_RECORD = "said in the visit but not in the record";
+const DISAGREES = "said in the visit, record disagrees — nurse to check";
+/** a over b, field by field, keeping each group of readings whole. */
+function overlay(a, b) {
+  const out = { ...b };
+  for (const [k, v] of Object.entries(a)) if (k !== "symptoms") out[k] = v;
+  for (const g of GROUPS) if (g.some((k) => a[k] !== undefined)) for (const k of g) { if (a[k] === undefined) delete out[k]; }
+  if (a.symptoms || b.symptoms) out.symptoms = { ...(b.symptoms || {}), ...(a.symptoms || {}) };
+  return out;
+}
+const refers = (r) => { try { return (checkRecord(r) || []).filter((f) => f.severity === "refer_now"); } catch { return []; } };
 /**
- * Refer-level flags that the transcript supports but the record's flags lack. The record's own
- * values win wherever it has them (an explicit "no fits" in the record is respected); only what
- * the record left out is filled in from the transcript.
+ * Refer-level signs in the ASHA's words that the record's flags lack. Two passes:
+ * 1. what the record left out, filled from her words (the record wins where it has a value);
+ * 2. her words over the record: a refer-level sign that only appears this way means the record
+ *    disagrees with what she said (fits said, record "no fits"; 39 °C said, record 37). The record's
+ *    value is kept, and the flag is added with conflict: true for the nurse to check.
+ * Nothing is ever removed.
  */
 function transcriptFlags(record, fromWords, have) {
-  const heard = {};
-  for (const [k, v] of Object.entries(fromWords)) if (!["type", "name", "symptoms"].includes(k) && record[k] === undefined) heard[k] = v;
-  const sym = {};
-  for (const [k, v] of Object.entries(fromWords.symptoms || {})) if (v === true && record.symptoms?.[k] === undefined) sym[k] = true;
-  if (!Object.keys(heard).length && !Object.keys(sym).length) return { flags: [], heard: null };
-  const merged = { ...fromWords, ...record };
-  if (fromWords.symptoms || record.symptoms) merged.symptoms = { ...(fromWords.symptoms || {}), ...(record.symptoms || {}) };
+  const words = { ...fromWords };
+  delete words.name;
+  if (!Object.keys(words).some((k) => k !== "type")) return { flags: [], heard: null, disagree: null };
   const codes = new Set(have.map((f) => f.code));
-  let flags = [];
-  try { flags = (checkRecord(merged) || []).filter((f) => f.severity === "refer_now" && !codes.has(f.code)); } catch { flags = []; }
-  if (Object.keys(sym).length) heard.symptoms = sym;
-  return {
-    flags: flags.map((f) => ({ ...flagView(f), from: "transcript", note: "said in the visit but not in the record" })),
-    heard: flags.length ? heard : null,
-  };
+  const missing = refers(overlay(record, words)).filter((f) => !codes.has(f.code));
+  missing.forEach((f) => codes.add(f.code));
+  const conflicting = refers(overlay(words, record)).filter((f) => !codes.has(f.code));
+  const flags = [
+    ...missing.map((f) => ({ ...flagView(f), from: "transcript", note: NOT_IN_RECORD })),
+    ...conflicting.map((f) => ({ ...flagView(f), from: "transcript", conflict: true, note: DISAGREES })),
+  ];
+  if (!flags.length) return { flags, heard: null, disagree: null };
+  // what her words added, and where they disagree with the record
+  const heard = {}, disagree = {};
+  for (const [k, v] of Object.entries(words)) {
+    if (k === "type" || k === "symptoms") continue;
+    if (record[k] === undefined) heard[k] = v;
+    else if (record[k] !== v) disagree[k] = { record: record[k], said: v };
+  }
+  for (const [k, v] of Object.entries(words.symptoms || {})) {
+    if (v !== true) continue;
+    if (record.symptoms?.[k] === undefined) (heard.symptoms ||= {})[k] = true;
+    else if (record.symptoms[k] === false) disagree["symptoms." + k] = { record: false, said: true };
+  }
+  return { flags, heard: Object.keys(heard).length ? heard : null, disagree: Object.keys(disagree).length ? disagree : null };
 }
 
 // ---------- CSV for the ANM's register ----------
@@ -499,6 +597,9 @@ function fieldsFor(type) {
   if (Array.isArray(extra)) for (const f of extra) if (typeof f === "string" && /^[a-z][a-z0-9_]{0,30}$/.test(f) && !["type", "name", "symptoms"].includes(f)) list.add(f);
   return list;
 }
+// Only symptom codes the rules know (any visit type), so nobody can plant text on the board.
+const LABELLED = new Set(Object.values(RULES.SYMPTOM_LABELS || {}).flatMap((m) => Object.keys(m || {})));
+const KNOWN_SYMPTOMS = (k) => /^[a-z][a-z_]{2,30}$/.test(k) && (LABELLED.size === 0 || LABELLED.has(k));
 export function sanitize(r) {
   const out = { type: r.type };
   if (typeof r.name === "string" && r.name.trim()) out.name = r.name.trim().replace(/[<>"'`&]/g, "").slice(0, 30);
@@ -515,7 +616,7 @@ export function sanitize(r) {
   }
   if (r.symptoms && typeof r.symptoms === "object" && !Array.isArray(r.symptoms)) {
     const sym = {};
-    for (const [k, v] of Object.entries(r.symptoms).slice(0, 60)) if (/^[a-z][a-z_]{2,30}$/.test(k) && typeof v === "boolean") sym[k] = v;
+    for (const [k, v] of Object.entries(r.symptoms).slice(0, 60)) if (KNOWN_SYMPTOMS(k) && typeof v === "boolean") sym[k] = v;
     if (Object.keys(sym).length) out.symptoms = sym;
   }
   return out;

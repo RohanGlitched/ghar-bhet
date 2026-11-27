@@ -96,6 +96,16 @@
   .fu-wrap { display: grid; gap: 12px; margin-bottom: 8px; }
   .fu-wrap > h2 { font-size: 17px; margin: 0; }
   .fu { border-left: 6px solid var(--watch); }
+  .ref-do { margin: 8px 0 2px; font-size: 18px; font-weight: 700; line-height: 1.3; }
+  .ref.urgent .ref-do { color: var(--refer-text); }
+  .ref-signs { margin: 0 0 6px; font-size: 15px; color: var(--ink-2); }
+  .show-all > summary { cursor: pointer; font-weight: 600; font-size: 14px; min-height: 44px; display: inline-flex; align-items: center; }
+  .show-all .alert-do { display: none; }
+  .ref-body { font-size: 15px; color: var(--ink-2); padding-bottom: 8px; }
+  .seen-line { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 0 14px; }
+  .seen-line > summary { cursor: pointer; min-height: 48px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .seen-line > summary span { color: var(--ink-3); font-size: 14px; }
+  .seen-line[open] { padding-bottom: 12px; }
   .reg-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
   .reg-top h2 { margin: 0 !important; }
   .gloss-card { margin-top: 24px; }
@@ -108,7 +118,7 @@
   <div class="b-head">
     <div><h1 id="vname">The nurse's board</h1>
       <p class="muted">For the nurse (ANM, auxiliary nurse-midwife) who looks after the village's mothers and babies. Referrals from the village health workers' spoken visits arrive here live.</p>
-      <p class="faint" id="vmeta">Loading the village register…</p></div>
+      <p class="faint" id="vmeta">Loading the village register…</p><p class="faint" id="demo-note" hidden></p></div>
     <span class="pill" id="live-pill" role="status">Connecting…</span>
   </div>
   <section class="ask" aria-label="Ask the board out loud">
@@ -122,7 +132,7 @@
   <div class="stats" id="stats"></div>
   <div class="b-grid">
     <section class="col" aria-label="Referrals">
-      <div class="fu-wrap" id="fu-wrap" hidden><h2 id="fu-h">Follow up today</h2><p class="faint" style="margin:-6px 0 0">Referrals the family did not go to, or that nobody could reach. Visit again today.</p><div class="col" id="followups"></div></div>
+      <div class="fu-wrap" id="fu-wrap" hidden><h2 id="fu-h">Referrals stuck: visit again today</h2><p class="faint" style="margin:-6px 0 0">The family did not go, nobody could be reached, or no outcome was recorded. Ask the health worker to visit again today.</p><div class="col" id="followups"></div></div>
       <h2 id="open-h">Open referrals</h2><div class="col" id="refs"></div>
       <h2 class="later" id="seen-h">Seen recently</h2><div class="col" id="seen"></div>
     </section>
@@ -141,8 +151,9 @@
 </main>
 <footer id="foot"></footer>
 <script type="module">
-import { mountChrome, api, esc, ago, glossaryHTML } from "/js/ui.js";
-import { answer, findPerson, toWatch, statusEn, reason, isUrgentRef, OUTCOME_LABEL } from "/js/ask.js";
+import { mountChrome, api, esc, ago, glossaryHTML, referHTML } from "/js/ui.js";
+import * as R from "/js/rules.js";
+import { answer, findPerson, toWatch, statusEn, reason, isUrgentRef, OUTCOME_LABEL, groupAlerts } from "/js/ask.js";
 import { dictate, speak, hush, support } from "/js/voice.js";
 import { romanize } from "/js/understand.js";
 mountChrome("/anm");
@@ -159,38 +170,57 @@ addEventListener("keydown", () => (interacted = true), { once: true, capture: tr
 $("#glossary").innerHTML = glossaryHTML({ open: false });
 
 const OUTCOMES = [["reached", "Reached"], ["admitted", "Admitted"], ["refused", "Refused"], ["not_reachable", "Not reachable"]];
+const typeName = (t) => (t === "newborn" ? "Newborn visit" : t === "anc" ? "Pregnancy visit" : "Mother after birth");
 function refCard(r) {
   const open = r.status === "open", urgent = isUrgentRef(r);
-  const heard = (r.flags || []).filter((f) => f.from === "transcript");
+  const flags = (r.flags || []).map((f) => ({ severity: "refer_now", ...f }));
+  const groups = groupAlerts(flags, r.type, R.groupFlags);
+  const heard = flags.filter((f) => f.from === "transcript" || f.conflict);
   const out = r.outcome ? (typeof r.outcome === "string" ? r.outcome : r.outcome.outcome) : null;
   return `<article class="ref ${open ? "" : "seen"} ${urgent ? "urgent" : ""} ${!firstPaint && !seenIds.has(r.id) ? "arrive" : ""}" data-ref="${esc(r.id)}">
     <div class="ref-head"><h3>${esc(refName(r))}</h3>${open ? (urgent ? `<span class="stamp urgent">GO NOW · 108</span>` : `<span class="stamp">REFER TODAY</span>`) : ""}</div>
-    <p class="faint" style="margin:0">${r.type === "newborn" ? "Newborn visit" : r.type === "anc" ? "Pregnancy visit" : "Mother after birth"} · ${ago(r.at)}${r.sample ? " · sample" : ""}</p>
-    <ul>${r.flags.map((f) => `<li><b>${esc(f.title)}${f.urgent ? " (go now)" : ""}.</b> ${esc(f.why || "")} ${esc(f.action || "")}${f.from === "transcript" ? ` <span class="pill watch">heard in what was said, not in the record</span>` : ""}</li>`).join("")}</ul>
-    ${heard.length ? `<p class="faint" style="margin:-4px 0 8px">The server re-read what the health worker said and found ${heard.length > 1 ? "these signs" : "this sign"} too. Check with her.</p>` : ""}
+    <p class="faint" style="margin:0">${typeName(r.type)} · ${ago(r.at)}${r.sample ? " · sample" : ""}</p>
+    <p class="ref-do">${esc(groups[0]?.where || "")}</p>
+    <p class="ref-signs">${esc(flags.map((f) => f.title).join(" · "))}</p>
+    ${heard.length ? `<p class="faint" style="margin:0 0 8px">Heard in what the health worker said${heard.some((f) => f.conflict) ? ", and the record disagrees" : ""}: ${esc(heard.map((f) => f.title).join(", "))}. Check with her.</p>` : ""}
+    <details class="show-all"><summary>Show all</summary><div class="ref-body">${referHTML(groups)}</div></details>
     <div class="row"><a class="btn small" href="/slip/${esc(r.id)}">Referral slip</a>${open ? `<button class="btn small ghost" data-seen="${esc(r.id)}">Mark as seen</button>` : `<span class="pill ok">Seen ${r.seenAt ? ago(r.seenAt) : ""}${byWhom(r.seenBy)}</span><button class="btn small ghost" data-open="${esc(r.id)}">Undo</button>`}</div>
     <div class="outcome" role="group" aria-label="What happened after the referral"><span class="faint">After the referral:</span>${OUTCOMES.map(([k, l]) => `<button class="${out === k ? "on" : ""}" aria-pressed="${out === k}" data-outcome="${k}" data-id="${esc(r.id)}">${l}</button>`).join("")}</div>
   </article>`;
 }
+/** Seen referrals: one line per person (newest first), the cards behind it. */
+function seenLines(seen) {
+  const by = new Map();
+  for (const r of seen) { const k = r.personId || `${r.type}:${r.name}`; if (!by.has(k)) by.set(k, []); by.get(k).push(r); }
+  return [...by.values()].slice(0, 3).map((rs) => {
+    const r = rs[0], out = r.outcome ? (typeof r.outcome === "string" ? r.outcome : r.outcome.outcome) : null;
+    return `<details class="seen-line" data-person="${esc(r.personId || r.name)}"><summary><b>${esc(refName(r))}</b><span>seen ${r.seenAt ? ago(r.seenAt) : ""}${out ? ` · ${esc(OUTCOME_LABEL[out] || out)}` : ""}${rs.length > 1 ? ` · ${rs.length} referrals` : ""}</span></summary><div class="col">${rs.map(refCard).join("")}</div></details>`;
+  }).join("");
+}
+const levelPill = (p) => {
+  const lv = p.last?.level || (p.last ? (p.last.refer ? "refer_today" : p.last.watch ? "watch" : "fine") : null);
+  return !lv ? `<span class="pill">no visit yet</span>` : lv === "go_now" ? `<span class="pill urgent">Go now</span>` : lv === "refer_today" ? `<span class="pill refer">Refer today</span>` : lv === "watch" ? `<span class="pill watch">Watch</span>` : `<span class="pill ok">Fine</span>`;
+};
 function paint() {
   const t = S.totals, watch = toWatch(S.people);
   $("#vname").textContent = `${S.village.name}: the nurse's board`;
   $("#vmeta").textContent = `${S.village.block}${S.village.sample ? ". The people here are made-up samples; visits you speak on the visit page are added live." : ""}`;
   const open = S.referrals.filter((r) => r.status === "open").sort((a, b) => (isUrgentRef(b) ? 1 : 0) - (isUrgentRef(a) ? 1 : 0));
-  const seen = S.referrals.filter((r) => r.status !== "open").slice(0, 6);
+  const seen = S.referrals.filter((r) => r.status !== "open");
   const nUrgent = open.filter(isUrgentRef).length;
   const watchNames = watch.map((p) => (p.kind === "baby" ? `${p.name}'s baby` : p.name));
   const nRef = watch.filter((p) => p.last.refer).length;
-  $("#stats").innerHTML = [[open.length, `open referrals${nUrgent ? `, ${nUrgent} urgent` : ""}`, open.length ? "hot" : "", ""], [watch.length, `need follow-up after their last visit (${nRef} referred, ${watch.length - nRef} to watch)`, "", watchNames.join(", ")], [t.dueToday, "visits due today", "", ""], [t.visitsThisWeek, "visits this week", "", ""]]
+  $("#stats").innerHTML = [[open.length, `new referral${open.length === 1 ? "" : "s"} not yet read${nUrgent ? `, ${nUrgent} urgent` : ""}`, open.length ? "hot" : "", ""], [watch.length, `to keep an eye on (${nRef} referred, ${watch.length - nRef} to watch)`, "", watchNames.join(", ")], [t.dueToday, "visits due today", "", ""], [t.visitsThisWeek, "visits this week", "", ""]]
     .map(([n, l, c, names]) => `<div class="stat ${c}"><b>${n}</b><span>${l}</span>${names ? `<small>${esc(names)}</small>` : ""}</div>`).join("");
   $("#open-h").textContent = `Open referrals (${open.length})`;
   $("#refs").innerHTML = open.length ? open.map(refCard).join("") : `<p class="empty">No open referrals. When a health worker's visit finds a danger sign, it appears here at once.</p>`;
   $("#seen-h").hidden = !seen.length;
-  $("#seen").innerHTML = seen.map(refCard).join("");
+  $("#seen").innerHTML = seenLines(seen);
+  const dn = $("#demo-note"); dn.hidden = !S.demoNote; dn.textContent = S.demoNote || "";
   // follow up today: from the server's list when it has one
   const fu = (S.followups || []).filter((f) => f.isDue !== false && (!f.due || f.due <= Date.now()));
   $("#fu-wrap").hidden = !fu.length;
-  $("#fu-h").textContent = `Follow up today (${fu.length})`;
+  $("#fu-h").textContent = `Referrals stuck: visit again today (${fu.length})`;
   $("#followups").innerHTML = fu.map((f) => `<div class="due fu"><div class="due-top"><b>${esc(f.type === "newborn" ? `${f.name}'s baby` : f.name || "")}${f.urgent ? " · urgent" : ""}</b></div><p class="faint" style="margin:0">${esc(f.reason || "")}</p><div></div>${f.referralId ? `<a class="btn small ghost" href="/slip/${esc(f.referralId)}" style="justify-self:start">Referral slip</a>` : ""}</div>`).join("");
   S.referrals.forEach((r) => seenIds.add(r.id));
   document.querySelectorAll("[data-seen]").forEach((b) => b.addEventListener("click", () => mark(b, b.dataset.seen, "seen")));
@@ -200,11 +230,11 @@ function paint() {
   const due = S.people.filter((p) => p.dueToday).sort((a, b) => (b.atRisk ? 1 : 0) - (a.atRisk ? 1 : 0));
   $("#due").innerHTML = due.length ? due.map((p) => `<div class="due"><div class="due-top"><b>${who(p)}</b><span class="faint">${esc(statusEn(p))}</span></div>
       ${p.plan ? `<div class="plan" aria-label="Visit plan">${p.plan.map((d) => `<span class="${d.done ? "done" : d.due ? "due" : d.overdue ? "over" : ""}" title="day ${d.day}: ${d.done ? "done" : d.due ? "due today" : d.overdue ? "missed" : "later"}">day ${d.day}</span>`).join("")}</div>` : `<p class="faint" style="margin:0">Monthly pregnancy visit${p.last ? `; last ${ago(p.last.at)}` : ""}.</p>`}
-      ${p.last?.refer ? `<span class="pill refer" style="justify-self:start">Referred after last visit</span>` : p.last?.watch ? `<span class="pill watch" style="justify-self:start">Watch</span>` : ""}
+      ${p.last && (p.last.refer || p.last.watch || p.last.level) && p.last.level !== "fine" ? `<span style="justify-self:start">${levelPill(p)} <span class="faint">after the last visit</span></span>` : ""}
       <a class="btn small ghost" href="/visit?type=${visitType(p)}&person=${encodeURIComponent(p.id)}" style="justify-self:start">Start this visit</a></div>`).join("") : `<p class="empty">No visits due today.</p>`;
   // register: a table on wide screens, two-line cards on phones
   const rows = [...S.people].sort((a, b) => (b.last?.at || 0) - (a.last?.at || 0));
-  const result = (p) => p.last ? (p.last.refer ? `<span class="pill refer">refer today</span>` : p.last.watch ? `<span class="pill watch">watch</span>` : `<span class="pill ok">fine</span>`) : `<span class="pill">no visit yet</span>`;
+  const result = levelPill;
   $("#reg-title").textContent = `Register: ${S.people.length} people`;
   $("#reg").innerHTML = rows.map((p) => `<tr>
       <td class="name">${who(p)}<small>${p.sample ? "sample" : "added by a visit"}</small></td>
@@ -263,15 +293,21 @@ async function start() {
 let ALANG = "hi", session = null;
 // the mark-seen and outcome chips use the first open referral, so the demo command always does something
 function chipsFor(l) {
-  const first = S?.referrals?.find((r) => r.status === "open");
-  const n = first?.name || "Sunita";
+  const openR = (S?.referrals || []).filter((r) => r.status === "open");
+  const n = openR[0]?.name || "Sunita";
+  const where = (r) => JSON.stringify(r.flags || []);
+  const phc = openR.find((r) => /\bPHC\b/.test(where(r))) || (S?.referrals || []).find((r) => /\bPHC\b/.test(where(r)));
+  const sncu = openR.find((r) => r.type === "newborn");
+  const out = phc ? [`${phc.name} PHC pahunchi`, `${phc.name} reached the clinic`, `${phc.name} reached the clinic`]
+    : sncu ? [`${sncu.name} ka baby SNCU pahuncha`, `${sncu.name}'s baby reached the newborn unit`, `${sncu.name}'s baby reached the newborn unit`]
+    : [`${n} hospital pahunchi`, `${n} reached the hospital`, `${n} reached the hospital`];
   return {
-    hi: [["Aaj kaun kaun refer hua?", "Who is referred and not yet seen?"], ["Aaj kiske ghar jaana hai?", "Whose homes to visit today?"], ["Kis par dhyan rakhna hai?", "Who needs follow-up?"], ["Meena ka BP kitna tha?", "What was Meena's BP?"], [`${n} dekh liya`, `Mark ${n}'s referral seen`], [`${n} PHC pahunchi`, `${n} reached the clinic`]],
-    mr: [["Aaj konala refer kela?", "Who is referred and not yet seen?"], ["Aaj konachi bhet baaki aahe?", "Whose visits are due today?"], ["Konakade laksh dyayche?", "Who needs follow-up?"], [`${n} pahila`, `Mark ${n}'s referral seen`]],
-    en: [["Who was referred today?", "Who is referred and not yet seen?"], ["Whose visits are due today?"], ["Who is at risk?"], ["What was Meena's BP?"], [`${n} seen`, `Mark ${n}'s referral seen`], [`${n} reached the hospital`]],
+    hi: [["Aaj kaun kaun refer hua?", "Who was referred today?"], ["Aaj kiske ghar jaana hai?", "Whose homes to visit today?"], ["Kis par dhyan rakhna hai?", "Who to keep an eye on?"], ["Meena ka BP kitna tha?", "What was Meena's BP?"], [`${n} dekh liya`, `Mark ${n}'s referral seen`], [out[0], out[1]]],
+    mr: [["Aaj konala refer kela?", "Who was referred today?"], ["Aaj konachi bhet baaki aahe?", "Whose visits are due today?"], ["Konakade laksh dyayche?", "Who to keep an eye on?"], [`${n} pahila`, `Mark ${n}'s referral seen`]],
+    en: [["Who was referred today?"], ["Whose visits are due today?"], ["Who is at risk?"], ["What was Meena's BP?"], [`${n} seen`, `Mark ${n}'s referral seen`], [out[2]]],
   }[l];
 }
-const HINT = { hi: 'Tap the mic and ask, for example "Aaj kaun kaun refer hua?" (who is referred?)', mr: 'Tap the mic and ask, for example "Aaj konala refer kela?" (who is referred?)', en: 'Tap the mic and ask, for example "Who was referred today?"' };
+const HINT = { hi: 'Tap the mic and ask, for example "Aaj kaun kaun refer hua?" (Who was referred today?)', mr: 'Tap the mic and ask, for example "Aaj konala refer kela?" (Who was referred today?)', en: 'Tap the mic and ask, for example "Who was referred today?"' };
 let chipKey = "";
 function drawChips() {
   const chips = chipsFor(ALANG), k = ALANG + JSON.stringify(chips);

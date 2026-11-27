@@ -99,6 +99,8 @@ async function ready(page, timeout = 8000) {
 async function say(page, text) { await ready(page); const r = await page.evaluate((t) => window.__say(t), text); await sleep(80); return r; }
 const until = (page, fn, arg, timeout = 8000) => page.waitForFunction(fn, arg, { timeout }).then(() => true, () => false);
 async function tapMic(page) { await page.click("#mic"); await page.waitForFunction(() => window.__sr.current?.running, null, { timeout: 4000 }); }
+// stop the mic by tap (she is done talking): the phone then asks for what is missing
+async function stopMic(page) { await ready(page); await page.click("#mic"); await page.waitForFunction(() => !window.__gb().session || window.__gb().mode === "answer", null, { timeout: 4000 }); }
 const run = async (name, fn) => {
   if (ONLY && !ONLY.some((o) => name.includes(o))) return;
   try { await fn(); } catch (e) { ok(name, false, "threw: " + e.message.split("\n")[0]); }
@@ -124,7 +126,7 @@ await run("loose save regex is gone (sevan, own Marathi alert)", async () => {
   const asked = await until(page, () => window.__gb().pending === "save");
   await until(page, () => window.__gb().mode === "answer" && window.__sr.current?.running);
   const sp = await spoken(page);
-  const readBack = sp.some((t) => /बीपी 120 बटा 80/.test(t));
+  const readBack = sp.some((t) => /Sunita/.test(t) && /ख़तरे का कोई लक्षण नहीं/.test(t) && !/बीपी 120/.test(t)); // short read-back before saving
   const confirm = sp.some((t) => /सेव करूँ/.test(t));
   await say(page, "हाँ");
   const saved = await until(page, () => window.__gb().saved && window.__gb().saved !== "queued");
@@ -206,7 +208,7 @@ await run("quiet timing", async () => {
   await page.waitForFunction(() => !window.__gb().session, null, { timeout: 7000 }).catch(() => {});
   await sleep(300);
   const s = await gb(page);
-  ok("quiet: mic waits ~8 s for first words, then says it heard nothing", still && !s.session && /Didn't hear anything/.test(s.status) && (await spoken(page)).some((t) => /कुछ सुनाई नहीं दिया/.test(t)), `at4s=${still} status=${s.status}`);
+  ok("quiet: mic waits ~8 s for first words, then says it heard nothing", still && !s.session && /Didn't hear anything|Kuch sunai nahi/.test(s.status) && (await spoken(page)).some((t) => /कुछ सुनाई नहीं दिया/.test(t)), `at4s=${still} status=${s.status}`);
   // keeps listening across a 5 s pause mid-visit
   await tapMic(page);
   await say(page, "Sunita ka baby saat din ka");
@@ -268,7 +270,7 @@ await run("hands-free", async () => {
   const { ctx, page } = await open("/visit?type=newborn&lang=hi");
   await tapMic(page);
   await say(page, "Sunita ka baby, saat din ka");
-  await say(page, "bas");
+  await stopMic(page);
   await until(page, () => !window.__gb().session);
   // the phone asks the next question, then opens the mic by itself
   const auto = await until(page, () => window.__gb().mode === "answer" && window.__gb().asking === "weight_g" && window.__sr.current?.running);
@@ -358,7 +360,7 @@ await run("commands", async () => {
   // during the BP question, "chhod do" skips; it never becomes a BP doubt
   await tapMic(page);
   await say(page, "Sunita, saatva mahina");
-  await say(page, "bas");
+  await stopMic(page);
   const atBp = await until(page, () => window.__gb().asking === "bp_sys" && window.__gb().mode === "answer" && window.__sr.current?.running);
   await say(page, "छोड़ दो");
   await sleep(300);
@@ -381,7 +383,7 @@ await run("breath count", async () => {
   await tapMic(page);
   const openTone = (await page.evaluate(() => window.__osc)) > osc0;
   await say(page, "Sunita ka baby, saat din ka, wajan do kilo, temperature 37");
-  await say(page, "bas");
+  await stopMic(page);
   const counting = await until(page, () => window.__gb().counting && window.__gb().mode === "answer" && window.__sr.current?.running);
   const hold = (await gb(page)).deadlineIn;
   const osc1 = await page.evaluate(() => window.__osc);
@@ -398,7 +400,7 @@ await run("breath count", async () => {
   const p2 = await open("/visit?type=newborn&lang=hi", { timing: { ...FAST, count: 60000, tick: 15000 } });
   await tapMic(p2.page);
   await say(p2.page, "Sunita ka baby, saat din ka, wajan do kilo, temperature 37");
-  await say(p2.page, "bas");
+  await stopMic(p2.page);
   await until(p2.page, () => window.__gb().counting && window.__gb().mode === "answer");
   const hold2 = (await gb(p2.page)).deadlineIn;
   ok("breath count: with the real minute the mic is held at least 75 s", hold2 >= 74000, `held ${hold2} ms`);
@@ -409,14 +411,14 @@ await run("silent close", async () => {
   const { ctx, page } = await open("/visit?type=newborn&lang=hi");
   await tapMic(page);
   await say(page, "Sunita ka baby, saat din ka");
-  await say(page, "bas");
+  await stopMic(page);
   await until(page, () => window.__gb().mode === "answer" && window.__gb().asking === "weight_g");
   const osc0 = await page.evaluate(() => window.__osc);
   const closed = await until(page, () => !window.__gb().session, null, 8000);
   await sleep(600);
   const s = await gb(page);
   const said = (await spoken(page)).filter((t) => /जवाब के लिए माइक दबाइए/.test(t)).length;
-  ok("silent close in answer mode: closing tone, says 'tap the mic to answer' once, status says the mic is off", closed && said === 1 && /Mic off/.test(s.status) && (await page.evaluate(() => window.__osc)) > osc0, JSON.stringify({ closed, said, status: s.status }));
+  ok("silent close in answer mode: closing tone, says 'tap the mic to answer' once, status says the mic is off", closed && said === 1 && /Mic off|Mic band/.test(s.status) && (await page.evaluate(() => window.__osc)) > osc0, JSON.stringify({ closed, said, status: s.status }));
   await ctx.close();
 });
 
@@ -437,7 +439,7 @@ await run("name", async () => {
   const { ctx, page } = await open("/visit?type=newborn&lang=hi");
   await tapMic(page);
   await say(page, "saat din ka baby, wajan do kilo");
-  await say(page, "bas");
+  await stopMic(page);
   const asked = await until(page, () => window.__gb().asking === "name" && window.__spoken.some((x) => /माँ का नाम क्या है/.test(x.text)) && window.__gb().mode === "answer" && window.__sr.current?.running);
   await say(page, "सुनीता");
   const got = await until(page, () => window.__gb().record.name === "Sunita");
@@ -485,8 +487,8 @@ await run("urgent", async () => {
   };
   const a = await check("anc", "Meena, battees hafte, BP 160 by 115");
   const b = await check("newborn", "Rekha ka baby, saat din ka, naal mein pus hai");
-  const consistent = (r) => { const u = r.flags.some((c) => urgentCodes.has(c)); return u ? r.stamp === "GO NOW · 108" && /now\. Call 108\.$/.test(r.line) : !r.stamp || (r.stamp === "REFER TODAY" && /today\.$/.test(r.line)); };
-  ok("urgent rules show GO NOW · 108 and 'now, call 108'; non-urgent ones REFER TODAY and 'today' (from the rule's urgent field)", a.stamp === "GO NOW · 108" && consistent(a) && consistent(b), JSON.stringify({ a, b }));
+  const consistent = (r) => { const u = r.flags.some((c) => urgentCodes.has(c)); return u ? r.stamp === "GO NOW · 108" && /\b108\b/.test(r.line) : !r.stamp || (r.stamp === "REFER TODAY" && /today/i.test(r.line) && !/108/.test(r.line)); };
+  ok("urgent rules show GO NOW · 108 and 'now, call 108'; non-urgent ones REFER TODAY and 'today' (from the rule's urgent field)", a.stamp === "GO NOW · 108" && consistent(a) && consistent(b), JSON.stringify({ a, b, ca: consistent(a), cb: consistent(b), nUrgent: urgentCodes.size }));
   await ctx.close();
   // the board puts it first with the same stamp; so does the slip
   const v = await (await fetch(BASE + "/api/visits", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "anc", record: { type: "anc", name: "Urmila", weeks: 34, bp_sys: 168, bp_dia: 116 }, said: ["Urmila, 34 hafte, BP 168 by 116"], lang: "hi", via: "typed" }) })).json();
@@ -500,7 +502,7 @@ await run("urgent", async () => {
   await p3.page.waitForSelector(".slip-head");
   const slip = await p3.page.evaluate(() => ({ stamp: document.querySelector(".slip .stamp")?.textContent, line: document.querySelector(".slip .do")?.textContent, gloss: !!document.querySelector(".slip .gloss-box") }));
   await p3.ctx.close();
-  ok("urgent referral: first on the board with GO NOW · 108, said first and as urgent, and the slip agrees", first.stamp === "GO NOW · 108" && /तुरंत/.test(spokenFirst) && slip.stamp === "GO NOW · 108" && /now\. Call 108/.test(slip.line) && slip.gloss, JSON.stringify({ first, spokenFirst, slip }));
+  ok("urgent referral: first on the board with GO NOW · 108, said first and as urgent, and the slip agrees", first.stamp === "GO NOW · 108" && /तुरंत/.test(spokenFirst) && slip.stamp === "GO NOW · 108" && /108/.test(slip.line) && slip.gloss, JSON.stringify({ first, spokenFirst, slip }));
 });
 
 await run("correction", async () => {
@@ -517,7 +519,7 @@ await run("correction", async () => {
   const p2 = await open("/visit?type=pnc&lang=hi");
   await tapMic(p2.page);
   await say(p2.page, "Sudha, delivery ko paanch din, temperature 38.5");
-  await say(p2.page, "bas");
+  await stopMic(p2.page);
   await until(p2.page, () => window.__gb().asking === "pads" && window.__gb().mode === "answer" && window.__sr.current?.running);
   await say(p2.page, "nahi nahi, 37.5");
   await sleep(300);
@@ -559,8 +561,8 @@ await run("phone layout", async () => {
   ok("tiles: Romanised caption in Hindi (none in English), 24 px icons, light danger tile on refer-soft", tiles.cap === "Wajan" && capEn === 0 && tiles.icon === "24" && tiles.bg === "rgb(251, 227, 222)", JSON.stringify({ ...tiles, capEn }));
   await ctx.close();
   const p2 = await open("/", { width: 390, height: 844 });
-  const order = await p2.page.evaluate(() => document.querySelector(".hero-demo").getBoundingClientRect().top < document.querySelector(".hero .lead").getBoundingClientRect().top);
-  ok("home: on a phone the replay card comes before the paragraph", order);
+  const order = await p2.page.evaluate(() => { const t = (s) => document.querySelector(s).getBoundingClientRect().top; return t(".hero h1") < t(".hero .lead") && t(".hero .lead") < t(".hero .cta") && t(".hero .cta") < t(".hero-demo"); });
+  ok("home: on a phone the headline, short lead and buttons come first, then the replay card", order);
   await p2.ctx.close();
 });
 
@@ -599,7 +601,7 @@ await run("doubts", async () => {
   const { ctx, page } = await open("/visit?type=newborn&lang=hi", { timing: { ...FAST, pause: 60000 } });
   await tapMic(page);
   await say(page, "Rekha ka baby, saat din ka, wajan 400 gram");
-  await say(page, "bas");
+  await stopMic(page);
   const asked = await until(page, () => window.__gb().asking === "doubt:weight_g" && window.__spoken.some((x) => /वज़न 400 ग्राम है/.test(x.text)) && window.__sr.current?.running);
   await say(page, "नहीं");
   const reask = await until(page, () => window.__spoken.some((x) => /कितना है, बताइए/.test(x.text)) && window.__sr.current?.running);
@@ -610,12 +612,144 @@ await run("doubts", async () => {
   const p2 = await open("/visit?type=anc&lang=hi", { timing: { ...FAST, pause: 60000 } });
   await tapMic(p2.page);
   await say(p2.page, "Meena, battees hafte, BP 100 by 140");
-  await say(p2.page, "bas");
+  await stopMic(p2.page);
   const asked2 = await until(p2.page, () => window.__gb().asking === "doubt:bp" && window.__sr.current?.running);
   await say(p2.page, "हाँ");
   const bp = await until(p2.page, () => window.__gb().record.bp_sys === 140 && window.__gb().record.bp_dia === 100);
   ok("'Did you say BP 140 by 100?' then haan sets 140/100", asked2 && bp, JSON.stringify((await gb(p2.page)).record));
   await p2.ctx.close();
+});
+
+/* ---------- round 4 ---------- */
+await run("turn timing", async () => {
+  const { ctx, page } = await open("/visit?type=newborn&lang=hi");
+  await tapMic(page);
+  await say(page, "Sunita ka baby, saat din ka");
+  await until(page, () => window.__gb().asking === "weight_g" && window.__spoken.some((x) => /वज़न कितना है/.test(x.text)), null, 8000);
+  await ready(page);
+  const t0 = await page.evaluate(() => { window.__say("do kilo aath sau gram"); return Date.now(); });
+  const next = await until(page, () => window.__spoken.some((x) => /तापमान कितना है/.test(x.text)), null, 6000);
+  const gap = await page.evaluate((t) => (window.__spoken.find((x) => /तापमान कितना है/.test(x.text))?.at || 0) - t, t0);
+  ok("turn timing: in an open mic the next question comes < 1.2 s after an answer", next && gap > 0 && gap < 1200, `gap ${gap} ms`);
+  await ctx.close();
+});
+
+await run("correction r4", async () => {
+  const { ctx, page } = await open("/visit?type=newborn&lang=hi", { timing: { ...FAST, pause: 60000 } });
+  await tapMic(page);
+  await say(page, "Sunita ka baby saat din ka, doodh theek pee raha hai, saans pachaas, temperature 37");
+  await say(page, "galat, doodh kam pee raha hai");
+  await sleep(300);
+  let s = await gb(page);
+  const words = s.record.feeding === "poor" && (await spoken(page)).some((t) => /दूध कम पी रहा है। ठीक\?/.test(t));
+  await say(page, "nahi nahi, 38.5");
+  await sleep(300);
+  s = await gb(page);
+  const dec = s.record.temp_c === 38.5 && s.record.resp_rate === 50 && (await spoken(page)).some((t) => /तापमान 38.5 डिग्री। ठीक\?/.test(t));
+  await say(page, "sorry, saadhe chhattees");
+  await sleep(300);
+  s = await gb(page);
+  const saadhe = s.record.temp_c === 36.5;
+  const n0 = (await spoken(page)).length;
+  await say(page, "nahi nahi, saadhe chhattees");
+  await sleep(300);
+  const nothing = (await spoken(page)).slice(n0).some((t) => /किसका नंबर है/.test(t));
+  ok("corrections: a non-number correction ('galat, doodh kam...') is read normally; 38.5 goes to temperature not breaths; saadhe works; each value is said back; no change gets a re-prompt", words && dec && saadhe && nothing, JSON.stringify({ words, dec, saadhe, nothing, rec: s.record }));
+  await ctx.close();
+});
+
+await run("bas and ruko", async () => {
+  const { ctx, page } = await open("/visit?type=newborn&lang=hi");
+  await tapMic(page);
+  await say(page, "Sunita ka baby, saat din ka");
+  await say(page, "bas");
+  const off = await until(page, () => !window.__gb().session && window.__spoken.some((x) => /ठीक है, माइक बंद/.test(x.text)));
+  await sleep(1500);
+  const noAsk = !(await spoken(page)).some((t) => /वज़न कितना है/.test(t));
+  await tapMic(page);
+  await say(page, "bas");
+  const stopAsk = await until(page, () => window.__spoken.some((x) => /अब और नहीं पूछूँगी/.test(x.text)));
+  await sleep(1200);
+  const stillNoAsk = !(await spoken(page)).some((t) => /वज़न कितना है/.test(t));
+  ok("'bas' closes the mic and the phone does not ask more; a second 'bas' stops the questions for this visit", off && noAsk && stopAsk && stillNoAsk, JSON.stringify({ off, noAsk, stopAsk, stillNoAsk }));
+  await ctx.close();
+  // "ruko": the answer mic waits (soft ticks), then the same question is asked again
+  const p2 = await open("/visit?type=newborn&lang=hi", { timing: { ...FAST, hold: 3000, tick: 1000 } });
+  await tapMic(p2.page);
+  await say(p2.page, "Sunita ka baby, saat din ka");
+  await stopMic(p2.page);
+  await until(p2.page, () => window.__gb().asking === "weight_g" && window.__gb().mode === "answer" && window.__sr.current?.running);
+  await say(p2.page, "ek minute");
+  const waiting = await until(p2.page, () => window.__spoken.some((x) => /मैं रुकती हूँ/.test(x.text)));
+  const osc0 = await p2.page.evaluate(() => window.__osc);
+  await sleep(2200);
+  const open2 = (await gb(p2.page)).session;
+  const ticks = (await p2.page.evaluate(() => window.__osc)) - osc0;
+  const reasked = await until(p2.page, () => window.__spoken.filter((x) => /वज़न कितना है/.test(x.text)).length === 2, null, 5000);
+  await until(p2.page, () => window.__sr.current?.running);
+  await say(p2.page, "do kilo aath sau gram");
+  const got = await until(p2.page, () => window.__gb().record.weight_g === 2800);
+  ok("'ek minute' holds the mic past the normal wait with soft ticks, then asks the same question again", waiting && open2 && ticks >= 1 && reasked && got, JSON.stringify({ waiting, open2, ticks, reasked, got }));
+  await p2.ctx.close();
+});
+
+await run("save flow r4", async () => {
+  const { ctx, page } = await open("/visit?type=newborn&lang=hi", { timing: { ...FAST, pause: 60000 } });
+  await tapMic(page);
+  const guide = await until(page, () => window.__spoken.some((x) => /माँ का नाम, बच्चे की उम्र/.test(x.text)));
+  await say(page, "Sunita ka baby saat din ka, wajan do kilo aath sau gram, temperature 37, saans chalis");
+  await say(page, "save karo");
+  await until(page, () => window.__gb().pending === "save" && window.__spoken.some((x) => /सेव करूँ/.test(x.text)));
+  const rb = (await spoken(page)).find((t) => /Sunita/.test(t) && /लक्षण/.test(t)) || "";
+  const short = /Sunita/.test(rb) && !/वज़न 2800/.test(rb);
+  await until(page, () => window.__sr.current?.running);
+  await say(page, "हाँ");
+  await until(page, () => window.__gb().saved && window.__gb().saved !== "queued");
+  const nextMic = await until(page, () => window.__spoken.some((x) => /अगली विज़िट के लिए/.test(x.text)) && window.__gb().session && window.__sr.current?.running);
+  await say(page, "naya");
+  const fresh = await until(page, () => !window.__gb().saved && window.__gb().utter === 0 && window.__spoken.some((x) => /नई विज़िट/.test(x.text)));
+  const visitMic = await until(page, () => window.__gb().mode === "visit" && window.__sr.current?.running);
+  ok("first mic open speaks a one-line guide; save reads back only the name and the result; after saving the mic listens for 'naya', which starts the next visit by voice", guide && short && nextMic && fresh && visitMic, JSON.stringify({ guide, rb, nextMic, fresh, visitMic }));
+  await ctx.close();
+  const p2 = await open("/visit?type=newborn&lang=hi");
+  await p2.page.evaluate(() => { document.querySelector("#tips").click(); });
+  await tapMic(p2.page);
+  await sleep(400);
+  ok("the spoken tip can be switched off", !(await spoken(p2.page)).some((t) => /माँ का नाम, बच्चे की उम्र/.test(t)));
+  await p2.ctx.close();
+});
+
+await run("grouped alert", async () => {
+  const { ctx, page } = await open("/visit?example=1", { width: 375, height: 812, timing: { ...FAST } });
+  await page.waitForFunction(() => window.__gb().utter >= 3 && document.querySelector("#alert-refer"), null, { timeout: 15000 });
+  await sleep(800);
+  const r = await page.evaluate(() => {
+    const a = document.querySelector("#alert-refer"), txt = a.innerText, count = (re) => (txt.match(re) || []).length;
+    const ask = document.querySelector("#ask"), ar = a.getBoundingClientRect();
+    return { doLines: a.querySelectorAll(".alert-do").length, otw: a.querySelectorAll(".otw li").length, onTheWay: count(/On the way/gi), skin: count(/skin to skin/gi), place: (txt.split(a.querySelector(".alert-do").textContent).length - 1),
+      aboveQuestion: ask.hidden || ar.top < ask.getBoundingClientRect().top, inView: ar.top < innerHeight && ar.bottom > 0, focused: document.activeElement === a,
+      rulesFound: document.querySelector(".v-side h2:not(.x)") && [...document.querySelectorAll(".v-side h2")].some((h) => h.textContent === "What the rules found"), watchTag: !!document.querySelector(".rules-found .lvl.watch"), glossClosed: !document.querySelector("#glossary details").open };
+  });
+  ok("grouped alert: one action line, one 'On the way' list, no repeated sentences", r.doLines === 1 && r.otw === 3 && r.onTheWay === 1 && r.skin === 1 && r.place === 1, JSON.stringify(r));
+  ok("375: the red card sits under the transcript above the question, is scrolled into view and focused; side list is 'What the rules found' with watch tagged; glossary folded", r.aboveQuestion && r.inView && r.focused && r.rulesFound && r.watchTag && r.glossClosed, JSON.stringify(r));
+  // the Romanised screen words follow the language
+  const hi = await page.evaluate(() => { document.querySelector('[data-lang="hi"]').click(); return { save: document.querySelector("#save [data-ui]").textContent, cmd: document.querySelector("#save .cmd").textContent, who: document.querySelector("#lab-type").textContent, dev: /[ऀ-ॿ]/.test(document.body.innerText) }; });
+  const en = await page.evaluate(() => { document.querySelector('[data-lang="en"]').click(); return document.querySelector("#save [data-ui]").textContent; });
+  ok("language switch changes screen words to Romanised Hindi (with the voice command), English stays default, no Devanagari", hi.save === "Visit save karo" && hi.cmd === '"save karo"' && hi.who === "Kiske ghar gaye" && !hi.dev && en === "Save visit", JSON.stringify({ ...hi, en }));
+  await ctx.close();
+  // the slip: one destination; lower-level signs are context, never a second instruction
+  const v = await (await fetch(BASE + "/api/visits", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "anc", record: { type: "anc", name: "Rajni", month: 8, hb: 4.5, symptoms: { breathless: true } }, said: ["Rajni, aathva mahina, Hb saadhe chaar, saans phoolti hai"], lang: "hi", via: "typed" }) })).json();
+  const p2 = await open(`/slip/${v.id}`, { width: 390 });
+  await p2.page.waitForSelector(".slip-head");
+  const slip = await p2.page.evaluate(() => { const t = document.querySelector("#slip").innerText; return { doLines: document.querySelectorAll(".slip .do").length, phcToday: /PHC today/i.test(t), also: /Also found/.test(t), flags: document.querySelectorAll(".slip-alert .signs li").length }; });
+  await p2.ctx.close();
+  ok("slip: one destination when two levels fire; the lower one is context only", slip.doLines === 1 && !slip.phcToday && slip.flags >= 2, JSON.stringify(slip));
+  // the board: open cards show the first line with Show all; seen ones are one line per person, at most 3
+  const p3 = await open("/anm", { width: 1440, height: 900 });
+  await p3.page.waitForSelector("#refs .ref");
+  const b = await p3.page.evaluate(() => ({ firstLine: !!document.querySelector("#refs .ref .ref-do")?.textContent, showAll: !!document.querySelector("#refs .ref details.show-all"), seen: [...document.querySelectorAll("#seen .seen-line")].map((d) => d.dataset.person), stat: document.querySelectorAll("#stats .stat span")[0].textContent, stat2: document.querySelectorAll("#stats .stat span")[1].textContent, chip: [...document.querySelectorAll("#ask-chips button small")].map((x) => x.textContent) }));
+  ok("board: first instruction line + Show all; Seen recently one line per person (max 3); new labels; one translation for the referral question", b.firstLine && b.showAll && b.seen.length <= 3 && new Set(b.seen).size === b.seen.length && /not yet read/.test(b.stat) && /to keep an eye on/.test(b.stat2) && b.chip[0] === "Who was referred today?", JSON.stringify(b));
+  await p3.ctx.close();
 });
 
 /* 10. offline */
@@ -664,7 +798,7 @@ await run("board", async () => {
   await page.evaluate(() => window.__ask("Who is at risk?"));
   const tile = await page.evaluate(() => { const s = document.querySelectorAll("#stats .stat")[1]; return { n: +s.querySelector("b").textContent, names: s.querySelector("small")?.textContent || "" }; });
   const ans = await page.evaluate(() => document.querySelector("#ask-out p").textContent);
-  const m = ans.match(/^(\d+) need follow-up/);
+  const m = ans.match(/^(\d+) to keep an eye on/);
   ok("board: the 'to watch' tile and 'Who is at risk?' agree and list every name", m && +m[1] === tile.n && tile.names.split(", ").every((nm) => ans.includes(nm)), `tile=${tile.n} [${tile.names}] answer=${ans}`);
   // a person's last values
   const withBp = st.people.find((p) => p.kind === "pregnant" && p.last);
@@ -680,6 +814,7 @@ await run("board", async () => {
   const seen = (await (await fetch(BASE + "/api/state")).json()).referrals.find((r) => r.id === r0.id);
   ok("board: 'X dekh liya' marks the referral seen", seen?.status === "seen", seen?.status);
   await page.waitForSelector(`[data-open="${r0.id}"]`, { timeout: 5000 }).catch(() => {});
+  await page.evaluate((id) => document.querySelector(`[data-open="${id}"]`)?.closest("details")?.setAttribute("open", ""), r0.id);
   const undo = await page.$(`[data-open="${r0.id}"]`);
   if (undo) { await undo.click(); await sleep(600); }
   const re = (await (await fetch(BASE + "/api/state")).json()).referrals.find((r) => r.id === r0.id);

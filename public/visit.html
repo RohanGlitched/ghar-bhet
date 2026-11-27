@@ -24,21 +24,23 @@
     <h1>Speak a home visit</h1>
     <p>You are the village health worker (ASHA). Tap the mic and say the visit.</p>
     <details class="how-to">
-      <summary>How to speak</summary>
+      <summary data-ui="howTo">How to speak</summary>
       <ul>
         <li>Pick who you visited and your language, tap the mic, and say what you found, the way you would tell the nurse: name, age, weight, temperature, breathing, feeding, any danger sign.</li>
         <li>The phone asks for what is missing, out loud, and opens the mic for your answer. "Haan" and "nahi" work, and so do "chhodo" (skip) and "pata nahi" (not checked).</li>
         <li>Say "save karo" to save: the phone reads the record back and saves on "haan". "Padh ke sunao" reads it back; "bas" stops the mic.</li>
-        <li>Works in Chrome or Edge. Anywhere else, or with no internet, type it below or use your keyboard's mic, or try an example.</li>
+        <li>Say "ruko" or "ek minute" while you measure: the mic waits up to 2 minutes. Say "bas" to stop the mic; say it twice to stop the questions.</li>
+        <li>Works in Chrome or Edge. Anywhere else, or with no internet, type it below, or dictate into the box with Wispr Flow or your keyboard's mic, or try an example.</li>
       </ul>
+      <label class="tip-toggle"><input type="checkbox" id="tips" checked> Speak a one-line tip the first time the mic opens</label>
     </details>
   </div>
   <div class="v-grid">
     <section class="v-app" aria-label="The visit">
       <div class="v-pick">
-        <div class="pick-group"><span class="pick-label" id="lab-type">Who you visited</span>
-          <div class="seg" role="group" aria-labelledby="lab-type"><button data-type="newborn" aria-pressed="true">Newborn</button><button data-type="anc" aria-pressed="false">Pregnancy</button><button data-type="pnc" aria-pressed="false">After birth</button></div></div>
-        <div class="pick-group"><span class="pick-label" id="lab-lang">Language</span>
+        <div class="pick-group"><span class="pick-label" id="lab-type" data-ui="who">Who you visited</span>
+          <div class="seg" role="group" aria-labelledby="lab-type"><button data-type="newborn" aria-pressed="true" data-ui="newborn">Newborn</button><button data-type="anc" aria-pressed="false" data-ui="anc">Pregnancy</button><button data-type="pnc" aria-pressed="false" data-ui="pnc">After birth</button></div></div>
+        <div class="pick-group"><span class="pick-label" id="lab-lang" data-ui="lang">Language</span>
           <div class="seg small-seg" role="group" aria-labelledby="lab-lang"><button data-lang="hi" aria-pressed="true">Hindi</button><button data-lang="mr" aria-pressed="false">Marathi</button><button data-lang="en" aria-pressed="false">English</button></div></div>
       </div>
 
@@ -56,29 +58,29 @@
       <div id="banner" aria-live="polite"></div>
 
       <div class="card v-said">
-        <div class="v-said-head"><h2>What you said</h2><span class="faint" id="said-note"></span></div>
+        <div class="v-said-head"><h2 data-ui="said">What you said</h2><span class="faint" id="said-note"></span></div>
         <div id="said" aria-live="polite"><p class="said faint">Nothing yet. Speak, type below, or try an example.</p></div>
       </div>
+      <div id="alert" aria-live="assertive"></div>
 
       <div class="v-record">
         <div class="v-said-head"><h2 id="record-title">Newborn visit</h2><span class="faint" id="filled-count"></span></div>
         <div class="tiles" id="tiles"></div>
-        <div class="sym-row" id="syms" aria-label="Signs said"></div>
+        <div class="sym-row" id="syms" role="group" aria-label="Signs said"></div>
       </div>
 
       <div id="ask" class="v-ask" hidden aria-live="polite"></div>
-      <div id="alert" aria-live="assertive"></div>
 
       <div class="v-actions">
-        <button class="btn voice" id="save" disabled><svg class="ic" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Save visit</span></button>
-        <button class="btn ghost" id="readback" disabled><svg class="ic" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>Read the record aloud</span></button>
-        <button class="btn ghost" id="clear"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>New visit</span></button>
+        <button class="btn voice" id="save" disabled><svg class="ic" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="lbl"><b data-ui="save">Save visit</b><small class="cmd" data-cmd="saveCmd"></small></span></button>
+        <button class="btn ghost" id="readback" disabled><svg class="ic" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="lbl"><b data-ui="read">Read the record aloud</b><small class="cmd" data-cmd="readCmd"></small></span></button>
+        <button class="btn ghost" id="clear"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span class="lbl"><b data-ui="fresh">New visit</b><small class="cmd" data-cmd="freshCmd"></small></span></button>
         <span class="pill watch" id="outbox" hidden role="status"></span>
       </div>
       <div id="saved" aria-live="polite"></div>
 
       <details class="card v-type" id="type-box">
-        <summary>Type instead of speaking</summary>
+        <summary data-ui="typeBox">Type instead of speaking</summary>
         <label class="sr" for="typed">The visit, typed</label>
         <textarea id="typed" rows="3" placeholder="For example: Sunita ka baby, 7 din ka, wajan 1 kilo 700 gram, doodh kam pee raha"></textarea>
         <div class="v-type-row"><button class="btn small" id="typed-go">Read this</button><span class="faint">Works in any browser, with no microphone. Voice typing (for example Wispr Flow) works here too.</span></div>
@@ -93,18 +95,15 @@
 
     <aside class="v-side" aria-label="How this visit was read">
       <details class="card side-d" open data-fold-phone>
-        <summary><h2>How it understands you</h2></summary>
+        <summary><h2>What happens to your words</h2></summary>
         <ol class="steps">
-          <li><b>Speak in your own words.</b> Hindi, Marathi or English, numbers as digits or words: "dedh sau" (150), "saadhe aath" (8.5), "ek kilo saat sau gram" (1.7 kg).</li>
+          <li><b>Numbers can be words.</b> "dedh sau" (150), "saadhe aath" (8.5), "ek kilo saat sau gram" (1.7 kg).</li>
           <li><b>Every value keeps the words it came from:</b> tap a value to light them up. If nothing matches, the field stays empty and the phone asks for it.</li>
-          <li><b>The phone asks for what is missing</b>, out loud, and listens for the answer. "Haan" and "nahi" work, and so do "chhodo" (skip) and "pata nahi" (not checked).</li>
           <li><b>Danger signs come from fixed rules</b>, the ones in the Health Ministry (MoHFW) manuals and the 2026 newborn guidelines, never from a model.</li>
-          <li><b>Correct it by voice.</b> "Nahi nahi, 150 by 100": the last value said wins.</li>
-          <li><b>Save by voice.</b> Say "save karo"; the phone reads the record back and saves when you say "haan".</li>
         </ol>
       </details>
       <div class="card">
-        <h2>Danger signs found</h2>
+        <h2>What the rules found</h2>
         <div id="fired"><p class="faint">None yet.</p></div>
       </div>
       <div class="card">

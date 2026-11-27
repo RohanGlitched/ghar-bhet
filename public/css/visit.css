@@ -96,3 +96,24 @@
 .src-d summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink-3); min-height: 32px; display: inline-flex; align-items: center; }
 .count { display: inline-flex; align-items: center; gap: 6px; margin: 4px 0; padding: 4px 10px; border-radius: 999px; background: var(--mic-bg); color: var(--mic-ink); font-family: var(--mono); font-size: 15px; width: max-content; }
 .vil a { min-height: 44px; }
+/* buttons carry their spoken command under the label */
+.btn .lbl { display: grid; text-align: left; line-height: 1.15; }
+.btn .lbl b, .btn > span > :first-child { font-weight: 600; }
+.btn .cmd, .v-ask .cmd { display: block; font-size: 12px; font-weight: 500; opacity: .8; }
+.btn .cmd:empty { display: none; }
+#skip > span, #unchecked > span { display: grid; text-align: left; line-height: 1.15; }
+.how-to { border: 1px solid var(--line); border-radius: 14px; padding: 0 14px; background: var(--card); max-width: 70ch; }
+.how-to > summary { list-style: none; justify-content: space-between; width: 100%; display: flex; }
+.how-to > summary::-webkit-details-marker { display: none; }
+.how-to > summary::after { content: "+"; font-size: 20px; color: var(--ink-3); }
+.how-to[open] > summary::after { content: "−"; }
+.how-to[open] { padding-bottom: 12px; }
+.tip-toggle { display: flex; gap: 8px; align-items: center; margin-top: 10px; font-size: 14px; color: var(--ink-2); min-height: 44px; }
+.tip-toggle input { width: 20px; height: 20px; accent-color: var(--ink); }
+.rules-found { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 15px; }
+.rules-found li { border-bottom: 1px dashed var(--line); padding-bottom: 6px; }
+.rules-found .lvl { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; padding: 2px 6px; border-radius: 6px; background: var(--refer-soft); color: var(--refer-text); }
+.rules-found .lvl.go-now { background: var(--urgent-bg); color: var(--urgent-ink); }
+.rules-found .lvl.watch { background: var(--watch-soft); color: var(--watch-text); }
+.src-d summary { min-height: 44px; }
+.vil a { display: inline-flex; min-width: 44px; }

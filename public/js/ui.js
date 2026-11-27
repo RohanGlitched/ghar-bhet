@@ -42,11 +42,34 @@ export const GLOSSARY = [
   ["PPH / APH", "Heavy bleeding after / before a delivery."],
   ["PMSMA", "Free monthly pregnancy check-up by a doctor on the 9th of each month."],
   ["HBNC", "Home Based Newborn Care: the ASHA's newborn home-visit programme."],
-  ["SSBSK", "India's 2026 newborn and child home-visit guidelines."],
+  ["SSBSK", "Samagra Shishu Bal Swasthya Karyakram: India's 2026 newborn and child home-visit guidelines."],
+  ["MCP card", "The Mother and Child Protection card every pregnant woman gets; it holds her and the baby's records."],
   ["CHO", "Community health officer at a health and wellness centre."],
   ["JSSK", "The government's free mother and child scheme, including transport."],
   ["MoHFW", "India's Ministry of Health and Family Welfare."],
 ];
+/**
+ * One referral alert body, the same on the visit page, the slip and the board:
+ * the action once in big type, one "On the way" list, then each sign as a short
+ * line with a "Why" toggle. Lower-level groups are context under the highest.
+ * `groups` comes from groupAlerts() in ask.js.
+ */
+export function referHTML(groups, { signs = true, why = true } = {}) {
+  if (!groups || !groups.length) return "";
+  const [top, ...rest] = groups;
+  const cap = (x) => String(x).charAt(0).toUpperCase() + String(x).slice(1);
+  // the reason without repeating the sign's own name ("Signs of sepsis: signs of sepsis: ...")
+  const reasonText = (f) => { const w = String(f.why || ""), t = String(f.title || ""); return w.toLowerCase().startsWith(t.toLowerCase()) ? w.slice(t.length).replace(/^[\s:,.-]+/, "") : w; };
+  const line = (f) => `<li><b>${esc(f.title)}</b>${f.urgent ? ' <span class="go">go now</span>' : ""}${reasonText(f) ? `: ${esc(reasonText(f))}` : ""}`
+    + `${f.from === "transcript" ? ' <span class="pill watch">heard in what was said</span>' : ""}${f.conflict ? ' <span class="pill watch">said in the visit, record disagrees: nurse to check</span>' : ""}`
+    + `${why && (f.source || f.code) ? `<details class="why"><summary>Why</summary><p class="src">${esc(f.source || "")}${f.code ? ` · Rule: ${esc(f.code)}` : ""}</p></details>` : ""}</li>`;
+  return `<p class="alert-do">${esc(top.where)}</p>`
+    + (top.extra && top.extra.length ? `<p class="alert-extra">${esc(top.extra.join(" "))}</p>` : "")
+    + (top.onTheWay && top.onTheWay.length ? `<div class="otw"><b>On the way</b><ul>${top.onTheWay.map((x) => `<li>${esc(cap(x))}</li>`).join("")}</ul></div>` : "")
+    + (signs ? `<ul class="signs">${top.flags.map(line).join("")}</ul>` : "")
+    + (signs && rest.length ? `<p class="also-found">Also found; the referral above covers ${rest.length > 1 || rest[0].flags.length > 1 ? "them" : "it"}:</p><ul class="signs">${rest.flatMap((g) => g.flags).map(line).join("")}</ul>` : "");
+}
+
 /** The shared "Words used here" block. With `only`, just the words that text uses (plus 102/108). */
 export function glossaryHTML({ only = null, open = false } = {}) {
   const rows = only == null ? GLOSSARY : GLOSSARY.filter(([w]) => w === "Go now · 108" || w.split(" / ").some((x) => new RegExp(`\\b${x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(only)));

@@ -158,7 +158,7 @@ export function answer(question, S) {
     if (!risk.length) return { intent, en: "Nobody needs watching after their last visit.", hi: "पिछली विज़िट के बाद किसी पर ख़ास ध्यान की ज़रूरत नहीं है।", mr: "शेवटच्या भेटीनंतर कोणाकडेही विशेष लक्ष द्यायची गरज नाही." };
     const tag = (p) => (p.last.refer ? "referred" : "watch");
     return { intent, items: risk.map((p) => ({ text: `${whoEn(p)}: ${tag(p)} after the last visit` })),
-      en: `${risk.length} need follow-up after their last visit (${risk.filter((p) => p.last.refer).length} referred, ${risk.filter((p) => !p.last.refer).length} to watch): ${list(risk.map((p) => `${whoEn(p)} (${tag(p)})`))}.`,
+      en: `${risk.length} to keep an eye on (${risk.filter((p) => p.last.refer).length} referred, ${risk.filter((p) => !p.last.refer).length} to watch): ${list(risk.map((p) => `${whoEn(p)} (${tag(p)})`))}.`,
       hi: `${risk.length} लोगों पर ध्यान रखना है: ${list(risk.map(whoHi))}।`, mr: `${risk.length} जणांकडे लक्ष ठेवायचं आहे: ${list(risk.map(whoMr))}.` };
   }
   if (intent === "due" && !person) {
@@ -184,4 +184,56 @@ export function answer(question, S) {
   return { intent: "help", en: "Ask who was referred, whose visits are due today, who to watch, or about one person by name. Say \"Sunita dekh liya\" to mark a referral seen.",
     hi: "पूछिए: किसे रेफर किया, आज किसकी विज़िट बाकी है, किस पर ध्यान रखना है, या किसी एक का नाम।",
     mr: "विचारा: कोणाला रेफर केलं, आज कोणाची भेट बाकी आहे, कोणाकडे लक्ष ठेवायचं, किंवा एखाद्याचं नाव." };
+}
+
+/* ---------- one action per alert: group danger signs by what to do ----------
+   Uses rules.js groupFlags() when it exists; otherwise groups flags whose action
+   starts with the same destination sentence. The highest level comes first and
+   wins; lower groups are shown only as context under it. */
+const sentencesOf = (s) => String(s || "").split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
+const wordSet = (s) => new Set(String(s).toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter((w) => w.length > 2));
+const otwItems = (s) => String(s || "").replace(/\.\s*$/, "").split(/,\s*/).map((x) => x.replace(/^and\s+/i, "").trim()).filter(Boolean);
+function splitAction(action) {
+  const a = String(action || ""), i = a.search(/on the way:/i);
+  return { main: (i >= 0 ? a.slice(0, i) : a).trim(), otw: i >= 0 ? a.slice(i).replace(/^on the way:\s*/i, "").trim() : "" };
+}
+export function groupAlerts(flags, type, groupFlags) {
+  const refer = (flags || []).filter((f) => f.severity === "refer_now");
+  if (!refer.length) return [];
+  if (typeof groupFlags === "function") {
+    try {
+      const g = groupFlags(refer);
+      if (Array.isArray(g) && g.length) {
+        return g.filter((x) => (x.flags || []).some((f) => f.severity !== "watch")).map((x) => ({
+          where: x.where || bigLine(x.flags || [], type), urgent: !!x.urgent, flags: (x.flags || []).filter((f) => f.severity !== "watch"), extra: [],
+          onTheWay: Array.isArray(x.onTheWay) ? x.onTheWay : x.onTheWay ? otwItems(x.onTheWay) : [],
+        }));
+      }
+    } catch { /* fall back */ }
+  }
+  const sorted = [...refer].sort((a, b) => (b.urgent ? 1 : 0) - (a.urgent ? 1 : 0));
+  const groups = [];
+  for (const f of sorted) {
+    const { main, otw } = splitAction(f.action);
+    const s = sentencesOf(main), head = f.where || s[0] || bigLine([f], type);
+    const key = head.toLowerCase().replace(/[^a-z ]/g, "").trim();
+    let g = groups.find((x) => x.key === key);
+    if (!g) { g = { key, where: head, urgent: false, flags: [], onTheWay: [], extra: [] }; groups.push(g); }
+    g.flags.push(f); g.urgent = g.urgent || !!f.urgent;
+    const items = Array.isArray(f.onTheWay) ? f.onTheWay : otwItems(f.onTheWay || otw);
+    for (const it of items) if (!g.onTheWay.some((x) => x.toLowerCase() === it.toLowerCase())) g.onTheWay.push(it);
+    for (const x of f.where ? [] : s.slice(1)) g.extra.push(x);
+  }
+  for (const g of groups) {
+    const otwW = wordSet(g.onTheWay.join(" ")), keep = [];
+    for (const x of g.extra) {
+      if (/^call (108|102)/i.test(x)) { if (!/108|102/.test(g.where)) g.where += " " + x; continue; }
+      const w = [...wordSet(x)];
+      if (w.length && w.filter((y) => otwW.has(y)).length / w.length >= 0.6) continue; // says the same as "on the way"
+      if (!keep.some((k) => k.toLowerCase() === x.toLowerCase())) keep.push(x);
+    }
+    g.extra = keep;
+    if (g.urgent && !/108/.test(g.where)) g.where += " Call 108.";
+  }
+  return groups;
 }

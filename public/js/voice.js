@@ -177,7 +177,7 @@ export const echoTone = () => tone([220], 0.12, 0, 0.04);
 export function dictate({ lang = "hi", onInterim, onPhrase, onError, onPause, onEcho, onState, firstMs = 8000, quietMs = 4000, pauseMs = null, single = false } = {}) {
   let rec, stopped = false, paused = false, running = false, finalText = "", quiet = null, pauseT = null, resolveDone, startedAt = Date.now();
   const done = new Promise((r) => (resolveDone = r));
-  const S = { stop: () => finish(), pause, resume, extend, done, error: null, heard: false, lastHeard: 0, deadline: 0, lang };
+  const S = { stop: () => finish(), pause, resume, extend, release, done, error: null, heard: false, lastHeard: 0, deadline: 0, lang };
   const finish = () => {
     if (stopped) return; stopped = true; clearTimeout(quiet); clearTimeout(pauseT);
     if (active === S) active = null;
@@ -204,6 +204,8 @@ export function dictate({ lang = "hi", onInterim, onPhrase, onError, onPause, on
     if (!paused) arm(ms);
     S.holdUntil = Date.now() + ms;
   }
+  /** End a hold early (the answer came): back to the normal silence clock. */
+  function release() { if ((S.holdUntil || 0) > Date.now()) { S.holdUntil = 0; if (!stopped && !paused && S.heard) armAfterSpeech(); } }
   function resume() {
     if (stopped || !paused) return;
     paused = false;
@@ -237,7 +239,7 @@ export function dictate({ lang = "hi", onInterim, onPhrase, onError, onPause, on
         } else if (!isEcho(t)) interim += r[0].transcript;
       }
       if (interim) { S.lastHeard = Date.now(); onInterim && onInterim(interim, finalText); }
-      if (interim || S.heard) { if ((S.holdUntil || 0) > Date.now() && !S.heard) arm(S.holdUntil - Date.now()); else armAfterSpeech(); }
+      if (interim || S.heard) { if ((S.holdUntil || 0) > Date.now()) arm(S.holdUntil - Date.now()); else armAfterSpeech(); }
     };
     rec.onerror = (e) => {
       if (e.error === "no-speech" || e.error === "aborted") return;

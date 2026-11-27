@@ -18,6 +18,8 @@
   .slip .stamp { font-size: 20px; flex: none; margin: 4px 4px 0 0; }
   .slip .do { font-size: 21px; font-weight: 700; margin: 16px 0 0; padding: 10px 14px; border-radius: 12px; background: var(--alert-bg); color: var(--alert-ink); }
   .slip .do.urgent { background: var(--urgent-bg); color: var(--urgent-ink); }
+  .slip-alert .otw { background: var(--paper-2); }
+  .slip-alert .signs { padding-left: 18px; }
   .slip .heard { margin: 12px 0 0; padding: 10px 14px; border-radius: 12px; background: var(--watch-soft); border: 1px solid var(--watch); }
   .slip .gloss-box { margin-top: 10px; }
   .kv { display: grid; grid-template-columns: 180px 1fr; gap: 0 14px; margin: 18px 0; font-size: 16px; }
@@ -39,9 +41,9 @@
 <main class="wrap" id="slip-main"><article class="slip" id="slip" aria-live="polite"><p class="muted">Loading the referral…</p></article></main>
 <footer id="foot"></footer>
 <script type="module">
-import { mountChrome, api, esc, glossaryHTML } from "/js/ui.js";
+import { mountChrome, api, esc, glossaryHTML, referHTML } from "/js/ui.js";
 import { romanize } from "/js/understand.js";
-import { bigLine } from "/js/ask.js";
+import { groupAlerts } from "/js/ask.js";
 import * as R from "/js/rules.js";
 mountChrome("");
 const id = location.pathname.split("/")[2] || new URLSearchParams(location.search).get("id");
@@ -68,7 +70,9 @@ else try {
   const v = await api(`/api/visits/${encodeURIComponent(id)}`);
   const refer = v.flags.filter((f) => f.severity === "refer_now"), watch = v.flags.filter((f) => f.severity === "watch");
   const urgent = refer.some((f) => f.urgent === true);
-  const doLine = refer.length ? bigLine(refer, v.type) : "";
+  // one destination: the highest level wins; lower ones are context under it
+  const groups = groupAlerts(v.flags, v.type, R.groupFlags);
+  const doLine = groups[0]?.where || "";
   const text = v.flags.map((f) => `${f.title} ${f.why} ${f.action} ${f.source}`).join(" ") + " Hb BP";
   const heard = v.flags.filter((f) => f.from === "transcript");
   const yes = Object.entries(v.record.symptoms || {}).filter(([, x]) => x).map(([k]) => SIGN(v.type, k));
@@ -82,7 +86,7 @@ else try {
     ${heard.length ? `<p class="heard"><b>Heard in what was said, not in the record:</b> ${esc(heard.map((f) => f.title).join(", "))}. The server re-read the health worker's words and found ${heard.length > 1 ? "these signs" : "this sign"}; check with her.</p>` : ""}
     <dl class="kv">${F(v.record).map(([k, x]) => `<dt>${esc(k)}</dt><dd>${esc(x)}</dd>`).join("")}${yes.length ? `<dt>Signs present</dt><dd>${esc(yes.join(", "))}</dd>` : ""}</dl>
     <section class="why"><h2 style="font-size:17px;margin:0 0 6px">Why this referral</h2>
-      ${refer.length ? `<ul>${refer.map((f) => `<li><b>${esc(f.title)}${f.urgent ? " (go now)" : ""}.</b> ${esc(f.why)} <b>${esc(f.action)}</b>${f.from === "transcript" ? " <i>(heard in what was said)</i>" : ""}<br><span class="rule-id">${esc(f.source)} · rule id: ${esc(f.code)}</span></li>`).join("")}</ul>` : `<p>No danger sign found in this visit.</p>`}
+      ${refer.length ? `<div class="slip-alert">${referHTML(groups).replace(/<p class="alert-do">[\s\S]*?<\/p>/, "")}</div>` : `<p>No danger sign found in this visit.</p>`}
       ${watch.length ? `<p class="faint" style="margin:4px 0">Also watch: ${watch.map((f) => esc(f.title)).join(", ")}.</p>` : ""}
       ${glossaryHTML({ only: text, open: true })}
     </section>

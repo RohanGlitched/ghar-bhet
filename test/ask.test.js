@@ -36,7 +36,7 @@ test("one definition of who to watch, for the tile and the spoken answer, listin
   const people = [...S.people, { id: "d", kind: "mother", name: "Laxmi", dayAfter: 2, last: { refer: false, watch: false } }];
   const a = answer("Who is at risk?", { ...S, people });
   assert.equal(toWatch(people).length, 2);
-  assert.match(a.en, /^2 need follow-up after their last visit \(1 referred, 1 to watch\): Sunita's baby \(referred\), Meena \(watch\)\.$/);
+  assert.match(a.en, /^2 to keep an eye on \(1 referred, 1 to watch\): Sunita's baby \(referred\), Meena \(watch\)\.$/);
   assert.equal(a.items.length, 2);
 });
 

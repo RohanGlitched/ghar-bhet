@@ -77,3 +77,22 @@
 .saved-box { display: grid; gap: 12px; }
 .saved-links { display: flex; gap: 8px; flex-wrap: wrap; }
 @media (max-width: 420px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* the red bar under the header when a referral first appears */
+.refer-bar { position: sticky; top: 60px; z-index: 28; }
+.refer-bar a { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px max(16px, calc((100vw - 1200px) / 2 + 24px)); background: var(--alert-bg); color: var(--alert-ink); text-decoration: none; font-weight: 600; font-size: 15px; box-shadow: 0 6px 16px -10px rgba(0, 0, 0, .5); }
+.refer-bar.urgent a { background: var(--urgent-bg); color: var(--urgent-ink); }
+.refer-bar b { letter-spacing: .05em; font-weight: 800; white-space: nowrap; }
+.refer-bar span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.refer-bar .see { margin-left: auto; flex: none; text-decoration: underline; text-underline-offset: 3px; }
+.refer-bar.off { visibility: hidden; height: 0; overflow: hidden; }
+.v-intro .how-to { margin-top: 8px; }
+.how-to summary { cursor: pointer; font-weight: 700; min-height: 44px; display: inline-flex; align-items: center; }
+.how-to ul { margin: 4px 0 0; padding-left: 20px; display: grid; gap: 6px; color: var(--ink-2); font-size: 15px; max-width: 70ch; }
+.side-d > summary { cursor: pointer; list-style: none; min-height: 44px; display: flex; align-items: center; justify-content: space-between; }
+.side-d > summary::-webkit-details-marker { display: none; }
+.side-d > summary::after { content: "+"; font-size: 20px; color: var(--ink-3); }
+.side-d[open] > summary::after { content: "−"; }
+.side-d > summary h2 { margin: 0; }
+.src-d summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink-3); min-height: 32px; display: inline-flex; align-items: center; }
+.count { display: inline-flex; align-items: center; gap: 6px; margin: 4px 0; padding: 4px 10px; border-radius: 999px; background: var(--mic-bg); color: var(--mic-ink); font-family: var(--mono); font-size: 15px; width: max-content; }
+.vil a { min-height: 44px; }

@@ -60,16 +60,21 @@ export function speak(text, lang = "en", { rate = 0.9 } = {}) {
   });
 }
 const plainWords = (s) => String(s || "").toLowerCase().replace(/[.,!?;:।"'()\-]/g, " ").split(/\s+/).filter(Boolean);
-/** True when a heard phrase is most likely the phone's own voice coming back. */
-export function isEcho(text, { windowMs = 1000 } = {}) {
+/**
+ * True when a heard phrase is most likely the phone's own voice coming back.
+ * Only a phrase that overlaps the last spoken line is dropped: a quick "haan"
+ * right after a question is her answer, not an echo.
+ */
+export function isEcho(text, { windowMs = 1500 } = {}) {
   if (said.speaking) return true;
-  if (Date.now() - said.endedAt < windowMs) return true;
   if (!said.text || Date.now() - said.endedAt > 10000) return false;
-  const a = plainWords(text), b = new Set(plainWords(said.text));
+  const a = plainWords(text), spokenWords = plainWords(said.text), b = new Set(spokenWords);
   if (!a.length) return false;
-  if (a.join(" ") === [...plainWords(said.text)].join(" ")) return true;
-  if (a.length < 3) return false;
-  return a.filter((w) => b.has(w)).length / a.length >= 0.7;
+  if (a.join(" ") === spokenWords.join(" ")) return true;
+  const shared = a.filter((w) => b.has(w)).length;
+  if (a.length < 2 || shared < 2) return false;
+  const recent = Date.now() - said.endedAt < windowMs;
+  return shared / a.length >= (recent ? 0.5 : 0.7);
 }
 export function hush() { speakingToken++; if (window.speechSynthesis) speechSynthesis.cancel(); }
 /** Has the microphone worked at least once on this page? Then the app may open it by itself. */
@@ -150,6 +155,11 @@ export function tone(freqs, dur, when = 0, vol = 0.07) {
 export const ring = () => { tone([400, 450], 0.4, 0); tone([400, 450], 0.4, 0.6); };
 export const beep = () => tone([880], 0.11, 0, 0.05);
 export const click = () => tone([1200], 0.035, 0, 0.03);
+// the mic's own sounds, so she knows by ear when it listens
+export const micOpenTone = () => { tone([660], 0.08, 0, 0.05); tone([990], 0.1, 0.09, 0.05); };
+export const micCloseTone = () => { tone([880], 0.08, 0, 0.045); tone([520], 0.12, 0.09, 0.045); };
+export const tickTone = () => tone([1500], 0.06, 0, 0.03);
+export const echoTone = () => tone([220], 0.12, 0, 0.04);
 
 /**
  * Dictation: keep listening while the ASHA talks, and hand back each finished
@@ -167,7 +177,7 @@ export const click = () => tone([1200], 0.035, 0, 0.03);
 export function dictate({ lang = "hi", onInterim, onPhrase, onError, onPause, onEcho, onState, firstMs = 8000, quietMs = 4000, pauseMs = null, single = false } = {}) {
   let rec, stopped = false, paused = false, running = false, finalText = "", quiet = null, pauseT = null, resolveDone, startedAt = Date.now();
   const done = new Promise((r) => (resolveDone = r));
-  const S = { stop: () => finish(), pause, resume, done, error: null, heard: false, lastHeard: 0, deadline: 0, lang };
+  const S = { stop: () => finish(), pause, resume, extend, done, error: null, heard: false, lastHeard: 0, deadline: 0, lang };
   const finish = () => {
     if (stopped) return; stopped = true; clearTimeout(quiet); clearTimeout(pauseT);
     if (active === S) active = null;
@@ -187,12 +197,20 @@ export function dictate({ lang = "hi", onInterim, onPhrase, onError, onPause, on
     try { rec && rec.abort(); } catch {}
     onState && onState("paused");
   }
+  /** Keep the mic open at least this long from now (a timed count), with no pause prompt. */
+  function extend(ms) {
+    if (stopped) return;
+    clearTimeout(pauseT);
+    if (!paused) arm(ms);
+    S.holdUntil = Date.now() + ms;
+  }
   function resume() {
     if (stopped || !paused) return;
     paused = false;
     if (!running) { try { rec.start(); running = true; } catch {} }
     // the silence clock restarts: she gets the full wait again after the phone spoke
-    if (S.heard) armAfterSpeech(); else arm(firstMs);
+    const hold = Math.max(0, (S.holdUntil || 0) - Date.now());
+    if (hold > 0) arm(hold); else if (S.heard) armAfterSpeech(); else arm(firstMs);
     onState && onState("listening");
   }
   if (!SR) { S.error = "unsupported"; onError && onError("unsupported"); stopped = true; resolveDone(""); return S; }
@@ -219,7 +237,7 @@ export function dictate({ lang = "hi", onInterim, onPhrase, onError, onPause, on
         } else if (!isEcho(t)) interim += r[0].transcript;
       }
       if (interim) { S.lastHeard = Date.now(); onInterim && onInterim(interim, finalText); }
-      if (interim || S.heard) armAfterSpeech();
+      if (interim || S.heard) { if ((S.holdUntil || 0) > Date.now() && !S.heard) arm(S.holdUntil - Date.now()); else armAfterSpeech(); }
     };
     rec.onerror = (e) => {
       if (e.error === "no-speech" || e.error === "aborted") return;

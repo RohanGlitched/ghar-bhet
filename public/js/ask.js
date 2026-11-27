@@ -4,7 +4,20 @@ import { normalise, romanize } from "./understand.js";
 
 const has = (q, re) => re.test(q);
 const SEEN = /dekh liya|dekh li\b|dekh lia|dekha hai|देख लिया|देख ली|देखा है|देख लिए|seen|mark (it |her |him )?as seen|पाहिलं|पाहिले|पाहिला|pahila|pahile|baghitla|baghitle|बघितलं|बघितले|बघितला/;
+// what happened after a referral, said by the ASHA or the nurse: "Sunita PHC pahunchi", "gaye nahi"
+const NEG = "(?:nahi|nahin|नहीं|नही|नाही)";
+const WENT = "(?:gaye|gayi|gaya|gai|गए|गई|गया|गेले|गेली|gele|geli|pahunch\\S*|pahuch\\S*|पहुंच\\S*|पहुँच\\S*|पोहोच\\S*|pohoch\\S*)";
+const OUTCOMES = [
+  ["refused", new RegExp(`${WENT} ${NEG}|${NEG} ${WENT}|mana kar|मना कर|refus|नकार|nakar|did not go|didn't go`)],
+  ["not_reachable", /not reachable|sampark nahi|संपर्क नहीं|संपर्क नाही|phone nahi lag|फोन नहीं लग|फ़ोन नहीं लग|mil nahi rahe|मिल नहीं रहे|सापडत नाही|sapdat nahi|could not reach|couldn't reach/],
+  ["admitted", /admit|bharti|bhartee|भर्ती|दाखल|dakhal/],
+  ["reached", new RegExp(`${WENT}|reached|gaye the|गए थे|गई थी|गेले होते`)],
+];
+export const OUTCOME_LABEL = { reached: "reached the hospital", admitted: "admitted", refused: "did not go", not_reachable: "could not be reached" };
+const OUTCOME_SAY = { reached: ["अस्पताल पहुँच गए", "दवाखान्यात पोहोचले"], admitted: ["भर्ती हो गए", "दाखल झाले"], refused: ["नहीं गए", "गेले नाहीत"], not_reachable: ["संपर्क नहीं हुआ", "संपर्क झाला नाही"] };
+const PAST = /(^|\s)(kal|kalka|yesterday|last week|hafte|week|pichhle|pichle|कल|पिछले|हफ्ते|काल|आठवड्या)(\s|$|\?)/;
 const INTENTS = [
+  ["undo", /^(wapas|vapas|वापस|undo|परत|parat)(\s|$)/],
   ["seen", SEEN],
   ["referrals", /refer|referral|रेफर|रेफ़र|रेफरल|bheja|भेजा|भेजना|पाठव|paathav|hospital|अस्पताल|दवाखान/],
   ["risk", /risk|khatr|खतर|ख़तर|धोक|dhok|danger|serious|गंभीर|gambhir|watch|dhyan|ध्यान|लक्ष|laksh/],
@@ -46,6 +59,15 @@ const WHY = {
   nb_difficulty_breathing: ["साँस लेने में तकलीफ़", "श्वास घ्यायला त्रास"],
 };
 /** A flag's reason in a language; English falls back to the rule's own title. */
+/** The one big line a refer alert leads with, from the rule's own urgent field (never from its wording). */
+const BIG = {
+  newborn: ["Take the baby to the newborn care unit today.", "Take the baby to the newborn unit (SNCU) now. Call 108."],
+  anc: ["Take her to the hospital today.", "Take her to the hospital now. Call 108."],
+  pnc: ["Take her to the hospital today.", "Take her to the hospital now. Call 108."],
+};
+export const bigLine = (refer, type) => (BIG[type] || BIG.anc)[(refer || []).some((f) => f.severity !== "watch" && f.urgent === true) ? 1 : 0];
+export const isUrgentRef = (r) => r.urgent === true || (r.flags || []).some((f) => f.urgent === true);
+
 export function reason(f, lang = "en") {
   if (!f) return lang === "hi" ? "ख़तरे का लक्षण" : lang === "mr" ? "धोक्याचं लक्षण" : "danger sign";
   if (lang === "en") return (f.title || "danger sign").toLowerCase();
@@ -92,7 +114,21 @@ export function answer(question, S) {
   const person = findPerson(question, people);
   const intent = (INTENTS.find(([, re]) => has(q, re)) || [person ? "person" : "help"])[0];
   const refs = S.referrals || [];
-  const open = refs.filter((r) => r.status === "open");
+  const open = refs.filter((r) => r.status === "open").sort((a, b) => (isUrgentRef(b) ? 1 : 0) - (isUrgentRef(a) ? 1 : 0));
+  const outcome = (OUTCOMES.find(([, re]) => re.test(q)) || [null])[0];
+
+  if (intent === "undo") return { intent: "undo", en: "Undone.", hi: "वापस कर दिया।", mr: "परत केलं." };
+  if (outcome && intent !== "seen") {
+    const words = wordsOf(question);
+    const mine = refs.filter((x) => nameIn(words, x.name) && (!person || x.personId == null || x.personId === person.id));
+    const r = mine.find((x) => x.status === "open") || mine[0];
+    if (!r) return { intent: "outcome", en: person ? `${whoEn(person)} has no referral to update.` : "Say whose referral, for example \"Sunita PHC pahunchi\".", hi: person ? `${whoHi(person)} का कोई रेफरल नहीं है।` : "किसका रेफरल, नाम बताइए।", mr: person ? `${whoMr(person)} चा कोणताही रेफरल नाही.` : "कोणाचा रेफरल, नाव सांगा." };
+    const s = OUTCOME_SAY[outcome];
+    return { intent: "outcome", id: r.id, outcome, en: `${refWho(r, whoEn)}: ${OUTCOME_LABEL[outcome]}. Noted.`, hi: `${refWho(r, whoHi)}: ${s[0]}, लिख लिया।`, mr: `${refWho(r, whoMr)}: ${s[1]}, नोंद केली.` };
+  }
+  if ((intent === "due" || intent === "referrals") && PAST.test(q) && !person) {
+    return { intent: "help", en: "The board answers about today: open referrals and visits due today. Older visits are in the register below.", hi: "बोर्ड आज के बारे में बताता है: बाकी रेफरल और आज की विज़िट। पुरानी विज़िट नीचे रजिस्टर में हैं।", mr: "बोर्ड आजचं सांगतो: बाकी रेफरल आणि आजच्या भेटी. जुन्या भेटी खाली रजिस्टरमध्ये आहेत." };
+  }
 
   if (intent === "seen") {
     const words = wordsOf(question);
@@ -106,11 +142,15 @@ export function answer(question, S) {
   }
   if (intent === "referrals" && !(person && !/aaj|today|आज|kaun|कौन|कोण|kon|who/.test(q))) {
     if (!open.length) return { intent, en: "No open referrals right now.", hi: "अभी कोई रेफरल बाकी नहीं है।", mr: "आत्ता कोणताही रेफरल बाकी नाही." };
+    // urgent cases first, and said as urgent
+    const nU = open.filter(isUrgentRef).length;
+    const tag = { en: (r) => (isUrgentRef(r) ? "urgent, " : ""), hi: (r) => (isUrgentRef(r) ? "तुरंत, " : ""), mr: (r) => (isUrgentRef(r) ? "तातडीने, " : "") };
+    const lead = { en: nU ? `${nU} urgent. ` : "", hi: nU ? `${nU} तुरंत वाले। ` : "", mr: nU ? `${nU} तातडीचे. ` : "" };
     return {
-      intent, items: open.map((r) => ({ id: r.id, text: `${refWho(r, whoEn)}: ${r.flags[0]?.title || "danger sign"}` })),
-      en: `${open.length} open referral${open.length > 1 ? "s" : ""}: ${list(open.map((r) => `${refWho(r, whoEn)}, ${reason(r.flags[0], "en")}`), "; ")}.`,
-      hi: `${open.length} रेफरल बाकी ${open.length > 1 ? "हैं" : "है"}: ${list(open.map((r) => `${refWho(r, whoHi)}, ${reason(r.flags[0], "hi")}`), "; ")}।`,
-      mr: `${open.length} रेफरल बाकी ${open.length > 1 ? "आहेत" : "आहे"}: ${list(open.map((r) => `${refWho(r, whoMr)}, ${reason(r.flags[0], "mr")}`), "; ")}.`,
+      intent, items: open.map((r) => ({ id: r.id, text: `${isUrgentRef(r) ? "GO NOW · " : ""}${refWho(r, whoEn)}: ${r.flags[0]?.title || "danger sign"}` })),
+      en: `${lead.en}${open.length} open referral${open.length > 1 ? "s" : ""}: ${list(open.map((r) => `${refWho(r, whoEn)}, ${tag.en(r)}${reason(r.flags[0], "en")}`), "; ")}.`,
+      hi: `${lead.hi}${open.length} रेफरल बाकी ${open.length > 1 ? "हैं" : "है"}: ${list(open.map((r) => `${refWho(r, whoHi)}, ${tag.hi(r)}${reason(r.flags[0], "hi")}`), "; ")}।`,
+      mr: `${lead.mr}${open.length} रेफरल बाकी ${open.length > 1 ? "आहेत" : "आहे"}: ${list(open.map((r) => `${refWho(r, whoMr)}, ${tag.mr(r)}${reason(r.flags[0], "mr")}`), "; ")}.`,
     };
   }
   if (intent === "risk") {
@@ -118,7 +158,7 @@ export function answer(question, S) {
     if (!risk.length) return { intent, en: "Nobody needs watching after their last visit.", hi: "पिछली विज़िट के बाद किसी पर ख़ास ध्यान की ज़रूरत नहीं है।", mr: "शेवटच्या भेटीनंतर कोणाकडेही विशेष लक्ष द्यायची गरज नाही." };
     const tag = (p) => (p.last.refer ? "referred" : "watch");
     return { intent, items: risk.map((p) => ({ text: `${whoEn(p)}: ${tag(p)} after the last visit` })),
-      en: `${risk.length} to watch after their last visit: ${list(risk.map((p) => `${whoEn(p)} (${tag(p)})`))}.`,
+      en: `${risk.length} need follow-up after their last visit (${risk.filter((p) => p.last.refer).length} referred, ${risk.filter((p) => !p.last.refer).length} to watch): ${list(risk.map((p) => `${whoEn(p)} (${tag(p)})`))}.`,
       hi: `${risk.length} लोगों पर ध्यान रखना है: ${list(risk.map(whoHi))}।`, mr: `${risk.length} जणांकडे लक्ष ठेवायचं आहे: ${list(risk.map(whoMr))}.` };
   }
   if (intent === "due" && !person) {

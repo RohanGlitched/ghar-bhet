@@ -24,7 +24,7 @@ function draw(n, typed) {
   tiles.innerHTML = TL.map(([k, l, f]) => { const v = f(record); const bad = (k === "weight_g" && danger.has("nb_very_low_weight")); return `<div class="tile ${v ? "filled" : ""} ${bad ? "danger" : ""}"><small>${l}</small><b class="${v ? "" : "empty"}">${esc(v ?? "—")}</b></div>`; }).join("")
     + (record.symptoms?.chest_indrawing ? `<div class="tile danger" style="grid-column:span 3"><small>Signs</small><b>chest indrawing</b></div>` : "");
   const refer = flags.filter((f) => f.severity === "refer_now");
-  alertEl.innerHTML = refer.length && n === SAMPLE.length ? `<div class="alert"><div class="alert-head"><h3>${esc(refer[0].title)}${refer.length > 1 ? ` and ${refer.length - 1} more` : ""}</h3><span class="stamp press">REFER TODAY</span></div><p>${refer.map((f) => esc(f.why)).join(" ")}</p></div>` : "";
+  alertEl.innerHTML = refer.length && n === SAMPLE.length ? `<div class="alert"><div class="alert-head"><h3>${esc(refer[0].title)}${refer.length > 1 ? ` and ${refer.length - 1} more` : ""}</h3>${refer.some((f) => f.urgent) ? `<span class="stamp urgent press">GO NOW · 108</span>` : `<span class="stamp press">REFER TODAY</span>`}</div><p>${refer.map((f) => esc(f.why)).join(" ")}</p></div>` : "";
 }
 let timer;
 function loop(n = 0) {

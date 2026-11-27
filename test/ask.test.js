@@ -36,7 +36,7 @@ test("one definition of who to watch, for the tile and the spoken answer, listin
   const people = [...S.people, { id: "d", kind: "mother", name: "Laxmi", dayAfter: 2, last: { refer: false, watch: false } }];
   const a = answer("Who is at risk?", { ...S, people });
   assert.equal(toWatch(people).length, 2);
-  assert.match(a.en, /^2 to watch after their last visit: Sunita's baby \(referred\), Meena \(watch\)\.$/);
+  assert.match(a.en, /^2 need follow-up after their last visit \(1 referred, 1 to watch\): Sunita's baby \(referred\), Meena \(watch\)\.$/);
   assert.equal(a.items.length, 2);
 });
 
@@ -61,4 +61,31 @@ test("'X dekh liya' marks that person's open referral as seen", () => {
     assert.equal(a.id, "v1", q);
   }
   assert.equal(answer("Meena dekh liya", S).id, undefined);
+});
+
+test("the alert's big line comes from each rule's urgent field: go now for urgent rules, today for the rest", async () => {
+  const { bigLine } = await import("../public/js/ask.js");
+  const { RULE_TABLE } = await import("../public/js/rules.js");
+  const refer = RULE_TABLE.filter((r) => r.severity === "refer_now");
+  assert.ok(refer.some((r) => r.urgent) && refer.some((r) => !r.urgent), "the table has both kinds");
+  for (const r of refer) {
+    const line = bigLine([{ ...r }], r.type);
+    if (r.urgent) assert.match(line, /now\. Call 108\.$/, r.code);
+    else { assert.match(line, /today\.$/, r.code); assert.doesNotMatch(line, /now|108/, r.code); }
+  }
+});
+
+test("urgent referrals come first in the spoken answer; outcomes and undo are understood", () => {
+  const S2 = { people: S.people, referrals: [
+    { id: "v1", status: "open", type: "newborn", name: "Sunita", flags: [{ code: "nb_chest_indrawing", title: "Chest indrawing" }] },
+    { id: "v2", status: "open", type: "anc", name: "Meena", urgent: true, flags: [{ code: "anc_imminent_eclampsia", title: "Very high BP", urgent: true }] }] };
+  const a = answer("Aaj kaun kaun refer hua?", S2);
+  assert.match(a.en, /^1 urgent\. 2 open referrals: Meena, urgent/);
+  assert.match(a.hi, /Meena, तुरंत/);
+  for (const [q, o] of [["Sunita PHC pahunchi", "reached"], ["Sunita gaye nahi", "refused"], ["सुनीता पहुंची नहीं", "refused"], ["Meena bharti ho gayi", "admitted"], ["Meena ka phone nahi lag raha", "not_reachable"]]) {
+    const r = answer(q, S2);
+    assert.equal(r.intent, "outcome", q); assert.equal(r.outcome, o, q);
+  }
+  assert.equal(answer("wapas", S2).intent, "undo");
+  assert.equal(answer("Kal kaun refer hua tha?", S2).intent, "help");
 });

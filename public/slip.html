@@ -17,6 +17,9 @@
   .slip h1 { font-family: var(--serif); font-size: 30px; margin: 0 0 4px; font-weight: 600; }
   .slip .stamp { font-size: 20px; flex: none; margin: 4px 4px 0 0; }
   .slip .do { font-size: 21px; font-weight: 700; margin: 16px 0 0; padding: 10px 14px; border-radius: 12px; background: var(--alert-bg); color: var(--alert-ink); }
+  .slip .do.urgent { background: var(--urgent-bg); color: var(--urgent-ink); }
+  .slip .heard { margin: 12px 0 0; padding: 10px 14px; border-radius: 12px; background: var(--watch-soft); border: 1px solid var(--watch); }
+  .slip .gloss-box { margin-top: 10px; }
   .kv { display: grid; grid-template-columns: 180px 1fr; gap: 0 14px; margin: 18px 0; font-size: 16px; }
   .kv dt, .kv dd { border-bottom: 1px solid var(--reg-rule); padding: 6px 0; }
   .kv dt { color: var(--ink-3); } .kv dd { margin: 0; font-family: var(--hand); font-size: 22px; color: var(--reg-ink); line-height: 1.2; }
@@ -36,8 +39,10 @@
 <main class="wrap" id="slip-main"><article class="slip" id="slip" aria-live="polite"><p class="muted">Loading the referral…</p></article></main>
 <footer id="foot"></footer>
 <script type="module">
-import { mountChrome, api, esc } from "/js/ui.js";
+import { mountChrome, api, esc, glossaryHTML } from "/js/ui.js";
 import { romanize } from "/js/understand.js";
+import { bigLine } from "/js/ask.js";
+import * as R from "/js/rules.js";
 mountChrome("");
 const id = location.pathname.split("/")[2] || new URLSearchParams(location.search).get("id");
 const T = { newborn: "Newborn visit", anc: "Pregnancy visit", pnc: "Visit to a mother after birth" };
@@ -49,8 +54,7 @@ const F = (r) => [
   ["Urine albumin", r.albumin ? (/\d/.test(r.albumin) ? `${r.albumin}+` : r.albumin) : null], ["Weight", r.weight_g != null ? `${r.weight_g} g` : r.weight_kg != null ? `${r.weight_kg} kg` : null], ["Temperature", r.temp_c != null ? `${r.temp_c} °C` : null],
   ["Breaths a minute", r.resp_rate], ["Feeding", r.feeding ? FEED[r.feeding] || r.feeding : null], ["Pads a day", r.pads], ["Baby moving", r.fetal_movement ? MOVE[r.fetal_movement] || r.fetal_movement : null], ["Iron tablets", r.ifa_tablets],
 ].filter(([, v]) => v != null && v !== "");
-const SIGN = (k) => k.replace(/_/g, " ");
-const GLOSS = { FRU: "first referral unit, a hospital that can handle emergency births", PHC: "primary health centre", CHC: "community health centre", SNCU: "special newborn care unit at the district hospital", NBSU: "newborn stabilisation unit at the block hospital", ANM: "auxiliary nurse-midwife, the nurse", IFA: "iron and folic acid tablets" };
+const SIGN = (type, k) => { let s = null; try { s = typeof R.symptomLabel === "function" ? R.symptomLabel(type, k) : null; } catch {} s = s || k.replace(/_/g, " "); return s.charAt(0).toUpperCase() + s.slice(1); };
 const slip = document.getElementById("slip");
 function notFound(msg) {
   document.title = "Referral not found · Ghar Bhet";
@@ -63,26 +67,27 @@ if (!id) notFound("This link has no referral in it.");
 else try {
   const v = await api(`/api/visits/${encodeURIComponent(id)}`);
   const refer = v.flags.filter((f) => f.severity === "refer_now"), watch = v.flags.filter((f) => f.severity === "watch");
-  const now = refer.some((f) => /\bnow\b|108/i.test(f.action || ""));
-  const doLine = !refer.length ? "" : v.type === "newborn" ? (now ? "Take the baby to the hospital now. Call 108." : "Take the baby to the newborn care unit today.") : (now ? "Take her to the hospital now. Call 108." : "Take her to the hospital today.");
-  const text = refer.map((f) => `${f.why} ${f.action}`).join(" ");
-  const gloss = Object.entries(GLOSS).filter(([k]) => new RegExp(`\\b${k}\\b`).test(text));
-  const yes = Object.entries(v.record.symptoms || {}).filter(([, x]) => x).map(([k]) => SIGN(k));
+  const urgent = refer.some((f) => f.urgent === true);
+  const doLine = refer.length ? bigLine(refer, v.type) : "";
+  const text = v.flags.map((f) => `${f.title} ${f.why} ${f.action} ${f.source}`).join(" ") + " Hb BP";
+  const heard = v.flags.filter((f) => f.from === "transcript");
+  const yes = Object.entries(v.record.symptoms || {}).filter(([, x]) => x).map(([k]) => SIGN(v.type, k));
   const version = String(v.ruleset || "").replace(/^[a-z]+-/i, "");
   document.title = `Referral slip: ${v.name} · Ghar Bhet`;
   slip.innerHTML = `
     <div class="slip-head"><div><h1>Referral slip</h1>
     <p class="muted" style="margin:0">${esc(T[v.type] || "Visit")} · ${new Date(v.at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} · ${esc(v.village?.name || "")}${v.person?.sample || v.samplePerson ? " (made-up data)" : ""}</p></div>
-    ${refer.length ? `<span class="stamp">REFER TODAY</span>` : ""}</div>
-    ${doLine ? `<p class="do">${esc(doLine)}</p>` : ""}
+    ${refer.length ? (urgent ? `<span class="stamp urgent">GO NOW · 108</span>` : `<span class="stamp">REFER TODAY</span>`) : ""}</div>
+    ${doLine ? `<p class="do ${urgent ? "urgent" : ""}">${esc(doLine)}</p>` : ""}
+    ${heard.length ? `<p class="heard"><b>Heard in what was said, not in the record:</b> ${esc(heard.map((f) => f.title).join(", "))}. The server re-read the health worker's words and found ${heard.length > 1 ? "these signs" : "this sign"}; check with her.</p>` : ""}
     <dl class="kv">${F(v.record).map(([k, x]) => `<dt>${esc(k)}</dt><dd>${esc(x)}</dd>`).join("")}${yes.length ? `<dt>Signs present</dt><dd>${esc(yes.join(", "))}</dd>` : ""}</dl>
     <section class="why"><h2 style="font-size:17px;margin:0 0 6px">Why this referral</h2>
-      ${refer.length ? `<ul>${refer.map((f) => `<li><b>${esc(f.title)}.</b> ${esc(f.why)} <b>${esc(f.action)}</b><br><span class="rule-id">${esc(f.source)} · rule ${esc(f.code)}</span></li>`).join("")}</ul>` : `<p>No danger sign found in this visit.</p>`}
+      ${refer.length ? `<ul>${refer.map((f) => `<li><b>${esc(f.title)}${f.urgent ? " (go now)" : ""}.</b> ${esc(f.why)} <b>${esc(f.action)}</b>${f.from === "transcript" ? " <i>(heard in what was said)</i>" : ""}<br><span class="rule-id">${esc(f.source)} · rule id: ${esc(f.code)}</span></li>`).join("")}</ul>` : `<p>No danger sign found in this visit.</p>`}
       ${watch.length ? `<p class="faint" style="margin:4px 0">Also watch: ${watch.map((f) => esc(f.title)).join(", ")}.</p>` : ""}
-      ${gloss.length ? `<p class="gloss">${gloss.map(([k, x]) => `<b>${k}</b>: ${esc(x)}`).join(". ")}.</p>` : ""}
+      ${glossaryHTML({ only: text, open: true })}
     </section>
     ${v.said?.length ? `<p class="faint" style="margin:16px 0 4px">What the village health worker (ASHA) said, in Roman letters</p>${v.said.map((s) => `<p class="said-q">${esc(romanize(s))}</p>`).join("")}` : ""}
-    <p class="faint">Flags come from fixed government rules (rule set version ${esc(version || "unknown")}). They support the nurse's and doctor's judgement and never replace it. Free transport under the government's mother and child scheme (JSSK): call 108 or 102.</p>
+    <p class="faint">Flags come from fixed government rules (rule set ${esc(version || "unknown")}). They support the nurse's and doctor's judgement and never replace it. Free transport under the government's mother and child scheme (JSSK): call 108 or 102.</p>
     <div class="actions"><button class="btn" id="print">Print the slip</button><a class="btn ghost" href="tel:108">Call 108</a><a class="btn ghost" href="/anm">Nurse's board</a></div>`;
   document.getElementById("print").addEventListener("click", () => print());
 } catch (e) {

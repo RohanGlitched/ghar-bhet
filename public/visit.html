@@ -18,10 +18,20 @@
 </head>
 <body>
 <header id="top"></header>
+<div id="refer-bar" class="refer-bar" hidden role="status" aria-live="polite"></div>
 <main class="wrap v-wrap" id="visit">
   <div class="v-intro">
     <h1>Speak a home visit</h1>
-    <p>You are the village health worker (ASHA). Pick who you visited and your language, tap the mic, and say what you found. Works in Chrome or Edge; anywhere else, type it or try an example below.</p>
+    <p>You are the village health worker (ASHA). Tap the mic and say the visit.</p>
+    <details class="how-to">
+      <summary>How to speak</summary>
+      <ul>
+        <li>Pick who you visited and your language, tap the mic, and say what you found, the way you would tell the nurse: name, age, weight, temperature, breathing, feeding, any danger sign.</li>
+        <li>The phone asks for what is missing, out loud, and opens the mic for your answer. "Haan" and "nahi" work, and so do "chhodo" (skip) and "pata nahi" (not checked).</li>
+        <li>Say "save karo" to save: the phone reads the record back and saves on "haan". "Padh ke sunao" reads it back; "bas" stops the mic.</li>
+        <li>Works in Chrome or Edge. Anywhere else, or with no internet, type it below or use your keyboard's mic, or try an example.</li>
+      </ul>
+    </details>
   </div>
   <div class="v-grid">
     <section class="v-app" aria-label="The visit">
@@ -82,17 +92,17 @@
     </section>
 
     <aside class="v-side" aria-label="How this visit was read">
-      <div class="card">
-        <h2>How it understands you</h2>
+      <details class="card side-d" open data-fold-phone>
+        <summary><h2>How it understands you</h2></summary>
         <ol class="steps">
           <li><b>Speak in your own words.</b> Hindi, Marathi or English, numbers as digits or words: "dedh sau" (150), "saadhe aath" (8.5), "ek kilo saat sau gram" (1.7 kg).</li>
-          <li><b>Every value shows the words it came from.</b> Tap a tile to light up the words it came from. If nothing matches, the field stays empty and the app asks for it.</li>
+          <li><b>Every value keeps the words it came from:</b> tap a value to light them up. If nothing matches, the field stays empty and the phone asks for it.</li>
           <li><b>The phone asks for what is missing</b>, out loud, and listens for the answer. "Haan" and "nahi" work, and so do "chhodo" (skip) and "pata nahi" (not checked).</li>
           <li><b>Danger signs come from fixed rules</b>, the ones in the Health Ministry (MoHFW) manuals and the 2026 newborn guidelines, never from a model.</li>
           <li><b>Correct it by voice.</b> "Nahi nahi, 150 by 100": the last value said wins.</li>
           <li><b>Save by voice.</b> Say "save karo"; the phone reads the record back and saves when you say "haan".</li>
         </ol>
-      </div>
+      </details>
       <div class="card">
         <h2>Danger signs found</h2>
         <div id="fired"><p class="faint">None yet.</p></div>
@@ -102,17 +112,7 @@
         <div id="village"><p class="faint">Loading the register…</p></div>
         <a class="btn ghost small" href="/anm" style="margin-top:10px">Open the nurse's board</a>
       </div>
-      <div class="card">
-        <h2>Words used here</h2>
-        <dl class="gloss">
-          <dt>ASHA</dt><dd>Accredited Social Health Activist: the village health worker who visits homes.</dd>
-          <dt>ANM</dt><dd>Auxiliary nurse-midwife: the nurse the ASHA reports to.</dd>
-          <dt>Refer today</dt><dd>She or the baby must be seen at a hospital today. Where the advice says "now", go at once and call 108 (the free ambulance).</dd>
-          <dt>Hb</dt><dd>Haemoglobin, from a blood test. Low Hb means anaemia.</dd>
-          <dt>FRU</dt><dd>First referral unit: a hospital that can handle emergency births.</dd>
-          <dt>MoHFW</dt><dd>India's Ministry of Health and Family Welfare.</dd>
-        </dl>
-      </div>
+      <div class="card" id="glossary"></div>
     </aside>
   </div>
 </main>

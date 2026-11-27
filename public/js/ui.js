@@ -27,6 +27,32 @@ const I = {
   ev: `<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9M10 19V5M15 19v-7M20 19V8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`,
   home: `<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`,
 };
+/* One glossary for every page that shows health-system words. */
+export const GLOSSARY = [
+  ["ASHA", "Accredited Social Health Activist: the village health worker who visits homes."],
+  ["ANM", "Auxiliary nurse-midwife: the nurse the ASHA reports to."],
+  ["Refer today", "She or the baby must be seen at a hospital today."],
+  ["Go now · 108", "Urgent: go at once. 108 is the free ambulance; 102 is free transport for pregnant women and babies."],
+  ["PHC", "Primary health centre: the nearest government clinic with a doctor."],
+  ["FRU", "First referral unit: a hospital that can handle emergency births and blood transfusion."],
+  ["SNCU / NBSU", "Newborn care units: SNCU at the district hospital, NBSU at the block hospital."],
+  ["ANC", "Antenatal care: a pregnancy check-up."],
+  ["BP", "Blood pressure, written as top/bottom, for example 140/90."],
+  ["Hb", "Haemoglobin, from a blood test. Low Hb means anaemia."],
+  ["PPH / APH", "Heavy bleeding after / before a delivery."],
+  ["PMSMA", "Free monthly pregnancy check-up by a doctor on the 9th of each month."],
+  ["HBNC", "Home Based Newborn Care: the ASHA's newborn home-visit programme."],
+  ["SSBSK", "India's 2026 newborn and child home-visit guidelines."],
+  ["CHO", "Community health officer at a health and wellness centre."],
+  ["JSSK", "The government's free mother and child scheme, including transport."],
+  ["MoHFW", "India's Ministry of Health and Family Welfare."],
+];
+/** The shared "Words used here" block. With `only`, just the words that text uses (plus 102/108). */
+export function glossaryHTML({ only = null, open = false } = {}) {
+  const rows = only == null ? GLOSSARY : GLOSSARY.filter(([w]) => w === "Go now · 108" || w.split(" / ").some((x) => new RegExp(`\\b${x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(only)));
+  return `<details class="gloss-box"${open ? " open" : ""}><summary>Words used here</summary><dl class="gloss">${rows.map(([w, d]) => `<dt>${esc(w)}</dt><dd>${esc(d)}</dd>`).join("")}</dl></details>`;
+}
+
 const theme = () => document.documentElement.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 
 export function mountChrome(active) {
@@ -34,6 +60,7 @@ export function mountChrome(active) {
   const saved = ["light", "dark"].includes(forced) ? forced : store.get("gb-theme");
   if (saved) document.documentElement.setAttribute("data-theme", saved);
   const link = (href, label, cls = "") => `<a href="${href}"${active === href ? ' aria-current="page"' : ""} class="${cls}">${label}</a>`;
+  if (active) document.body.dataset.page = active.replace(/^\//, "") || "home";
   const main = document.querySelector("main");
   if (main && !document.querySelector(".skip")) {
     if (!main.id) main.id = "main";
@@ -66,8 +93,8 @@ export function mountChrome(active) {
       <div><h4>Ghar Bhet</h4><p style="margin:0 0 10px;max-width:46ch">An ASHA speaks a home visit in Hindi, Marathi or English. The official visit record fills itself, and fixed government rules flag danger signs for mothers and newborns.</p>
       <p class="faint" style="margin:0 0 8px">Ghar Bhet means "home visit" in Hindi and Marathi. An ASHA is a village health worker; the ANM (auxiliary nurse-midwife) is the nurse she reports to.</p>
       <p class="faint" style="margin:0">Built for the Scaler × Wispr Flow "India Runs on Voice" hackathon, 2026. The village on the nurse's board is a made-up sample. Not a medical device: the rules support, and never replace, the nurse's and doctor's judgement.</p></div>
-      <div><h4>Use it</h4><ul><li><a href="/visit">Speak a visit</a></li><li><a href="/anm">Nurse's board</a></li><li><a href="/visit?example=1">Try an example</a></li><li><a href="/how">Rules and method</a></li></ul></div>
-      <div><h4>Proof</h4><ul><li><a href="/evidence">Test results</a></li><li><a href="/how">Rules and method</a></li><li><a href="https://github.com/RohanGlitched/ghar-bhet">Source code</a></li></ul></div>
+      <div><h4>Use it</h4><ul><li><a href="/visit">Speak a visit</a></li><li><a href="/anm">Nurse's board</a></li><li><a href="/visit?example=1">Try an example</a></li></ul></div>
+      <div><h4>Test results</h4><ul><li><a href="/evidence">Test results</a></li><li><a href="/how">Rules and method</a></li><li><a href="https://github.com/RohanGlitched/ghar-bhet">Source code</a></li></ul></div>
       <div><h4>Sources</h4><ul><li><a href="https://nurturing-care.org/files/SSBSK_Operational_Guidline_2026.pdf">SSBSK guidelines 2026</a></li><li><a href="https://nhsrcindia.org/sites/default/files/2021-12/Care%20During%20Pregnancy%20and%20Childbirth%20Training%20Manual%20for%20CHO%20at%20AB-HWC.pdf">CHO pregnancy manual</a></li><li><a href="https://pib.gov.in/PressReleasePage.aspx?PRID=2096075">10.29 lakh ASHAs (PIB)</a></li></ul></div>
     </div>`;
   }

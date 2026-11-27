@@ -1,14 +1,14 @@
 {
- "run_at": "2026-11-27T10:31:23.245Z",
+ "run_at": "2026-11-27T11:26:24.360Z",
  "set": "vignettes",
- "ruleset": "mohfw-2026.4",
- "items": 40,
+ "ruleset": "mohfw-2026.5",
+ "items": 52,
  "refer": {
-  "positives": 33,
-  "negatives": 7,
-  "tp": 33,
+  "positives": 43,
+  "negatives": 9,
+  "tp": 43,
   "fn": 0,
-  "tn": 7,
+  "tn": 9,
   "fp": 0,
   "sensitivity": 100,
   "specificity": 100
@@ -17,8 +17,8 @@
   "gold": 18,
   "caught": 18,
   "recall": 100,
-  "predicted": 21,
-  "precision": 85.7
+  "predicted": 31,
+  "precision": 58.1
  },
  "rows": [
   {
@@ -893,6 +893,266 @@
     "name": "Seema",
     "month": 8,
     "fetal_movement": "absent"
+   },
+   "agree": true
+  },
+  {
+   "id": "v-41",
+   "type": "pnc",
+   "said": "Sunita, delivery ko 12 din, usne kaha ki khud ko khatam kar legi.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_self_harm"
+   ],
+   "record": {
+    "type": "pnc",
+    "name": "Sunita",
+    "day": 12,
+    "symptoms": {
+     "self_harm": true
+    }
+   },
+   "agree": false
+  },
+  {
+   "id": "v-42",
+   "type": "pnc",
+   "said": "Rekha, delivery ko 20 din, khudkushi ki baat karti hai.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_self_harm"
+   ],
+   "record": {
+    "type": "pnc",
+    "name": "Rekha",
+    "day": 20,
+    "symptoms": {
+     "self_harm": true
+    }
+   },
+   "agree": false
+  },
+  {
+   "id": "v-43",
+   "type": "pnc",
+   "said": "Pooja ki delivery ko 9 din, marne ki baat karti hai, bahut udaas hai.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_self_harm",
+    "pnc_low_mood"
+   ],
+   "record": {
+    "type": "pnc",
+    "name": "Pooja",
+    "day": 9,
+    "symptoms": {
+     "self_harm": true,
+     "low_mood": true
+    }
+   },
+   "agree": false
+  },
+  {
+   "id": "v-44",
+   "type": "pnc",
+   "said": "सविता, बाळंतपणानंतर पंधरा दिवस, तिला आत्महत्येचे विचार येतात.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_self_harm"
+   ],
+   "record": {
+    "type": "pnc",
+    "name": "Savita",
+    "day": 15,
+    "symptoms": {
+     "self_harm": true
+    }
+   },
+   "agree": false
+  },
+  {
+   "id": "v-45",
+   "type": "pnc",
+   "said": "Meena, delivery ko 25 din, usko lagta hai mar jaaun.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_self_harm"
+   ],
+   "record": {
+    "type": "pnc",
+    "name": "Meena",
+    "day": 25,
+    "symptoms": {
+     "self_harm": true
+    }
+   },
+   "agree": false
+  },
+  {
+   "id": "v-46",
+   "type": "pnc",
+   "said": "Kavita, delivery ko 7 din, kehti hai jaan de degi.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_self_harm"
+   ],
+   "record": {
+    "type": "pnc",
+    "name": "Kavita",
+    "day": 7,
+    "symptoms": {
+     "self_harm": true
+    }
+   },
+   "agree": false
+  },
+  {
+   "id": "v-47",
+   "type": "pnc",
+   "said": "Anita, baalantpananantar 10 divas, jeev dyaycha ase mhanate.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_self_harm"
+   ],
+   "record": {
+    "type": "pnc",
+    "name": "Anita",
+    "day": 10,
+    "symptoms": {
+     "self_harm": true
+    }
+   },
+   "agree": false
+  },
+  {
+   "id": "v-48",
+   "type": "pnc",
+   "said": "सुनंदा, बाळंतपणाला वीस दिवस, फाशी घेईन असं म्हणते.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_self_harm"
+   ],
+   "record": {
+    "type": "pnc",
+    "name": "Sunanda",
+    "day": 20,
+    "symptoms": {
+     "self_harm": true
+    }
+   },
+   "agree": false
+  },
+  {
+   "id": "v-49",
+   "type": "pnc",
+   "said": "Rani, delivery ko 14 din, kehti hai baby ko nuksan pahuncha degi.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_self_harm"
+   ],
+   "record": {
+    "type": "pnc",
+    "name": "Rani",
+    "day": 14,
+    "symptoms": {
+     "self_harm": true
+    }
+   },
+   "agree": false
+  },
+  {
+   "id": "v-50",
+   "type": "pnc",
+   "said": "Day 18 after delivery, she says she wants to end her life.",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_self_harm"
+   ],
+   "record": {
+    "type": "pnc",
+    "day": 18,
+    "symptoms": {
+     "self_harm": true
+    }
+   },
+   "agree": false
+  },
+  {
+   "id": "v-51",
+   "type": "newborn",
+   "said": "Laxmi ka baby, ikkisva din, janam pe 1600 gram tha, aaj 1750 gram, doodh achha pee raha, badan garam nahi.",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [
+    "nb_very_low_weight_gaining",
+    "nb_at_risk_birth_weight"
+   ],
+   "record": {
+    "type": "newborn",
+    "name": "Laxmi",
+    "weight_g": 1750,
+    "birth_weight_g": 1600,
+    "day": 21,
+    "feeding": "good",
+    "symptoms": {
+     "hot_to_touch": false
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v-52",
+   "type": "newborn",
+   "said": "Baby of Asha Devi, day 14, birth weight 3000 grams, today 2600 grams, feeding okay, no fever.",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [
+    "nb_not_regained"
+   ],
+   "record": {
+    "type": "newborn",
+    "name": "Asha",
+    "weight_g": 2600,
+    "birth_weight_g": 3000,
+    "day": 14,
+    "feeding": "good",
+    "symptoms": {
+     "hot_to_touch": false
+    }
    },
    "agree": true
   }

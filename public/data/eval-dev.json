@@ -1,7 +1,7 @@
 {
  "set": "dev",
- "run_at": "2026-11-27T10:31:19.833Z",
- "ruleset": "mohfw-2026.4",
+ "run_at": "2026-11-27T11:26:21.292Z",
+ "ruleset": "mohfw-2026.5",
  "typed": {
   "mode": "typed",
   "items": 120,
@@ -23,10 +23,10 @@
   },
   "flags": {
    "gold": 175,
-   "predicted": 177,
+   "predicted": 178,
    "correct": 173,
    "recall": 98.9,
-   "precision": 97.7,
+   "precision": 97.2,
    "refer_now_recall": 98.6
   },
   "exact_visits": 99.2,
@@ -300,6 +300,7 @@
     ],
     "flags_got": [
      "nb_very_low_weight",
+     "nb_not_regained",
      "nb_at_risk_birth_weight"
     ]
    },
@@ -368,10 +369,10 @@
   },
   "flags": {
    "gold": 175,
-   "predicted": 171,
+   "predicted": 172,
    "correct": 157,
    "recall": 89.7,
-   "precision": 91.8,
+   "precision": 91.3,
    "refer_now_recall": 87.7
   },
   "exact_visits": 89.2,
@@ -645,6 +646,7 @@
     ],
     "flags_got": [
      "nb_very_low_weight",
+     "nb_not_regained",
      "nb_at_risk_birth_weight"
     ]
    },

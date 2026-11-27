@@ -1,4 +1,4 @@
-# Ghar Bhet: record and rule spec (v4, rule set `mohfw-2026.4`, 27 Nov 2026)
+# Ghar Bhet: record and rule spec (v5, rule set `mohfw-2026.5`, 27 Nov 2026)
 
 This is the contract between the product and the test sets. The product fills a **record** from what the ASHA says, and a fixed **rule table** turns the record into **flags**. A test item gives, for each spoken visit, the record and flags a careful human would write. Gold flags are always recomputed from the gold record by `check_gold.py`, which implements the rule table below without importing product code.
 
@@ -10,6 +10,8 @@ v3 changes (from `mohfw-2026.2`): pregnancy temperature, high fever and a raised
 
 v4 changes (from `mohfw-2026.3`): a fever said with a reading stays `fever: true`; after-birth anaemia split (Hb under 7 urgent, 7-7.9 refer to FRU/DH, 8-11.9 watch, giddiness or paleness alone refer for an Hb test); low mood refers; thoughts of self-harm urgent; pallor in pregnancy (with breathlessness urgent); blue lips or tongue in the newborn urgent; new symptom codes `pallor` (anc), `self_harm` (pnc), `cyanosis` (newborn).
 
+v5 changes (from `mohfw-2026.4`): pregnancy stomach pain is urgent (to the FRU), jaundice and a pulse above 90 or below 60 refer, upper-stomach pain with BP 140/90 or more joins severe headache and blurred vision; after birth "tez bukhar" is high fever, upper-stomach pain joins severe headache, Hb 8-10.9 is moderate and 11-11.9 mild anaemia; newborn weight trend (a very low weight above the earlier weight is watch, below 90% of birth weight before day 14 refers, still under birth weight at day 14 or later is watch); BP and Hb read off the card; today beats earlier for feeding, pads and symptoms too; a relative's reading never fills the patient's field; bare "khoon" in pregnancy is bleeding. New fields `pulse` (anc), `bp_source`, `bp_date`, `hb_source`, `hb_date` (anc, pnc), `prev_weight_g` (newborn); new symptom codes `jaundice`, `epigastric_pain` (anc), `high_fever`, `epigastric_pain` (pnc).
+
 ## Visit types
 
 `anc` (a pregnant woman), `pnc` (the mother after delivery), `newborn` (a baby, day 0 to 42).
@@ -18,15 +20,17 @@ v4 changes (from `mohfw-2026.3`): a fever said with a reading stays `fever: true
 
 All fields are optional. Leave a field out when it was not said. A record never carries a field of another visit type. Symptoms are a map of code → `true` (said present) or `false` (said absent, e.g. "no swelling", "सूजन नहीं है"). Leave a symptom out entirely when it was not mentioned.
 
-**Past and present.** When a value is said twice, the one said for now wins: a number next to a past marker (pichli baar, pehle, kal, janam ke samay, at birth, tha/thi/the, was, last time, मागच्या वेळी, आधी) loses to a number next to a now marker (aaj, ab, abhi, now, आता) or an unmarked one. "BP 140 by 90 hai, lekin pichli baar 120 by 80 tha" → 140/90. When the speaker corrects herself ("140 by 90, nahi, 150 by 100") the record holds the corrected value.
+**Past and present.** When a value is said twice, the one said for now wins: a number next to a past marker (pichli baar, pehle, kal, janam ke samay, at birth, tha/thi/the, was, last time, मागच्या वेळी, आधी) loses to a number next to a now marker (aaj, ab, abhi, now, आता) or an unmarked one. "BP 140 by 90 hai, lekin pichli baar 120 by 80 tha" → 140/90. When the speaker corrects herself ("140 by 90, nahi, 150 by 100") the record holds the corrected value. In v5 the same holds for feeding, pads and symptoms: "doodh nahi pee raha, pehle peeta tha" → `feeding: none`; "pad 5 tha kal, aaj 2" → `pads: 2`; "bukhar tha kal, aaj nahi hai" → no fever (leave it out, or `false` where "aaj nahi" is said). A value said only in the past ("kal tak pee raha tha") is not today's value. When the visit is said in several parts, a later part that only says an earlier value does not replace a present one.
 
 **Ranges.** "chaar se paanch pad", "4 ya 5", "4 to 5": the more dangerous end (higher pads, temperature, breaths, BP; lower weight, Hb).
 
-**Subject.** Symptoms and readings said about someone else are left out: relatives (saas, sasur, pati, devar, behen, dadi, nani) in every visit; the mother in a newborn visit ("baby ki maa ko bukhar hai"); the baby in a pregnancy or after-birth visit ("bachche ko bukhar hai", "baby ka temperature 38").
+**Subject.** Symptoms and readings said about someone else are left out: relatives (saas, sasur, pati, devar, behen, dadi, nani) in every visit; the mother in a newborn visit ("baby ki maa ko bukhar hai"); the baby in a pregnancy or after-birth visit ("bachche ko bukhar hai", "baby ka temperature 38"). This holds for readings too (v5): "uski saas ka BP 170/110" leaves BP out, and "BP 120/80, saas ka BP 170/110" → 120/80. In a newborn visit "maa ka temperature 38.5, baby ka 37" → 37. A relative's word is never the patient's name ("Saasu maa ko bukhar hai").
 
-**Denials and mild pain.** "denies X", "no complaints of X or Y" mark every listed sign absent. "khoon ki jaanch / kami / chadhaya" (a test, a level, a transfusion) is not bleeding. A headache or (in pregnancy) stomach pain said as mild ("halka", "thoda", "mild") is not recorded as severe; leave it out of the gold record (the app asks "Is it severe?").
+**Denials and mild pain.** "denies X", "no complaints of X or Y" mark every listed sign absent. "khoon ki jaanch / kami / chadhaya" (a test, a level, a transfusion) is not bleeding. In v5, bare "khoon", "खून", "रक्त" said in a pregnancy visit is bleeding ("dard aur khoon"), unless a test or Hb word is near or a number follows as an Hb reading ("khoon saadhe aath" → `hb: 8.5`). After birth some bleeding is normal: a bare "khoon" is not `heavy_bleeding` by itself (leave it out of the gold record); the app asks whether it is heavy (5 or more pads a day, or clots). A headache or (in pregnancy) stomach pain said as mild ("halka", "thoda", "mild") is not recorded as severe; leave it out of the gold record (the app asks "Is it severe?").
 
-**Fever with a reading (v4).** When she says she has a fever ("bukhar hai", "ताप आहे", "fever") the record holds `fever: true` as well as the reading, for pregnancy and after birth. For a newborn the reading decides: a normal reading with "garam" is not `hot_to_touch`.
+**Fever with a reading (v4).** When she says she has a fever ("bukhar hai", "ताप आहे", "fever") the record holds `fever: true` as well as the reading, for pregnancy and after birth. For a newborn the reading decides: a normal reading with "garam" is not `hot_to_touch`. A bare number from 95 to 107 right after "bukhar" or a temperature word (also after a comma, or as the answer "haan, 101") is °F. "tez bukhar", "bahut bukhar", "high fever" are `high_fever` (and `fever`) in pregnancy and, in v5, after birth.
+
+**Readings from the card (v5).** When the ASHA says a BP or Hb was read off the MCP card ("card par likha hai", "card mein") the record holds `bp_source: "card"` (or `hb_source`), and `bp_date`/`hb_date` as said ("15 tarikh"). When she says it was taken today ("ANM ne aaj liya", "maine abhi naapa") the source is `"today"`. Leave the source out when neither is said. The flags are the same; a severe value from the card is not urgent (it may be old): the app says the card shows a severe value from that date, asks whether she has been seen, and says to tell the nurse (ANM) today.
 
 **Speech without punctuation.** A person word not owned by the word before it ("baby", "mother", "maa", "saas", not "Sunita ka baby") starts a new clause. A negation applies to the sign just before it (up to four words) or, in English, to what follows "no", "denies", "no h/o", "no complaints of".
 
@@ -65,8 +69,11 @@ All fields are optional. Leave a field out when it was not said. A record never 
 | `previous_births` | integer | births before this pregnancy ("5 bachche pehle se" → 5; "chautha bachcha" → 3) (v3) |
 | `malpresentation` | boolean | baby breech or lying across ("bachcha ulta hai") (v3) |
 | `td_doses` | integer 0-3 | Td/TT injections taken ("dono teeke" → 2) (v3) |
+| `pulse` | integer per minute | "pulse 104" (v5) |
+| `bp_source`, `hb_source` | `today` / `card` | where the BP or Hb was read (v5, see "Readings from the card") |
+| `bp_date`, `hb_date` | string | the date said for a card value, as said ("15 tarikh") (v5) |
 
-Symptom codes (`anc`): `bleeding`, `leaking_fluid` (water leaking / bag burst), `convulsions`, `severe_headache`, `blurred_vision`, `swelling_face_hands` (face, hands or whole body), `swelling_feet` (feet/legs only), `fever`, `breathless`, `abdominal_pain` (severe), `vomiting`, `dizziness` (giddiness, weakness, darkness before eyes), `burning_urine`, `foul_discharge` (foul or abnormal discharge), and in v3 `high_fever` ("tez bukhar", "high fever"; also mark `fever`), `labour_pain` (labour pains said), and in v4 `pallor` (pale eyelids, palms or nails; "palak safed").
+Symptom codes (`anc`): `bleeding`, `leaking_fluid` (water leaking / bag burst), `convulsions`, `severe_headache`, `blurred_vision`, `swelling_face_hands` (face, hands or whole body), `swelling_feet` (feet/legs only), `fever`, `breathless`, `abdominal_pain` (severe), `vomiting`, `dizziness` (giddiness, weakness, darkness before eyes), `burning_urine`, `foul_discharge` (foul or abnormal discharge), and in v3 `high_fever` ("tez bukhar", "high fever"; also mark `fever`), `labour_pain` (labour pains said), and in v4 `pallor` (pale eyelids, palms or nails; "palak safed"), and in v5 `jaundice` (eyes or skin yellow) and `epigastric_pain` (pain in the upper stomach, "upar pet mein dard").
 
 ### `pnc`
 | field | type | notes |
@@ -77,8 +84,9 @@ Symptom codes (`anc`): `bleeding`, `leaking_fluid` (water leaking / bag burst), 
 | `temp_f` | number | v2, optional: the Fahrenheit value exactly as said, kept so 102 °F compares as 102 °F. Only when said in °F |
 | `bp_sys`, `bp_dia` | integers | as for `anc` (v2) |
 | `hb` | number | as for `anc` (v2) |
+| `bp_source`, `bp_date`, `hb_source`, `hb_date` | as for `anc` | (v5) |
 
-Symptom codes (`pnc`): `heavy_bleeding`, `fever`, `foul_discharge`, `convulsions`, `blurred_vision`, `abnormal_speech`, `breathless`, `abdominal_pain`, `burning_urine`, `swelling_face_hands`, `breast_problem`, `dizziness`, and in v2 `severe_headache`, `jaundice` (her eyes or skin yellow), `incontinence` (urine or stool she cannot hold), `pallor` (pale, white), and in v3 `wound_infection` (pus, redness or smell at the stitches), `calf_pain` (calf pain or swelling), `low_mood` (sad, hopeless, no interest), and in v4 `self_harm` (thoughts of harming herself or the baby).
+Symptom codes (`pnc`): `heavy_bleeding`, `fever`, `foul_discharge`, `convulsions`, `blurred_vision`, `abnormal_speech`, `breathless`, `abdominal_pain`, `burning_urine`, `swelling_face_hands`, `breast_problem`, `dizziness`, and in v2 `severe_headache`, `jaundice` (her eyes or skin yellow), `incontinence` (urine or stool she cannot hold), `pallor` (pale, white), and in v3 `wound_infection` (pus, redness or smell at the stitches), `calf_pain` (calf pain or swelling), `low_mood` (sad, hopeless, no interest), and in v4 `self_harm` (thoughts of harming herself or the baby: "khud ko khatam kar legi", "khudkushi", "marne ki baat", "jaan de degi", "आत्महत्येचे विचार", "फाशी घेईन", "wants to end her life"), and in v5 `high_fever` ("tez/bahut bukhar", "high fever"; also mark `fever`) and `epigastric_pain` (as for `anc`).
 
 ### `newborn`
 | field | type | notes |
@@ -93,6 +101,7 @@ Symptom codes (`pnc`): `heavy_bleeding`, `fever`, `foul_discharge`, `convulsions
 | `weeks_at_birth` | integer | "34 hafte mein paida hua" → 34 (v3) |
 | `preterm` | boolean | born before 37 weeks, or "samay se pehle" said (v3) |
 | `birth_place` | `home` / `facility` | where the baby was born (v3) |
+| `prev_weight_g` | integer grams | the weight at the last saved visit (v5). Filled by the app from the saved visits, not from speech; test items leave it out unless they test the weight trend |
 
 Symptom codes (`newborn`): `convulsions`, `chest_indrawing` ("pasli chal rahi", "chest andar ja raha"), `lethargy`, `jaundice` (any yellowness), `jaundice_palms_soles`, `blood_stool`, `cord_pus` (pus, redness or bleeding at the cord), `skin_pustules`, `eye_discharge`, `cold_to_touch`, `hot_to_touch`, `weak_cry`, `vomiting`, `diarrhoea`, and in v2 `difficulty_breathing` ("saans lene mein takleef", "श्वास घ्यायला त्रास"), and in v3 `abdominal_distension` ("pet phula", swollen belly), and in v4 `cyanosis` (blue lips or tongue).
 
@@ -100,7 +109,7 @@ Never both `hot_to_touch` and `cold_to_touch` true. A temperature word alone ("t
 
 ## Rule table (flags)
 
-Flags are computed from the record only. Severity: `refer_now` (refer the same day) or `watch` (advise, recheck, tell the ANM). Rules marked **urgent** say "now, call 108" because the source says immediately or urgently. A symptom marked `false` never fires a flag. Temperatures compare on `temp_f` when present (exact), else on `temp_c`; "above 102 °F" with `temp_c` only means `temp_c` > 38.9.
+Flags are computed from the record only. Severity: `refer_now` (refer the same day) or `watch` (advise, recheck, tell the ANM). Rules marked **urgent** say "now, call 108" because the source says immediately or urgently. A BP or Hb rule whose value came from the card (`bp_source`/`hb_source` is `card`) keeps its flag and severity but is not urgent (v5). A symptom marked `false` never fires a flag. Temperatures compare on `temp_f` when present (exact), else on `temp_c`; "above 102 °F" with `temp_c` only means `temp_c` > 38.9.
 
 ### `anc`
 | flag | when | severity |
@@ -109,7 +118,7 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 | `anc_severe_hypertension` | (`bp_sys` ≥ 160 or `bp_dia` ≥ 110) and not `bp_dia` > 110 | refer_now, urgent |
 | `anc_preeclampsia` | (`bp_sys` ≥ 140 or `bp_dia` ≥ 90) and `albumin` ≥ 2 | refer_now, urgent |
 | `anc_hypertension` | (`bp_sys` ≥ 140 or `bp_dia` ≥ 90), not severe range, `albumin` < 2 | refer_now |
-| `anc_headache_vision` | `severe_headache` or `blurred_vision` | refer_now, urgent |
+| `anc_headache_vision` | `severe_headache` or `blurred_vision`, or (`epigastric_pain` and (`bp_sys` ≥ 140 or `bp_dia` ≥ 90)) | refer_now, urgent |
 | `anc_severe_anaemia` | `hb` < 7 | refer_now, urgent |
 | `anc_moderate_anaemia` | 7 ≤ `hb` < 10 | watch |
 | `anc_mild_anaemia` | 10 ≤ `hb` < 11 | watch |
@@ -122,7 +131,9 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 | `anc_fetal_movement` | `fetal_movement` is `reduced` or `absent` | refer_now |
 | `anc_swelling` | `swelling_face_hands` | refer_now |
 | `anc_breathless` | `breathless` | refer_now |
-| `anc_abdominal_pain` | `abdominal_pain` | refer_now |
+| `anc_abdominal_pain` | `abdominal_pain` or `epigastric_pain` | refer_now, urgent (v5) |
+| `anc_jaundice` | `jaundice` | refer_now |
+| `anc_pulse` | `pulse` > 90 or `pulse` < 60 | refer_now |
 | `anc_burning_urine` | `burning_urine` | refer_now |
 | `anc_discharge` | `foul_discharge` | refer_now |
 | `anc_labour_prolonged` | `labour_hours` > 12 | refer_now, urgent |
@@ -144,16 +155,17 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 | `pnc_hypertension` | (`bp_sys` ≥ 140 or `bp_dia` ≥ 90), not severe range | refer_now |
 | `pnc_severe_anaemia` | `hb` < 7 | refer_now, urgent |
 | `pnc_low_hb` | 7 ≤ `hb` < 8 | refer_now |
-| `pnc_moderate_anaemia` | 8 ≤ `hb` < 12 | watch |
+| `pnc_moderate_anaemia` | 8 ≤ `hb` < 11 | watch |
+| `pnc_mild_anaemia` | 11 ≤ `hb` < 12 | watch |
 | `pnc_anaemia_signs` | `dizziness` or `pallor`, and not `hb` < 8 | refer_now |
-| `pnc_high_fever` | temperature above 102 °F | refer_now, urgent |
+| `pnc_high_fever` | temperature above 102 °F, or `high_fever` | refer_now, urgent |
 | `pnc_uti` | `burning_urine` | refer_now |
 | `pnc_infection` | `foul_discharge` | refer_now |
 | `pnc_fever` | (`fever` or temperature above 100 °F), and no high fever, no `burning_urine`, no `foul_discharge` | refer_now |
 | `pnc_low_fever` | 37.5 °C ≤ temperature ≤ 100 °F, no `fever` said | watch |
 | `pnc_convulsions` | `convulsions` | refer_now, urgent |
 | `pnc_neuro` | `blurred_vision` or `abnormal_speech` | refer_now, urgent |
-| `pnc_headache` | `severe_headache` | refer_now, urgent |
+| `pnc_headache` | `severe_headache` or `epigastric_pain` | refer_now, urgent |
 | `pnc_breathless` | `breathless` | refer_now, urgent |
 | `pnc_abdominal_pain` | `abdominal_pain` | refer_now |
 | `pnc_swelling` | `swelling_face_hands` | refer_now |
@@ -183,7 +195,10 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 | `nb_jaundice_early` | `jaundice` and `day` ≤ 1 | refer_now, urgent |
 | `nb_jaundice_late` | `jaundice` and `day` > 14 | refer_now |
 | `nb_blood_stool` | `blood_stool` | refer_now, urgent |
-| `nb_very_low_weight` | `weight_g` < 1800 | refer_now, urgent |
+| `nb_very_low_weight` | `weight_g` < 1800, and not above the earlier weight (`prev_weight_g`, else `birth_weight_g`) | refer_now, urgent |
+| `nb_very_low_weight_gaining` | `weight_g` < 1800 and above the earlier weight | watch |
+| `nb_weight_loss` | `day` < 14, `birth_weight_g` known and `weight_g` < 0.9 × `birth_weight_g` | refer_now |
+| `nb_not_regained` | `day` ≥ 14, `birth_weight_g` known and `weight_g` < `birth_weight_g` | watch |
 | `nb_low_weight` | 1800 ≤ `weight_g` < 2500 | watch |
 | `nb_at_risk_birth_weight` | `birth_weight_g` < 2500 | watch |
 | `nb_preterm` | `preterm` true, or `weeks_at_birth` < 37 | watch |
@@ -198,7 +213,7 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 
 ### Never silent
 
-`noted(record, flags)` in rules.js lists every symptom marked `true` that no fired flag covers (for example jaundice on day 5, or swelling of the feet in pregnancy). The app shows these as "Noted: tell the nurse" and never shows "No danger signs" while the list is not empty. The reader also returns `unread`: clauses that name a body part or complaint but filled nothing, so the app can show "Noted: words not understood". Each flag also carries `where` (a few words: where to go and when) and `onTheWay` (or null); `groupFlags(flags)` returns one group per destination, most urgent first, with every lower-level flag folded under the top destination when anything refers.
+`noted(record, flags)` in rules.js lists every symptom marked `true` that no fired flag covers (for example jaundice on day 5, or swelling of the feet in pregnancy). The app shows these as "Noted: tell the nurse" and never shows "No danger signs" while the list is not empty. The reader also returns `unread`: clauses that name a body part or complaint but filled nothing, so the app can show "Noted: words not understood". Each flag also carries `where` (a few words: where to go and when), `onTheWay` (or null), and `sayRoman`/`onTheWayRoman` (the Hindi and Marathi spoken lines in Roman letters, v5); `groupFlags(flags)` returns one group per destination, most urgent first, with every lower-level flag folded under the top destination when anything refers.
 
 ## Test item format (JSONL, one object per line)
 
@@ -206,7 +221,7 @@ Flags are computed from the record only. Severity: `refer_now` (refer the same d
 {"id":"nb-017","lang":"hi","script":"devanagari","said":"सुनीता का बच्चा सात दिन का है, वजन एक किलो सात सौ ग्राम, बुखार नहीं है, दूध कम पी रहा है","record":{"type":"newborn","name":"Sunita","day":7,"weight_g":1700,"feeding":"poor","symptoms":{"hot_to_touch":false}},"flags":["nb_poor_feeding","nb_very_low_weight"],"tags":["numbers-in-words","negation"]}
 ```
 
-Ids: `nb-`, `anc-`, `pnc-` in dev; `d2-` to `d5-` prefixes in dev2 to dev5; `h-` in the held-out sets; `adv-` and `adv2-` in the two independent adversarial sets.
+Ids: `nb-`, `anc-`, `pnc-` in dev; `d2-` to `d6-` prefixes in dev2 to dev6; `h-` in the held-out sets; `adv-` and `adv2-` in the two independent adversarial sets.
 
 Notes for labellers: `fever` is not a newborn symptom code; for a newborn "बुखार नहीं" means `hot_to_touch: false`. For newborn and pnc, "bukhar hai" with no number means `hot_to_touch: true` (newborn) or `fever: true` (pnc). Use these exact codes.
 

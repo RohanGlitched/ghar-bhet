@@ -1,7 +1,7 @@
 {
  "set": "adversarial2",
- "run_at": "2026-11-27T10:31:23.038Z",
- "ruleset": "mohfw-2026.4",
+ "run_at": "2026-11-27T11:26:24.188Z",
+ "ruleset": "mohfw-2026.5",
  "typed": {
   "mode": "typed",
   "items": 60,
@@ -14,17 +14,17 @@
   },
   "type_detected": 100,
   "danger": {
-   "visits": 40,
-   "caught": 40,
+   "visits": 41,
+   "caught": 41,
    "caught_pct": 100,
-   "normal_visits": 20,
+   "normal_visits": 19,
    "false_alarms": 0,
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 99,
-   "predicted": 100,
-   "correct": 99,
+   "gold": 100,
+   "predicted": 101,
+   "correct": 100,
    "recall": 100,
    "precision": 99,
    "refer_now_recall": 100
@@ -282,11 +282,6 @@
     "ok": 3,
     "pct": 100
    },
-   "watch-only": {
-    "n": 4,
-    "ok": 4,
-    "pct": 100
-   },
    "abbreviation": {
     "n": 9,
     "ok": 9,
@@ -345,6 +340,11 @@
    "birth-vs-now": {
     "n": 1,
     "ok": 1,
+    "pct": 100
+   },
+   "watch-only": {
+    "n": 3,
+    "ok": 3,
     "pct": 100
    },
    "fahrenheit": {
@@ -482,20 +482,20 @@
   },
   "type_detected": 71.7,
   "danger": {
-   "visits": 40,
-   "caught": 34,
-   "caught_pct": 85,
-   "normal_visits": 20,
+   "visits": 41,
+   "caught": 35,
+   "caught_pct": 85.4,
+   "normal_visits": 19,
    "false_alarms": 0,
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 99,
-   "predicted": 84,
-   "correct": 72,
-   "recall": 72.7,
-   "precision": 85.7,
-   "refer_now_recall": 68.5
+   "gold": 100,
+   "predicted": 85,
+   "correct": 73,
+   "recall": 73,
+   "precision": 85.9,
+   "refer_now_recall": 68.9
   },
   "exact_visits": 71.7,
   "by_field": {
@@ -750,11 +750,6 @@
     "ok": 2,
     "pct": 66.7
    },
-   "watch-only": {
-    "n": 4,
-    "ok": 2,
-    "pct": 50
-   },
    "abbreviation": {
     "n": 9,
     "ok": 8,
@@ -814,6 +809,11 @@
     "n": 1,
     "ok": 1,
     "pct": 100
+   },
+   "watch-only": {
+    "n": 3,
+    "ok": 1,
+    "pct": 33.3
    },
    "fahrenheit": {
     "n": 7,
@@ -1125,7 +1125,7 @@
      "pads: want 2 got undefined"
     ],
     "flags_want": [
-     "pnc_moderate_anaemia"
+     "pnc_mild_anaemia"
     ],
     "flags_got": []
    },

@@ -3,8 +3,8 @@
 // (guideline coverage), build, voice (spoken-flow details); "r2" marks the second round.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { understand } from "../public/js/understand.js";
-import { flagCodes, checkRecord, noted, RULE_TABLE, groupFlags } from "../public/js/rules.js";
+import { understand, merge } from "../public/js/understand.js";
+import { flagCodes, checkRecord, noted, RULE_TABLE, groupFlags, askExtra, ASK_PROMPTS } from "../public/js/rules.js";
 
 const read = (s, t) => understand(s, t);
 const rec = (s, t) => understand(s, t).record;
@@ -561,4 +561,99 @@ test("adv2 set: unpunctuated clinical English", () => {
   assert.equal(rec("9va mahina dard shuru ho gaye 5 ghante se bachha ulta hai", "anc").month, 9);
   assert.equal(rec("Sushma baalantpanache 14 divas Hb 11.4 divsatun 2 pad", "pnc").day, 14);
   assert.equal(rec("day 10 she fainted twice", "pnc").day, 10, "English 'she' is not Marathi 'she' (hundred)");
+});
+
+/* ---------------- sixth review round ---------------- */
+
+test("r6 P0: a present 'not feeding' beats an earlier 'used to feed', also across sentences", () => {
+  for (const s of ["bachcha doodh nahi pee raha, pehle peeta tha", "doodh nahi pee raha, pehle theek peeta tha", "doodh nahi pee raha. pehle peeta tha."]) assert.equal(rec(s, "newborn").feeding, "none", s);
+  const m = merge(read("Rekha ka baby doodh nahi pee raha", "newborn"), read("pehle theek peeta tha", "newborn"));
+  assert.equal(m.record.feeding, "none"); assert.ok(flagCodes(m.record).includes("nb_not_feeding"));
+});
+
+test("r6: today's pads and fever beat yesterday's", () => {
+  assert.equal(rec("pad 5 tha kal, aaj 2", "pnc").pads, 2);
+  assert.equal(rec("pad kal 6 the, aaj 3", "pnc").pads, 3);
+  assert.deepEqual(flags("pad 5 tha kal, aaj 2", "pnc"), []);
+  const r = rec("baby ko bukhar tha kal, aaj nahi hai", "newborn");
+  assert.notEqual(r.symptoms?.hot_to_touch, true); assert.deepEqual(flagCodes(r), []);
+});
+
+test("r6 P0: self-harm in everyday Hindi and Marathi", () => {
+  for (const s of ["usne kaha ki khud ko khatam kar legi", "khudkushi ki baat karti hai", "marne ki baat karti hai", "आत्महत्येचे विचार येतात", "usko lagta hai mar jaaun, bahut udaas rehti hai", "kehti hai jaan de degi", "फाशी घेईन असं म्हणते", "she says she wants to end her life"]) {
+    const r = rec(s, "pnc");
+    assert.equal(r.symptoms?.self_harm, true, s); assert.ok(flagCodes(r).includes("pnc_self_harm"), s);
+    assert.equal(r.name, undefined, `${s}: no name from the words`);
+  }
+  assert.equal(rec("आत्महत्या करण्याचे विचार", "pnc").name, undefined);
+});
+
+test("r6: a relative's reading is not the patient's", () => {
+  assert.deepEqual(flags("uski saas ko BP hai 170/110", "anc"), []);
+  const r = rec("BP 120/80, uski saas ka BP 170/110", "anc"); assert.deepEqual([r.bp_sys, r.bp_dia], [120, 80]);
+  assert.deepEqual([rec("BP 120/80. Saas ka BP 170/110.", "anc").bp_sys], [120]);
+  const m = merge(read("BP 120 by 80", "anc"), read("uski saas ka BP 170 by 110 hai", "anc"));
+  assert.equal(m.record.bp_sys, 120);
+  assert.equal(rec("maa ka temperature 38.5 hai, baby ka 37", "newborn").temp_c, 37);
+  assert.equal(rec("Saasu maa ko bukhar hai, baby theek hai, 6 din ka", "newborn").name, undefined);
+});
+
+test("r6: bare khoon in pregnancy is bleeding; high fever words; a bare 103 after bukhar", () => {
+  assert.ok(flags("पेट में तेज़ दर्द और खून", "anc").includes("anc_bleeding"));
+  assert.ok(flags("dard aur khoon", "anc").includes("anc_bleeding"));
+  assert.ok(!flags("khoon ki jaanch hui, Hb 11", "anc").includes("anc_bleeding"));
+  assert.ok(!flags("पूनम, छत्तीस हफ्ते, खून साढ़े आठ है", "anc").includes("anc_bleeding"));
+  const f = rec("kal raat se tez bukhar, 103", "pnc"); assert.equal(f.temp_f, 103); assert.ok(flagCodes(f).includes("pnc_high_fever"));
+  assert.ok(flags("tez bukhar hai", "pnc").includes("pnc_high_fever"));
+  assert.equal(rec("bukhar hai kya? haan, 101", "pnc").temp_f, 101);
+  assert.equal(rec("pad do teen badalti hai", "pnc").pads, 3);
+  assert.equal(rec("BP eksau chalis by nabbe", "anc").bp_sys, 140);
+  assert.ok(flags("Meena aathva mahina, paani gir gaya kal raat se", "anc").includes("anc_leaking"));
+});
+
+test("r6: after birth a bare khoon asks whether the bleeding is heavy", () => {
+  const ask = (s) => read(s, "pnc").doubts.filter((d) => d.field === "severity").map((d) => d.code);
+  assert.deepEqual(ask("dard aur khoon aa raha hai"), ["heavy_bleeding"]);
+  assert.deepEqual(flags("dard aur khoon aa raha hai", "pnc"), []);
+  for (const s of ["khoon nahi ja raha", "khoon aa raha hai, teen pad", "saas ko khoon aa raha hai", "Hb 9, khoon ki kami"]) assert.deepEqual(ask(s), [], s);
+});
+
+test("r6 clinical: newborn weight trend", () => {
+  const stable = checkRecord({ type: "newborn", day: 21, birth_weight_g: 1600, weight_g: 1750, feeding: "good" });
+  assert.deepEqual(stable.map((f) => [f.code, f.urgent]), [["nb_very_low_weight_gaining", false], ["nb_at_risk_birth_weight", false], ["nb_low_weight", false]].filter(([c]) => stable.some((x) => x.code === c)));
+  assert.ok(!stable.some((f) => f.urgent), "a gaining KMC baby is not sent by 108");
+  assert.equal(checkRecord({ type: "newborn", weight_g: 1700 })[0].code, "nb_very_low_weight");
+  assert.equal(checkRecord({ type: "newborn", weight_g: 1650, prev_weight_g: 1700 })[0].urgent, true, "falling");
+  assert.ok(flagCodes({ type: "newborn", day: 14, birth_weight_g: 3000, weight_g: 2600 }).includes("nb_not_regained"));
+  assert.ok(flagCodes({ type: "newborn", day: 5, birth_weight_g: 3000, weight_g: 2600 }).includes("nb_weight_loss"));
+  assert.deepEqual(askExtra({ type: "newborn", weight_g: 2600, day: 5 }).map((a) => a.field), ["birth_weight_g"]);
+});
+
+test("r6 clinical: pregnancy stomach pain, jaundice, upper-stomach pain with BP, pulse", () => {
+  const ab = checkRecord({ type: "anc", symptoms: { abdominal_pain: true } })[0];
+  assert.equal(ab.urgent, true); assert.match(ab.where, /FRU/);
+  assert.deepEqual(flags("aankhein peeli hain, saatva mahina", "anc"), ["anc_jaundice"]);
+  assert.ok(flags("upar pet mein dard hai, BP 150/100", "anc").includes("anc_headache_vision"));
+  assert.ok(flags("pulse 104 hai", "anc").includes("anc_pulse"));
+  assert.deepEqual(flagCodes({ type: "pnc", hb: 11.5 }), ["pnc_mild_anaemia"]);
+  assert.deepEqual(flagCodes({ type: "pnc", hb: 9 }), ["pnc_moderate_anaemia"]);
+});
+
+test("r6: a BP read off the card asks whether she was seen instead of sending her by 108", () => {
+  const r = rec("BP 160/110 card par likha hai, 15 tarikh ka", "anc");
+  assert.equal(r.bp_source, "card"); assert.equal(r.bp_date, "15 tarikh");
+  const f = checkRecord(r)[0];
+  assert.equal(f.urgent, false); assert.equal(f.fromCard, true); assert.match(f.action, /card shows severe BP from 15 tarikh: has she been seen/);
+  const t = rec("ANM ne aaj BP liya 160/110", "anc"); assert.equal(t.bp_source, "today"); assert.equal(checkRecord(t)[0].urgent, true);
+  assert.equal(checkRecord(rec("BP 160/110", "anc"))[0].urgent, true, "unspecified stays as before");
+  assert.match(ASK_PROMPTS.anc.bp.en, /card/);
+});
+
+test("r6: Roman-script spoken lines for every rule", () => {
+  const DEV = new RegExp("[" + String.fromCharCode(0x900) + "-" + String.fromCharCode(0x97f) + "]");
+  for (const r of RULE_TABLE) {
+    for (const l of ["hi", "mr"]) { assert.ok(r.sayRoman[l].length > 5, r.code); assert.ok(!DEV.test(r.sayRoman[l]), `${r.code} ${l}: ${r.sayRoman[l]}`); }
+    if (r.onTheWay) for (const l of ["hi", "mr"]) assert.ok(r.onTheWayRoman[l] && !DEV.test(r.onTheWayRoman[l]), r.code);
+    else assert.equal(r.onTheWayRoman, null, r.code);
+  }
 });

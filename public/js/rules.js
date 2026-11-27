@@ -1,4 +1,5 @@
 // Ghar Bhet: the danger-sign rules. Fixed, versioned and cited.
+import { romanize } from "./understand.js";
 // A model never decides these. Each rule names the document and clause it comes from.
 //
 // Exports
@@ -15,7 +16,12 @@
 //   groupFlags(flags)       -> [{ where, urgent, severity, flags, onTheWay }]: one destination per group, most urgent
 //                           first; when anything refers, all flags fold under the top destination.
 //   Each flag also has `where` (a few words: "Newborn unit (SNCU) now, call 108") and `onTheWay`
-//   (what to do on the way, or null). `action` stays the full sentence.
+//   (what to do on the way, or null). `action` stays the full sentence. `sayRoman` {hi, mr} and
+//   `onTheWayRoman` {hi, mr} (or null) are the Hindi and Marathi lines in Roman letters.
+//   A BP or Hb read off the card (record.bp_source / hb_source === "card") turns the urgent BP or Hb
+//   flags into "card shows ...: has she been seen? tell the nurse today" (fromCard: true, not urgent).
+//   askExtra(record)        -> questions for values a rule needs but nobody said (birth weight, day,
+//                           palms and soles, BP/Hb today or card). ASK_PROMPTS: card-first wording.
 //   SYMPTOM_LABELS          { anc|pnc|newborn: { code: "English label" } }
 //   FIELD_LABELS            { field: "English label" }
 //   symptomLabel(type, code), fieldLabel(field)
@@ -24,7 +30,7 @@
 // also keeps temp_f exactly as said, and the rules compare that, so "102 F" is exactly 102 F.
 
 export const RULESET = {
-  id: "mohfw-2026.4",
+  id: "mohfw-2026.5",
   label: "MoHFW CHO manuals (2021), SBA guidelines (2010), MCP card, HBNC 2014, SSBSK Operational Guidelines 2026, Anemia Mukt Bharat 2026",
 };
 
@@ -70,6 +76,8 @@ const SEPSIS = [
   (r) => has(r.resp_rate) && r.resp_rate > 60,
   (r) => S(r, "cord_pus"),
 ];
+// The earlier weight to compare with: the last saved visit (prev_weight_g, filled by the server) or birth weight
+const earlierWeight = (r) => (has(r.prev_weight_g) ? r.prev_weight_g : has(r.birth_weight_g) ? r.birth_weight_g : null);
 const sepsisCount = (r) => SEPSIS.filter((f) => f(r)).length;
 const SEPSIS_NAMES = ["moves only when touched", "feeding less", "weak cry", "vomiting or swollen belly", "too cold or fever", "chest indrawing", "breathing over 60", "cord pus"];
 const sepsisSigns = (r) => SEPSIS.map((f, k) => (f(r) ? SEPSIS_NAMES[k] : null)).filter(Boolean);
@@ -103,8 +111,8 @@ const RULES = [
     action: "BP is high. Take her to the PHC today; the nurse (ANM) or medical officer will recheck it. Free transport: 102.",
     say: { en: "Blood pressure is high. Take her to the PHC today. The nurse or doctor will check it again.", hi: "बीपी ज़्यादा है। आज ही पीएचसी ले जाइए। एएनएम या डॉक्टर फिर से जाँचेंगे।", mr: "बीपी जास्त आहे. आजच पीएचसीला न्या. एएनएम किंवा डॉक्टर पुन्हा तपासतील." } },
   { code: "anc_headache_vision", type: "anc", severity: "refer_now", urgent: true, covers: ["severe_headache", "blurred_vision"],
-    threshold: "Severe headache or blurred vision said", src: `${DOC.mcp}, danger signs panel ("take the pregnant woman to the hospital immediately")`,
-    when: (r) => S(r, "severe_headache") || S(r, "blurred_vision"),
+    threshold: "Severe headache or blurred vision, or upper-stomach pain with BP 140/90 or more", src: `${DOC.mcp}, danger signs panel ("take the pregnant woman to the hospital immediately"); ${DOC.cho_anc}, p.30 table (severe headache, blurred vision, epigastric pain with high BP)`,
+    when: (r) => S(r, "severe_headache") || S(r, "blurred_vision") || (S(r, "epigastric_pain") && highBP(r)),
     title: "Severe headache or blurred vision", why: () => "A danger sign on the MCP card.",
     action: "Take her to the hospital now. Her BP must be checked.",
     say: { en: "Severe headache or blurred vision is a danger sign. Take her to the hospital now.", hi: "तेज़ सिरदर्द या धुंधला दिखना ख़तरे का निशान है। अभी अस्पताल ले जाइए।", mr: "खूप डोकेदुखी किंवा धूसर दिसणे हे धोक्याचे लक्षण आहे. आत्ताच दवाखान्यात न्या." } },
@@ -127,10 +135,10 @@ const RULES = [
     action: "Take her to the PHC today for an Hb test.",
     say: { en: "She looks pale. Take her to the PHC today for a blood test.", hi: "वह पीली दिख रही है। खून की जाँच के लिए आज ही पीएचसी ले जाइए।", mr: "ती फिकट दिसते. रक्त तपासणीसाठी आजच पीएचसीला न्या." } },
   { code: "anc_moderate_anaemia", type: "anc", severity: "watch", urgent: false,
-    threshold: "Hb 7 to 9.9 g/dl", src: `${DOC.amb}, Table 1 p.40 (mild-moderate anaemia: 2 IFA tablets daily for 1 month); ${DOC.cho_anc}, p.35`,
+    threshold: "Hb 7 to 9.9 g/dl", src: `${DOC.amb}, Table 1 p.40 (mild-moderate anaemia: 2 IFA tablets daily for 1 month; for moderate anaemia IV iron as advised by the treating physician); ${DOC.cho_anc}, p.35`,
     when: (r) => has(r.hb) && r.hb >= 7 && r.hb < 10,
     title: "Moderate anaemia", why: (r) => `Hb ${r.hb} g/dl is between 7 and 9.9.`,
-    action: "Two iron (IFA) tablets a day for one month, then Hb again. Tell the nurse (ANM); the medical officer sees her if it does not rise.",
+    action: "Two iron (IFA) tablets a day for one month, then Hb again. Tell the nurse (ANM); the medical officer may advise IV iron, and sees her if it does not rise.",
     say: { en: "Moderate anaemia. Two iron tablets every day for a month, and tell the nurse.", hi: "खून की कमी है। एक महीने तक रोज़ आयरन की दो गोलियाँ, और एएनएम को बताइए।", mr: "रक्ताची कमतरता आहे. एक महिना रोज लोहाच्या दोन गोळ्या, आणि एएनएमला कळवा." } },
   { code: "anc_mild_anaemia", type: "anc", severity: "watch", urgent: false,
     threshold: "Hb 10 to 10.9 g/dl", src: `${DOC.amb}, Table 1 p.40 (mild-moderate anaemia: 2 IFA tablets daily for 1 month)`,
@@ -192,12 +200,24 @@ const RULES = [
     title: "Breathlessness", why: () => "Breathlessness may come with severe anaemia.",
     action: "Take her to the PHC today; her Hb must be checked.",
     say: { en: "She is breathless. Take her to the PHC today.", hi: "साँस फूल रही है। आज ही पीएचसी ले जाइए।", mr: "दम लागतो आहे. आजच पीएचसीला न्या." } },
-  { code: "anc_abdominal_pain", type: "anc", severity: "refer_now", urgent: false, covers: ["abdominal_pain"],
-    threshold: "Severe stomach pain said", src: `${DOC.cho_anc}, p.31 (pain in abdomen: refer the woman to the MO at the FRU)`,
-    when: (r) => S(r, "abdominal_pain"),
-    title: "Severe stomach pain", why: () => "Severe abdominal pain in pregnancy needs a doctor.",
-    action: "Take her to the PHC today.",
-    say: { en: "Severe stomach pain. Take her to the PHC today.", hi: "पेट में तेज़ दर्द है। आज ही पीएचसी ले जाइए।", mr: "पोटात खूप दुखत आहे. आजच पीएचसीला न्या." } },
+  { code: "anc_abdominal_pain", type: "anc", severity: "refer_now", urgent: true, covers: ["abdominal_pain", "epigastric_pain"],
+    threshold: "Severe stomach pain said", src: `${DOC.cho_anc}, p.31 (pain in abdomen: refer the woman to the MO at the FRU). Mild pain is asked about, not referred`,
+    when: (r) => S(r, "abdominal_pain") || S(r, "epigastric_pain"),
+    title: "Severe stomach pain", why: () => "Severe abdominal pain in pregnancy needs a doctor at the FRU.",
+    action: "Take her to the FRU (hospital) now. Call 102 or 108.",
+    say: { en: "Severe stomach pain in pregnancy. Take her to the hospital now.", hi: "गर्भावस्था में पेट में तेज़ दर्द है। अभी अस्पताल ले जाइए।", mr: "गरोदरपणात पोटात खूप दुखत आहे. आत्ताच दवाखान्यात न्या." } },
+  { code: "anc_jaundice", type: "anc", severity: "refer_now", urgent: false, covers: ["jaundice"],
+    threshold: "Yellow eyes or skin said", src: `${DOC.cho_anc}, p.27 (jaundice: refer the pregnant woman to the 24-hour PHC/FRU)`,
+    when: (r) => S(r, "jaundice"),
+    title: "Jaundice in pregnancy", why: () => "Yellow eyes or skin in pregnancy.",
+    action: "Take her to the 24-hour PHC or FRU today.",
+    say: { en: "Her eyes or skin are yellow. Take her to the PHC today.", hi: "आँखें या त्वचा पीली है। आज ही पीएचसी ले जाइए।", mr: "डोळे किंवा त्वचा पिवळी आहे. आजच पीएचसीला न्या." } },
+  { code: "anc_pulse", type: "anc", severity: "refer_now", urgent: false,
+    threshold: "Pulse above 90 or below 60 a minute", src: `${DOC.cho_anc}, p.27 (pulse rate more than 90 or less than 60 beats a minute: refer to 24-hour PHC/FRU)`,
+    when: (r) => has(r.pulse) && (r.pulse > 90 || r.pulse < 60),
+    title: "Pulse too fast or too slow", why: (r) => `Pulse ${r.pulse} a minute.`,
+    action: "Take her to the 24-hour PHC today.",
+    say: { en: "Her pulse is not normal. Take her to the PHC today.", hi: "नाड़ी ठीक नहीं है। आज ही पीएचसी ले जाइए।", mr: "नाडी ठीक नाही. आजच पीएचसीला न्या." } },
   { code: "anc_burning_urine", type: "anc", severity: "refer_now", urgent: false, covers: ["burning_urine"],
     threshold: "Burning urine said", src: `${DOC.cho_anc}, p.17 (burning micturition is a symptom of complication) and p.30 (burning on urination, UTI: refer to the MO at the PHC)`,
     when: (r) => S(r, "burning_urine"),
@@ -298,15 +318,21 @@ const RULES = [
     action: "Take her to the PHC today for an Hb test and treatment.",
     say: { en: "Signs of anaemia. Take her to the PHC today for a blood test.", hi: "खून की कमी के निशान हैं। खून की जाँच के लिए आज ही पीएचसी ले जाइए।", mr: "रक्ताच्या कमतरतेची लक्षणे आहेत. रक्त तपासणीसाठी आजच पीएचसीला न्या." } },
   { code: "pnc_moderate_anaemia", type: "pnc", severity: "watch", urgent: false,
-    threshold: "Hb 8 to 11.9 g/dl", src: `${DOC.amb}, p.33-34 (women who are not pregnant: mild 11-11.9, moderate 8-10.9 g/dl) and Table 2 p.42 (lactating mother, mild-moderate: 2 IFA tablets daily for 3 months)`,
-    when: (r) => has(r.hb) && r.hb >= 8 && r.hb < 12,
-    title: "Mild or moderate anaemia", why: (r) => `Hb ${r.hb} g/dl is under 12.`,
-    action: "Two iron (IFA) tablets a day for three months, then Hb again. Tell the nurse (ANM).",
-    say: { en: "Her hemoglobin is a little low. Two iron tablets every day for three months, and tell the nurse.", hi: "हीमोग्लोबिन थोड़ा कम है। तीन महीने तक रोज़ आयरन की दो गोलियाँ, और एएनएम को बताइए।", mr: "हिमोग्लोबिन थोडे कमी आहे. तीन महिने रोज लोहाच्या दोन गोळ्या, आणि एएनएमला कळवा." } },
-  { code: "pnc_high_fever", type: "pnc", severity: "refer_now", urgent: true, covers: ["fever"],
-    threshold: "Temperature above 102 °F (38.9 °C)", src: `${DOC.hbnc}, p.19 (above 102 F refer); ${DOC.mcp}, danger signs panel (high fever within one month of delivery); ${DOC.cho_bk}`,
-    when: (r) => tAboveF(r, 102),
-    title: "High fever", why: (r) => `${showT(r)} is above 102 °F.`,
+    threshold: "Hb 8 to 10.9 g/dl", src: `${DOC.amb}, p.33-34 (women who are not pregnant: moderate 8-10.9 g/dl) and Table 2 p.42 (lactating mother, mild-moderate: 2 IFA tablets daily for 3 months)`,
+    when: (r) => has(r.hb) && r.hb >= 8 && r.hb < 11,
+    title: "Moderate anaemia", why: (r) => `Hb ${r.hb} g/dl is between 8 and 10.9.`,
+    action: "Two iron (IFA) tablets a day for three months, then Hb again. Tell the nurse (ANM); the medical officer may advise IV iron.",
+    say: { en: "Moderate anaemia. Two iron tablets every day for three months, and tell the nurse.", hi: "खून की कमी है। तीन महीने तक रोज़ आयरन की दो गोलियाँ, और एएनएम को बताइए।", mr: "रक्ताची कमतरता आहे. तीन महिने रोज लोहाच्या दोन गोळ्या, आणि एएनएमला कळवा." } },
+  { code: "pnc_mild_anaemia", type: "pnc", severity: "watch", urgent: false,
+    threshold: "Hb 11 to 11.9 g/dl", src: `${DOC.amb}, p.33-34 (women who are not pregnant: mild 11-11.9 g/dl) and Table 2 p.42 (lactating mother, mild-moderate: 2 IFA tablets daily for 3 months)`,
+    when: (r) => has(r.hb) && r.hb >= 11 && r.hb < 12,
+    title: "Mild anaemia", why: (r) => `Hb ${r.hb} g/dl is between 11 and 11.9.`,
+    action: "Two iron (IFA) tablets a day for three months and iron-rich food, then Hb again.",
+    say: { en: "Mild anaemia. Two iron tablets every day for three months.", hi: "थोड़ी खून की कमी है। तीन महीने तक रोज़ आयरन की दो गोलियाँ।", mr: "थोडी रक्ताची कमतरता आहे. तीन महिने रोज लोहाच्या दोन गोळ्या." } },
+  { code: "pnc_high_fever", type: "pnc", severity: "refer_now", urgent: true, covers: ["fever", "high_fever"],
+    threshold: "Temperature above 102 °F (38.9 °C), or high fever said", src: `${DOC.hbnc}, p.19 (above 102 F refer); ${DOC.mcp}, danger signs panel (high fever within one month of delivery); ${DOC.cho_bk}`,
+    when: (r) => tAboveF(r, 102) || S(r, "high_fever"),
+    title: "High fever", why: (r) => has(tempC(r)) && tAboveF(r, 102) ? `${showT(r)} is above 102 °F.` : "High fever said.",
     action: "Take her to the FRU (hospital) now. Call 108.",
     say: { en: "High fever after delivery. Take her to the hospital now.", hi: "डिलीवरी के बाद तेज़ बुखार है। अभी अस्पताल ले जाइए।", mr: "प्रसूतीनंतर खूप ताप आहे. आत्ताच दवाखान्यात न्या." } },
   { code: "pnc_uti", type: "pnc", severity: "refer_now", urgent: false, covers: ["burning_urine", "fever"],
@@ -323,7 +349,7 @@ const RULES = [
     say: { en: "Foul discharge may be an infection. Take her to the PHC today.", hi: "बदबूदार पानी इन्फ़ेक्शन हो सकता है। आज ही पीएचसी ले जाइए।", mr: "दुर्गंधी स्राव हा संसर्ग असू शकतो. आजच पीएचसीला न्या." } },
   { code: "pnc_fever", type: "pnc", severity: "refer_now", urgent: false, covers: ["fever"],
     threshold: "Fever said, or above 100 °F (37.8 °C)", src: `${DOC.ssbsk}, Form 4 p.115 (fever: any YES means referral; the same form uses fever above 100 °F for infection); ${DOC.hbnc}, p.19 (fever more than 100 F)`,
-    when: (r) => (S(r, "fever") || tAboveF(r, 100)) && !tAboveF(r, 102) && !S(r, "burning_urine") && !S(r, "foul_discharge"),
+    when: (r) => (S(r, "fever") || tAboveF(r, 100)) && !tAboveF(r, 102) && !S(r, "high_fever") && !S(r, "burning_urine") && !S(r, "foul_discharge"),
     title: "Fever", why: (r) => has(tempC(r)) ? `${showT(r)}.` : "She has a fever.",
     action: "Take her to the PHC today.",
     say: { en: "She has a fever after delivery. Take her to the PHC today.", hi: "डिलीवरी के बाद बुखार है। आज ही पीएचसी ले जाइए।", mr: "प्रसूतीनंतर ताप आहे. आजच पीएचसीला न्या." } },
@@ -345,9 +371,9 @@ const RULES = [
     title: "Blurred vision or strange speech", why: () => "A neurological danger sign after delivery.",
     action: "Go to the FRU now; her BP must be checked there. Call 108.",
     say: { en: "Blurred vision or strange speech is a danger sign. Take her to the hospital now.", hi: "धुंधला दिखना या अजीब बोलना ख़तरे का निशान है। अभी अस्पताल ले जाइए।", mr: "धूसर दिसणे किंवा विचित्र बोलणे हे धोक्याचे लक्षण आहे. आत्ताच दवाखान्यात न्या." } },
-  { code: "pnc_headache", type: "pnc", severity: "refer_now", urgent: true, covers: ["severe_headache"],
-    threshold: "Severe headache said", src: `${DOC.mcp}, danger signs panel (headache, blurring of vision and fits: hospital immediately; worded for pregnancy, used here after delivery); ${DOC.ssbsk}, Form 4 p.115 (neurological signs mean referral)`,
-    when: (r) => S(r, "severe_headache"),
+  { code: "pnc_headache", type: "pnc", severity: "refer_now", urgent: true, covers: ["severe_headache", "epigastric_pain"],
+    threshold: "Severe headache or upper-stomach pain said", src: `${DOC.sba}, p.52 (after delivery, call for help for dizziness, severe headache, visual disturbance or epigastric pain); ${DOC.mcp}, danger signs panel (headache, blurring of vision and fits: hospital immediately; worded for pregnancy, used here after delivery); ${DOC.ssbsk}, Form 4 p.115 (neurological signs mean referral)`,
+    when: (r) => S(r, "severe_headache") || S(r, "epigastric_pain"),
     title: "Severe headache", why: () => "A severe headache after delivery needs a BP check.",
     action: "Go to the FRU now; her BP must be checked there. Call 108.",
     say: { en: "Severe headache after delivery is a danger sign. Take her to the hospital now to check her blood pressure.", hi: "डिलीवरी के बाद तेज़ सिरदर्द ख़तरे का निशान है। बीपी जाँचने के लिए अभी अस्पताल ले जाइए।", mr: "प्रसूतीनंतर खूप डोकेदुखी हे धोक्याचे लक्षण आहे. बीपी तपासायला आत्ताच दवाखान्यात न्या." } },
@@ -391,7 +417,7 @@ const RULES = [
     threshold: "Calf pain or swelling said", src: `${DOC.ssbsk}, Form 4 p.115 (oedema of face, hands and legs means referral); a painful swollen calf can be a clot (our wording)`,
     when: (r) => S(r, "calf_pain"),
     title: "Painful or swollen calf", why: () => "Pain or swelling in the calf after delivery.",
-    action: "Take her to the PHC today; she should not rub or press the leg.",
+    action: "Take her to the PHC today; she should not rub or press the leg. Sudden breathlessness or chest pain means the FRU now, call 108.",
     say: { en: "Her calf is painful or swollen. Take her to the PHC today.", hi: "पिंडली में दर्द या सूजन है। आज ही पीएचसी ले जाइए।", mr: "पोटरीत दुखणे किंवा सूज आहे. आजच पीएचसीला न्या." } },
   { code: "pnc_low_mood", type: "pnc", severity: "refer_now", urgent: false, covers: ["low_mood"],
     threshold: "Sad, hopeless or no interest said", src: `${DOC.ssbsk}, Form 4 p.115 (psychological distress: two questions; if either is yes, prompt referral to the CHO/MO)`,
@@ -504,11 +530,29 @@ const RULES = [
     action: "Take the baby to the newborn unit (SNCU) now.",
     say: { en: "There is blood in the stool. Take the baby to the hospital now.", hi: "मल में खून है। अभी अस्पताल ले जाइए।", mr: "शीमध्ये रक्त आहे. आत्ताच दवाखान्यात न्या." } },
   { code: "nb_very_low_weight", type: "newborn", severity: "refer_now", urgent: true,
-    threshold: "Weight under 1800 g", src: `${DOC.cho_nb} (below 1800 g: refer urgently to NBSU/SNCU); ${DOC.jobaid} (weight under 1800 g: refer)`,
-    when: (r) => has(r.weight_g) && r.weight_g < 1800,
-    title: "Very low weight", why: (r) => `${r.weight_g} g is below 1800 g.`,
+    threshold: "Weight under 1800 g, first weight or not gaining", src: `${DOC.cho_nb} (below 1800 g: refer urgently to NBSU/SNCU, at birth or the first examination); ${DOC.jobaid} (weight under 1800 g: refer). A baby under 1800 g who is gaining is managed at home (next rule)`,
+    when: (r) => has(r.weight_g) && r.weight_g < 1800 && !(has(earlierWeight(r)) && r.weight_g > earlierWeight(r)),
+    title: "Very low weight", why: (r) => has(earlierWeight(r)) ? `${r.weight_g} g is below 1800 g and not above the earlier ${earlierWeight(r)} g.` : `${r.weight_g} g is below 1800 g.`,
     action: "Take the baby to the newborn unit (SNCU) now. Call 108.",
     say: { en: "The baby weighs less than one thousand eight hundred grams. Take the baby to the hospital now and keep the baby warm.", hi: "बच्चे का वज़न अठारह सौ ग्राम से कम है। अभी अस्पताल ले जाइए और बच्चे को गरम रखिए।", mr: "बाळाचे वजन अठराशे ग्रॅमपेक्षा कमी आहे. आत्ताच दवाखान्यात न्या आणि बाळाला उबदार ठेवा." } },
+  { code: "nb_very_low_weight_gaining", type: "newborn", severity: "watch", urgent: false,
+    threshold: "Weight under 1800 g but gaining since the earlier weight", src: `${DOC.ssbsk}, Form 2B p.112 and p.22 (at-risk newborns, including low birth weight and SNCU-discharged babies, are managed through home based care with joint ANM/CHO visits)`,
+    when: (r) => has(r.weight_g) && r.weight_g < 1800 && has(earlierWeight(r)) && r.weight_g > earlierWeight(r),
+    title: "Very low weight, gaining", why: (r) => `${r.weight_g} g, up from ${earlierWeight(r)} g.`,
+    action: "At-risk baby: keep her skin to skin (KMC) day and night, feed every 2 hours, and ask the nurse (ANM) for a joint visit this week.",
+    say: { en: "The baby is small but gaining. Keep the baby skin to skin and feed every two hours. Tell the nurse.", hi: "बच्चा छोटा है पर वज़न बढ़ रहा है। माँ की छाती से लगाकर रखिए और हर दो घंटे दूध पिलाइए। एएनएम को बताइए।", mr: "बाळ लहान आहे पण वजन वाढत आहे. आईच्या छातीशी लावून ठेवा आणि दर दोन तासांनी दूध पाजा. एएनएमला कळवा." } },
+  { code: "nb_weight_loss", type: "newborn", severity: "refer_now", urgent: false,
+    threshold: "More than 10% below birth weight before day 14", src: `${DOC.hbnc} (a baby who is not gaining weight: refer); ${DOC.ssbsk}, Form 2B p.112 (regained birth weight by day 14). The 10% line is ours: up to 10% is usual in the first week`,
+    when: (r) => has(r.weight_g) && has(r.birth_weight_g) && has(r.day) && r.day < 14 && r.weight_g < 0.9 * r.birth_weight_g,
+    title: "Losing too much weight", why: (r) => `${r.weight_g} g is more than 10% below the birth weight of ${r.birth_weight_g} g.`,
+    action: "Take the baby to the PHC today; check how she feeds.",
+    say: { en: "The baby has lost too much weight. Take the baby to the PHC today.", hi: "बच्चे का वज़न बहुत घट गया है। आज ही पीएचसी ले जाइए।", mr: "बाळाचे वजन खूप कमी झाले आहे. आजच पीएचसीला न्या." } },
+  { code: "nb_not_regained", type: "newborn", severity: "watch", urgent: false,
+    threshold: "Day 14 or later and still under birth weight", src: `${DOC.ssbsk}, Form 2B p.112 (at-risk if the newborn has not regained the birth weight by day 14: 9-visit schedule, joint ANM/CHO visits); ${DOC.hbnc} (not gaining weight: refer)`,
+    when: (r) => has(r.weight_g) && has(r.birth_weight_g) && has(r.day) && r.day >= 14 && r.weight_g < r.birth_weight_g,
+    title: "Has not regained birth weight", why: (r) => `${r.weight_g} g on day ${r.day} is below the birth weight of ${r.birth_weight_g} g.`,
+    action: "At-risk baby: check how she feeds, start the 9-visit schedule, and tell the nurse (ANM) today.",
+    say: { en: "The baby has not regained the birth weight. Check the feeding and tell the nurse today.", hi: "बच्चे का वज़न जन्म के वज़न तक नहीं पहुँचा। दूध पिलाना जाँचिए और आज एएनएम को बताइए।", mr: "बाळाचे वजन जन्माच्या वजनापर्यंत आले नाही. स्तनपान तपासा आणि आज एएनएमला कळवा." } },
   { code: "nb_low_weight", type: "newborn", severity: "watch", urgent: false,
     threshold: "Weight 1800 to 2499 g", src: `${DOC.cho_nb} (1800-2500 g: low weight, keep warm, feeding support)`,
     when: (r) => has(r.weight_g) && r.weight_g >= 1800 && r.weight_g < 2500,
@@ -591,7 +635,7 @@ const WHERE = {
   anc_headache_vision: D.fru102, anc_severe_anaemia: D.fru102, anc_anaemia_breathless: D.fru102, anc_pallor: D.phcToday,
   anc_moderate_anaemia: D.iron, anc_mild_anaemia: D.iron, anc_bleeding: D.fruNow, anc_leaking: D.fru102, anc_convulsions: D.fruNow,
   anc_high_fever: D.fru102, anc_low_fever: D.tomorrow, anc_fever: D.phcToday, anc_fetal_movement: D.phcToday, anc_swelling: D.phcToday,
-  anc_breathless: D.phcToday, anc_abdominal_pain: D.phcToday, anc_burning_urine: D.phcToday, anc_discharge: D.moToday,
+  anc_breathless: D.phcToday, anc_abdominal_pain: D.fru102, anc_burning_urine: D.phcToday, anc_discharge: D.moToday,
   anc_labour_prolonged: D.fru102, anc_preterm_labour: D.fru102, anc_labour: D.delivery, anc_malpresentation: D.phcWeek,
   anc_multiple_pregnancy: D.phcWeek, anc_vomiting: D.tellAnm, anc_dizziness: D.tellAnm, anc_high_risk: D.anc24,
   pnc_heavy_bleeding: D.fruNow, pnc_severe_hypertension: D.fruNow, pnc_hypertension: D.phcToday, pnc_severe_anaemia: D.fruNow,
@@ -606,6 +650,8 @@ const WHERE = {
   nb_low_weight: D.tomorrow, nb_at_risk_birth_weight: D.atRisk, nb_preterm: D.atRisk, nb_abdominal_distension: D.daily,
   nb_cord_infection: D.nbAnm, nb_skin_pustules: D.nbAnm, nb_eye_discharge: D.nbAnm, nb_sepsis_signs: D.nbNow, nb_weak_cry: D.daily,
   nb_vomiting: D.daily, nb_diarrhoea: D.tellAnm,
+  nb_very_low_weight_gaining: D.atRisk, nb_weight_loss: D.phcToday, nb_not_regained: D.atRisk,
+  anc_jaundice: D.phcToday, anc_pulse: D.phcToday, pnc_mild_anaemia: D.iron,
 };
 
 // SSBSK 2026 p.22: danger signs need "pre referral stabilization, and immediate referral";
@@ -613,13 +659,29 @@ const WHERE = {
 const ON_WAY_NB = "Keep the baby skin to skin and warm, breastfeed if the baby can, and take the mother-and-child card (MCP card).";
 const ON_WAY_MOTHER = "Go with her, and take the mother-and-child card (MCP card).";
 const ON_WAY_FITS = "Lay her on her left side, keep the airway clear, go with her, and take the mother-and-child card (MCP card).";
+// SBA 2010 p.51 (uterine massage until the uterus is well contracted) and p.8 (plan transport, money and blood donors)
+const ON_WAY_BLEED = "Keep her lying down and warm, rub her womb through the belly until it feels hard, take a family member who can give blood, and the mother-and-child card (MCP card).";
+const ON_WAY_TEXT = {
+  [ON_WAY_NB]: { hi: "बच्चे को माँ की छाती से लगाकर गरम रखिए, दूध पी सके तो पिलाइए, और एमसीपी कार्ड साथ ले जाइए।", mr: "बाळाला आईच्या छातीशी लावून उबदार ठेवा, पिऊ शकत असेल तर दूध पाजा, आणि एमसीपी कार्ड सोबत न्या." },
+  [ON_WAY_MOTHER]: { hi: "उनके साथ जाइए, और एमसीपी कार्ड साथ ले जाइए।", mr: "तिच्यासोबत जा, आणि एमसीपी कार्ड सोबत न्या." },
+  [ON_WAY_FITS]: { hi: "उन्हें बाईं करवट लिटाइए, साँस का रास्ता साफ़ रखिए, साथ जाइए, और एमसीपी कार्ड ले जाइए।", mr: "तिला डाव्या कुशीवर झोपवा, श्वासाचा मार्ग मोकळा ठेवा, सोबत जा, आणि एमसीपी कार्ड न्या." },
+  [ON_WAY_BLEED]: { hi: "उन्हें लिटाकर गरम रखिए, पेट के ऊपर से बच्चेदानी को सख़्त होने तक मलिए, खून दे सकने वाले घरवाले को साथ ले जाइए, और एमसीपी कार्ड भी।", mr: "तिला झोपवून उबदार ठेवा, पोटावरून गर्भाशय कडक होईपर्यंत चोळा, रक्त देऊ शकणाऱ्या घरच्या व्यक्तीला सोबत न्या, आणि एमसीपी कार्डही." },
+};
+// Roman letters for the spoken Hindi and Marathi lines, so a screen can show them without Devanagari
+const roman = (t) => romanize(t).replace(/\s+([.,!?])/g, "$1");
 for (const r of RULES) {
   if (r.type === "newborn" && r.urgent) { r.onTheWay = ON_WAY_NB; r.action += " On the way: " + ON_WAY_NB.charAt(0).toLowerCase() + ON_WAY_NB.slice(1); r.src += "; on the way: SSBSK 2026 p.22 (pre-referral stabilisation)"; }
+  else if (r.code === "anc_bleeding" || r.code === "pnc_heavy_bleeding") { r.onTheWay = ON_WAY_BLEED; r.src += "; on the way: SBA 2010 p.51 (uterine massage) and p.8 (blood donors)"; }
   else if (r.urgent) r.onTheWay = r.code.endsWith("_convulsions") ? ON_WAY_FITS : ON_WAY_MOTHER;
   else r.onTheWay = null;
   r.where = WHERE[r.code];
   if (!r.where) throw new Error("rule " + r.code + " has no destination");
+  r.sayRoman = { hi: roman(r.say.hi), mr: roman(r.say.mr) };
+  r.onTheWayRoman = r.onTheWay ? { hi: roman(ON_WAY_TEXT[r.onTheWay].hi), mr: roman(ON_WAY_TEXT[r.onTheWay].mr) } : null;
 }
+// A BP or Hb read off the card (not taken today) does not send her to the hospital by 108: it asks
+// whether she has been seen, and tells the nurse today.
+const CARD_AWARE = { anc_imminent_eclampsia: "bp", anc_severe_hypertension: "bp", anc_preeclampsia: "bp", pnc_severe_hypertension: "bp", anc_severe_anaemia: "hb", pnc_severe_anaemia: "hb" };
 
 /* ------------------------------------------------------------------ */
 /* Labels                                                              */
@@ -630,7 +692,7 @@ export const SYMPTOM_LABELS = {
     bleeding: "Bleeding", leaking_fluid: "Water leaking", convulsions: "Fits", severe_headache: "Severe headache", blurred_vision: "Blurred vision",
     swelling_face_hands: "Swelling of face or hands", swelling_feet: "Swelling of feet", fever: "Fever", breathless: "Breathlessness",
     abdominal_pain: "Stomach pain", vomiting: "Vomiting", dizziness: "Giddiness or weakness", burning_urine: "Burning urine", foul_discharge: "Abnormal discharge",
-    high_fever: "High fever", labour_pain: "Labour pains", pallor: "Paleness",
+    high_fever: "High fever", labour_pain: "Labour pains", pallor: "Paleness", jaundice: "Yellow eyes or skin", epigastric_pain: "Upper stomach pain",
   },
   pnc: {
     heavy_bleeding: "Heavy bleeding", fever: "Fever", foul_discharge: "Foul-smelling discharge", convulsions: "Fits", blurred_vision: "Blurred vision",
@@ -638,6 +700,7 @@ export const SYMPTOM_LABELS = {
     swelling_face_hands: "Swelling of face or hands", breast_problem: "Breast problem", dizziness: "Giddiness or weakness",
     severe_headache: "Severe headache", jaundice: "Yellow eyes or skin", incontinence: "Leaking urine or stool", pallor: "Paleness",
     wound_infection: "Infected stitches", calf_pain: "Calf pain or swelling", low_mood: "Low mood", self_harm: "Thoughts of self-harm",
+    high_fever: "High fever", epigastric_pain: "Upper stomach pain",
   },
   newborn: {
     convulsions: "Fits", chest_indrawing: "Chest indrawing", lethargy: "Moves only when touched", jaundice: "Jaundice (yellow eyes or skin)",
@@ -655,6 +718,8 @@ export const FIELD_LABELS = {
   prev_stillbirth: "Stillbirth or newborn death before", prev_preterm: "Preterm or small baby before", diabetes: "Diabetes (sugar)", heart_disease: "Heart disease",
   rh_negative: "Rh negative", hiv_syphilis: "HIV or syphilis positive", previous_births: "Births before this pregnancy", malpresentation: "Baby not head down",
   td_doses: "Td injections", weeks_at_birth: "Weeks at birth", preterm: "Born early", birth_place: "Place of birth",
+  pulse: "Pulse a minute", bp_source: "BP taken today or from the card", bp_date: "Date of the BP on the card", hb_source: "Hb tested today or from the card",
+  hb_date: "Date of the Hb on the card", prev_weight_g: "Weight at the last visit (g)",
 };
 export const symptomLabel = (type, code) => SYMPTOM_LABELS[type]?.[code] || String(code).replace(/_/g, " ");
 export const fieldLabel = (field) => FIELD_LABELS[field] || String(field).replace(/_/g, " ");
@@ -676,10 +741,24 @@ export function checkRecord(record) {
     if (!fires) continue;
     let why = "";
     try { why = r.why(record); } catch { why = ""; }
-    out.push({
+    const f = {
       code: r.code, severity: r.severity, urgent: !!r.urgent, title: r.title,
       why, action: r.action, where: r.where, onTheWay: r.onTheWay, source: r.src, threshold: r.threshold, say: r.say,
-    });
+      sayRoman: r.sayRoman, onTheWayRoman: r.onTheWayRoman,
+    };
+    const kind = CARD_AWARE[r.code];
+    if (kind && record[kind + "_source"] === "card") {
+      const when = record[kind + "_date"] ? ` from ${record[kind + "_date"]}` : "";
+      const what = kind === "bp" ? "severe BP" : "very low Hb";
+      Object.assign(f, {
+        urgent: false, onTheWay: null, onTheWayRoman: null, where: D.tellAnm, fromCard: true,
+        why: `The card shows ${what}${when}. ${why}`,
+        action: `The card shows ${what}${when}: has she been seen by a doctor since? Tell the nurse (ANM) today; if she has new signs, take her today.`,
+        say: { en: `The card shows ${what}${when}. Has she been seen? Tell the nurse today.`, hi: `कार्ड पर ${kind === "bp" ? "बीपी बहुत ज़्यादा" : "हीमोग्लोबिन बहुत कम"} लिखा है। क्या डॉक्टर ने देखा है? आज एएनएम को बताइए।`, mr: `कार्डवर ${kind === "bp" ? "बीपी खूप जास्त" : "हिमोग्लोबिन खूप कमी"} लिहिले आहे. डॉक्टरांनी पाहिले का? आज एएनएमला कळवा.` },
+      });
+      f.sayRoman = { hi: roman(f.say.hi), mr: roman(f.say.mr) };
+    }
+    out.push(f);
   }
   return out.sort((a, b) => rank(a) - rank(b));
 }
@@ -700,7 +779,37 @@ export function noted(record, flags) {
     .map(([code]) => ({ code, label_en: symptomLabel(record.type, code) }));
 }
 
-export const RULE_TABLE = RULES.map((r) => ({ code: r.code, type: r.type, severity: r.severity, urgent: !!r.urgent, title: r.title, threshold: r.threshold, action: r.action, where: r.where, onTheWay: r.onTheWay, source: r.src }));
+export const RULE_TABLE = RULES.map((r) => ({ code: r.code, type: r.type, severity: r.severity, urgent: !!r.urgent, title: r.title, threshold: r.threshold, action: r.action, where: r.where, onTheWay: r.onTheWay, source: r.src, sayRoman: r.sayRoman, onTheWayRoman: r.onTheWayRoman }));
+
+/**
+ * Questions the app should ask when a rule needs a value that was not said:
+ * [{ field, say_en, say_hi, say_mr, sayRoman: {hi, mr} }].
+ */
+export function askExtra(record) {
+  const out = [];
+  const add = (field, en, hi, mr) => out.push({ field, say_en: en, say_hi: hi, say_mr: mr, sayRoman: { hi: roman(hi), mr: roman(mr) } });
+  if (!record || !record.type) return out;
+  const sym = record.symptoms || {};
+  if (record.type === "newborn") {
+    if (has(record.weight_g) && !has(record.birth_weight_g)) add("birth_weight_g", "What was the baby's weight at birth? It is on the MCP card.", "जन्म के समय बच्चे का वज़न कितना था? एमसीपी कार्ड पर लिखा होगा।", "जन्माच्या वेळी बाळाचे वजन किती होते? एमसीपी कार्डवर लिहिलेले असेल.");
+    if (!has(record.day)) add("day", "How many days old is the baby?", "बच्चा कितने दिन का है?", "बाळ किती दिवसांचं आहे?");
+    if (sym.jaundice === true && sym.jaundice_palms_soles === undefined) add("symptoms.jaundice_palms_soles", "Are the palms or soles yellow?", "क्या हथेली या तलवे पीले हैं?", "तळहात किंवा तळवे पिवळे आहेत का?");
+  }
+  if (record.type === "anc" || record.type === "pnc") {
+    if (has(record.bp_sys) && !record.bp_source) add("bp_source", "Was this BP taken today, or is it written on the card? From which date?", "यह बीपी आज लिया गया या कार्ड पर लिखा है? किस तारीख़ का?", "हा बीपी आज घेतला की कार्डवर लिहिलेला आहे? कोणत्या तारखेचा?");
+    if (has(record.hb) && !record.hb_source) add("hb_source", "Was this Hb tested today, or is it written on the card?", "यह हीमोग्लोबिन आज जाँचा या कार्ड पर लिखा है?", "हे हिमोग्लोबिन आज तपासले की कार्डवर लिहिलेले आहे?");
+  }
+  return out;
+}
+
+/** Suggested wording for the pregnancy questions about values an ASHA reads off the card. */
+export const ASK_PROMPTS = {
+  anc: {
+    bp: { en: "What BP did the nurse write on the card, or was it taken today?", hi: "कार्ड पर नर्स ने बीपी कितना लिखा है, या आज लिया गया?", mr: "कार्डवर नर्सने बीपी किती लिहिले आहे, की आज घेतले?" },
+    hb: { en: "What Hb is written on the card, and from which date?", hi: "कार्ड पर हीमोग्लोबिन कितना लिखा है, किस तारीख़ का?", mr: "कार्डवर हिमोग्लोबिन किती लिहिले आहे, कोणत्या तारखेचे?" },
+  },
+};
+for (const t of Object.values(ASK_PROMPTS)) for (const q of Object.values(t)) q.sayRoman = { hi: roman(q.hi), mr: roman(q.mr) };
 
 /**
  * Group fired flags by what to do, so a screen or slip says each destination once.

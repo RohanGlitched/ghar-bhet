@@ -1,7 +1,7 @@
 {
  "set": "adversarial",
- "run_at": "2026-11-27T10:31:22.047Z",
- "ruleset": "mohfw-2026.4",
+ "run_at": "2026-11-27T11:26:22.856Z",
+ "ruleset": "mohfw-2026.5",
  "typed": {
   "mode": "typed",
   "items": 100,
@@ -22,9 +22,9 @@
    "false_alarm_pct": 0
   },
   "flags": {
-   "gold": 123,
-   "predicted": 125,
-   "correct": 123,
+   "gold": 124,
+   "predicted": 126,
+   "correct": 124,
    "recall": 100,
    "precision": 98.4,
    "refer_now_recall": 100
@@ -584,12 +584,12 @@
    "false_alarm_pct": 2.4
   },
   "flags": {
-   "gold": 123,
-   "predicted": 115,
-   "correct": 107,
-   "recall": 87,
-   "precision": 93,
-   "refer_now_recall": 84.1
+   "gold": 124,
+   "predicted": 116,
+   "correct": 108,
+   "recall": 87.1,
+   "precision": 93.1,
+   "refer_now_recall": 84.3
   },
   "exact_visits": 89,
   "by_field": {

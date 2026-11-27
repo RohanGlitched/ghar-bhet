@@ -4,7 +4,7 @@
 //       Field recall/precision, danger visits caught, false alarms, flag recall.
 //       "typed" = the visit type is given (the ASHA picked it); "auto" = guessed.
 //   node eval/run.js vignettes [--misses] [--publish]
-//       40 clinical vignettes labelled only should_refer / urgent from the
+//       52 clinical vignettes labelled only should_refer / urgent from the
 //       guideline texts (not from rules.js). Reports sensitivity and specificity.
 //   node eval/run.js realspeech <results.json> [--misses] [--out=DIR]
 //       Results from public/dictation.html: {engine, results:[{id, lang, heard}]}.
@@ -17,7 +17,7 @@
 // (eval/heldout-run*.json, public/data/eval-heldout-run*.json) are history and
 // are never written by this script.
 //
-// The rule set id is printed with every result (now mohfw-2026.4; RULESET in public/js/rules.js).
+// The rule set id is printed with every result (now mohfw-2026.5; RULESET in public/js/rules.js).
 //
 // FIELD COUNTING RULE (since ruleset mohfw-2026.2). Some record fields were added after
 // a set was written (pnc BP and Hb, pregnancy risk items, new symptom codes). A

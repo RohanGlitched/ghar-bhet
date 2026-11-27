@@ -1,7 +1,7 @@
 {
  "set": "dev2",
- "run_at": "2026-11-27T10:31:20.840Z",
- "ruleset": "mohfw-2026.4",
+ "run_at": "2026-11-27T11:26:21.578Z",
+ "ruleset": "mohfw-2026.5",
  "typed": {
   "mode": "typed",
   "items": 80,
@@ -24,10 +24,10 @@
   "flags": {
    "gold": 109,
    "predicted": 108,
-   "correct": 108,
-   "recall": 99.1,
-   "precision": 100,
-   "refer_now_recall": 98.8
+   "correct": 107,
+   "recall": 98.2,
+   "precision": 99.1,
+   "refer_now_recall": 97.6
   },
   "exact_visits": 95,
   "by_field": {
@@ -310,6 +310,17 @@
     "flags_got": []
    },
    {
+    "id": "d2-pnc-009",
+    "said": "बाळंतपणाला सहा दिवस झाले, खूप ताप आहे, अंग गरम, थंडी वाजते, सुनंदा.",
+    "wrong": [],
+    "flags_want": [
+     "pnc_fever"
+    ],
+    "flags_got": [
+     "pnc_high_fever"
+    ]
+   },
+   {
     "id": "d2-pnc-010",
     "said": "तापमान अडतीस पॉइंट नऊ, पांढरं पाणी जातंय पण वास नाही, तिसरा दिवस, रेखा.",
     "wrong": [
@@ -360,10 +371,10 @@
   "flags": {
    "gold": 109,
    "predicted": 101,
-   "correct": 97,
-   "recall": 89,
-   "precision": 96,
-   "refer_now_recall": 89
+   "correct": 96,
+   "recall": 88.1,
+   "precision": 95,
+   "refer_now_recall": 87.8
   },
   "exact_visits": 88.8,
   "by_field": {
@@ -687,6 +698,17 @@
      "pnc_breast"
     ],
     "flags_got": []
+   },
+   {
+    "id": "d2-pnc-009",
+    "said": "बाळंतपणाला सहा दिवस झाले, खूप ताप आहे, अंग गरम, थंडी वाजते, सुनंदा.",
+    "wrong": [],
+    "flags_want": [
+     "pnc_fever"
+    ],
+    "flags_got": [
+     "pnc_high_fever"
+    ]
    },
    {
     "id": "d2-pnc-010",

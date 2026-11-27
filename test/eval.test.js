@@ -40,7 +40,7 @@ for (const set of ["adversarial", "adversarial2"]) test(`${set} set stays at or 
 test("clinical vignettes: no visit that the guidelines refer is missed", () => {
   run("vignettes", "--publish");
   const r = result("eval-vignettes");
-  assert.equal(r.items, 40);
+  assert.equal(r.items, 52);
   assert.equal(r.refer.sensitivity, 100);
   assert.ok(r.refer.specificity >= 80, `specificity ${r.refer.specificity}%`);
 });

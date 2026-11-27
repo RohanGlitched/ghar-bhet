@@ -49,6 +49,24 @@
   .register td.name { font-size: 22px; }
   .register td small { font-family: var(--sans); font-size: 13px; color: var(--ink-3); display: block; }
   .empty { color: var(--ink-3); font-size: 15px; padding: 14px; border: 1px dashed var(--line-2); border-radius: 14px; }
+  .ask { background: var(--ink); color: var(--paper); border-radius: 22px; padding: 16px 18px; margin-bottom: 20px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 16px; align-items: center; }
+  .ask .mic { width: 64px; height: 64px; border-radius: 50%; border: 0; background: var(--voice); color: var(--voice-ink); cursor: pointer; display: grid; place-items: center; grid-row: span 2; }
+  .ask .mic.on { animation: askring 1.4s infinite; }
+  @keyframes askring { 0% { box-shadow: 0 0 0 0 rgba(242, 183, 5, .55); } 70% { box-shadow: 0 0 0 16px rgba(242, 183, 5, 0); } 100% { box-shadow: 0 0 0 0 rgba(242, 183, 5, 0); } }
+  @media (prefers-reduced-motion: reduce) { .ask .mic.on { animation: none; outline: 3px solid var(--voice); outline-offset: 4px; } }
+  .ask-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .ask-top b { font-size: 17px; }
+  .ask .seg { background: color-mix(in srgb, var(--paper) 14%, transparent); }
+  .ask .seg button { color: color-mix(in srgb, var(--paper) 80%, transparent); min-height: 34px; padding: 5px 11px; font-size: 14px; }
+  .ask .seg button[aria-pressed="true"] { background: var(--paper); color: var(--ink); }
+  .ask-heard { margin: 0; font-size: 15px; color: color-mix(in srgb, var(--paper) 72%, transparent); min-height: 1.4em; }
+  .ask-chips { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .ask-chips button { font: inherit; font-size: 14px; border: 1px solid color-mix(in srgb, var(--paper) 30%, transparent); background: none; color: var(--paper); border-radius: 999px; padding: 6px 12px; cursor: pointer; min-height: 36px; }
+  .ask-chips button:hover { border-color: var(--voice); }
+  .ask-out { grid-column: 1 / -1; background: var(--card); color: var(--ink); border-radius: 14px; padding: 12px 14px; margin-top: 8px; }
+  .ask-out p { margin: 0; font-size: 17px; line-height: 1.45; }
+  .ask-out ul { margin: 8px 0 0; padding-left: 18px; font-size: 15px; color: var(--ink-2); }
+  @media (max-width: 520px) { .ask { padding: 14px; gap: 6px 12px; } .ask .mic { width: 56px; height: 56px; } .ask-heard { grid-column: 1 / -1; } .ask-chips button { font-size: 13px; padding: 5px 10px; } }
 </style>
 </head>
 <body>
@@ -58,6 +76,14 @@
     <div><h1 id="vname">The nurse's board</h1><p class="muted" id="vmeta">Loading the village register…</p></div>
     <span class="pill" id="live-pill">Connecting…</span>
   </div>
+  <section class="ask" aria-label="Ask the board out loud">
+    <button class="mic" id="ask-mic" aria-label="Ask the board a question out loud"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button>
+    <div class="ask-top"><b>Ask the board out loud</b>
+      <div class="seg" role="group" aria-label="Language you ask in"><button data-alang="hi" aria-pressed="true">Hindi</button><button data-alang="mr" aria-pressed="false">Marathi</button><button data-alang="en" aria-pressed="false">English</button></div></div>
+    <p class="ask-heard" id="ask-heard" aria-live="polite">Tap the mic and ask, for example "Aaj kaun kaun refer hua?"</p>
+    <div class="ask-chips" id="ask-chips"></div>
+    <div class="ask-out" id="ask-out" hidden aria-live="polite"></div>
+  </section>
   <div class="stats" id="stats"></div>
   <div class="b-grid">
     <section class="col" aria-label="Open referrals"><h2>Referrals from today's visits</h2><div class="col" id="refs"></div></section>
@@ -127,6 +153,41 @@ async function start() {
   setInterval(() => S && paint(), 60000);
 }
 start();
+
+// ---- Ask the board: the nurse's side is voice-first too ----
+let ALANG = "hi", session = null;
+const CHIPS = { hi: ["Aaj kaun kaun refer hua?", "Aaj kiske ghar jaana hai?", "Kaun khatre mein hai?", "Sunita ka baby kaisa hai?"],
+  mr: ["Aaj konala refer kela?", "Aaj konachi bhet baaki aahe?", "Kon dhokyat aahe?"],
+  en: ["Who was referred today?", "Whose visits are due today?", "Who is at risk?", "How is Meena?"] };
+function setALang(l) { ALANG = l; document.querySelectorAll("[data-alang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.alang === l)));
+  $("#ask-chips").innerHTML = CHIPS[l].map((c) => `<button>${esc(c)}</button>`).join("");
+  $("#ask-chips").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => respond(b.textContent))); }
+document.querySelectorAll("[data-alang]").forEach((b) => b.addEventListener("click", () => setALang(b.dataset.alang)));
+async function respond(q) {
+  if (!S) return;
+  const [{ answer }, { speak, hush, romanize }] = await Promise.all([import("/js/ask.js"), import("/js/voice.js").then(async (v) => ({ ...v, romanize: (await import("/js/understand.js")).romanize }))]);
+  const a = answer(q, S);
+  $("#ask-heard").textContent = `You asked: "${romanize(q)}"`;
+  const out = $("#ask-out"); out.hidden = false;
+  out.innerHTML = `<p>${esc(a.en)}</p>${a.items && a.items.length > 1 ? `<ul>${a.items.map((i) => `<li>${i.id ? `<a href="/slip/${i.id}">${esc(i.text)}</a>` : esc(i.text)}</li>`).join("")}</ul>` : ""}`;
+  hush(); speak(a[ALANG] || a.en, ALANG);
+}
+$("#ask-mic").addEventListener("click", async () => {
+  const btn = $("#ask-mic");
+  if (session) { session.stop(); return; }
+  const { dictate, support, hush } = await import("/js/voice.js");
+  if (!support().stt) { $("#ask-heard").textContent = "This browser can't listen. Tap a question below, or open this page in Chrome or Edge."; return; }
+  hush(); btn.classList.add("on"); btn.setAttribute("aria-label", "Stop listening");
+  $("#ask-heard").textContent = "Listening…";
+  session = dictate({ lang: ALANG, quietMs: 1500,
+    onInterim: (i, f) => { $("#ask-heard").textContent = (f + " " + i).trim() || "Listening…"; },
+    onError: (e) => { if (e === "not-allowed" || e === "service-not-allowed") $("#ask-heard").textContent = "The microphone is blocked. Allow it in the address bar, or tap a question below."; } });
+  const text = await session.done; session = null;
+  btn.classList.remove("on"); btn.setAttribute("aria-label", "Ask the board a question out loud");
+  if (text) respond(text); else if ($("#ask-heard").textContent === "Listening…") $("#ask-heard").textContent = "Didn't hear a question. Tap the mic and try again, or tap a question below.";
+});
+setALang("hi");
+window.__ask = (q) => respond(q);
 </script>
 </body>
 </html>

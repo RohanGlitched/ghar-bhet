@@ -1,7 +1,7 @@
 <p align="center"><img src="docs/cover.png" alt="Ghar Bhet: an ASHA speaks the visit, and the record fills itself" width="100%"></p>
 
 <p align="center">
-<img alt="tests" src="https://img.shields.io/badge/tests-16%20passing-1d7347">
+<img alt="tests" src="https://img.shields.io/badge/tests-17%20passing-1d7347">
 <img alt="keys" src="https://img.shields.io/badge/keys%20needed-none-16191d">
 <img alt="dependencies" src="https://img.shields.io/badge/npm%20dependencies-0-16191d">
 <img alt="languages" src="https://img.shields.io/badge/speaks-Hindi%20%C2%B7%20Marathi%20%C2%B7%20English-f2b705">
@@ -39,7 +39,7 @@ The organisers' "How to approach it" has four parts. Here is each one, in their 
 
 ### 2. Design it voice-first: "People finish the main flow by speaking."
 
-The whole visit is done by voice: she speaks the visit, the app asks out loud for anything missing ("Did you check her Hb?"), she answers by voice, corrects herself by voice ("nahi nahi, 150 by 100": the last value said wins), and can say "save". Danger alerts are spoken in her language. Typing exists only as a fallback for browsers without speech recognition.
+The whole visit is done by voice: she speaks the visit, the app asks out loud for anything missing ("Did you check her Hb?"), she answers by voice, corrects herself by voice ("nahi nahi, 150 by 100": the last value said wins), and can say "save". Danger alerts are spoken in her language. The nurse's side is voice-first too: on the board the ANM taps the mic and asks "Aaj kaun kaun refer hua?" (who was referred today?), "Aaj kiske ghar jaana hai?" (whose visits are due?) or about one person by name, and the board answers out loud in Hindi, Marathi or English. Typing exists only as a fallback for browsers without speech recognition.
 
 ### 3. Build a working prototype: "for one narrow use case."
 
@@ -78,11 +78,12 @@ flowchart LR
 
 - `public/js/understand.js`: the reader. Number words in Hindi, Marathi and English (dedh sau = 150, saadhe aath = 8.5, deedshe = 150, "one forty" = 140, "ek kilo saat sau gram" = 1700 g), Fahrenheit to Celsius, negation ("sujan nahin hai", "taap naahi", "no fits"), self-corrections, months vs weeks, Roman letters for display.
 - `public/js/rules.js`: 37 danger rules, each naming its source.
+- `public/js/ask.js`: the nurse's spoken questions to the board, answered from the register with fixed words.
 - `server/`: a zero-dependency Node server. It keeps the village register, re-checks every saved visit with the same rules (a client can't send its own flags), and streams referrals to the nurse's board with server-sent events.
 - `eval/`: the record spec, the test sets, the checker that re-computes every right answer from the rules, and `run.js`.
 
 ```bash
-npm test                    # 16 tests: reader, rule thresholds, server, no regression on the tuning sets
+npm test                    # 17 tests: reader, rule thresholds, server, no regression on the tuning sets
 node eval/run.js heldout    # the held-out accuracy run
 ```
 

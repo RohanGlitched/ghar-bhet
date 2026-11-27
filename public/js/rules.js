@@ -30,10 +30,11 @@ import { romanize } from "./understand.js";
 // also keeps temp_f exactly as said, and the rules compare that, so "102 F" is exactly 102 F.
 
 export const RULESET = {
-  id: "mohfw-2026.5",
+  id: "mohfw-2026.6",
   label: "MoHFW CHO manuals (2021), SBA guidelines (2010), MCP card, HBNC 2014, SSBSK Operational Guidelines 2026, Anemia Mukt Bharat 2026",
 };
 
+const sepsis = (r) => S(r, "foul_discharge") && (tAboveF(r, 100) || S(r, "high_fever") || S(r, "abdominal_pain") || (S(r, "fever") && !has(tempC(r))));
 const DOC = {
   cho_anc: "MoHFW/NHSRC, Care During Pregnancy and Childbirth, CHO training manual (2021)",
   cho_nb: "MoHFW/NHSRC, Newborn and Child Health Services, CHO training manual (2021)",
@@ -182,8 +183,8 @@ const RULES = [
     title: "Fever in pregnancy", why: () => "Fever in pregnancy needs a doctor.",
     action: "Take her to the PHC today, and test for malaria.",
     say: { en: "Fever in pregnancy. Take her to the PHC today.", hi: "गर्भावस्था में बुखार है। आज ही पीएचसी ले जाइए।", mr: "गरोदरपणात ताप आहे. आजच पीएचसीला न्या." } },
-  { code: "anc_fetal_movement", type: "anc", severity: "refer_now", urgent: false,
-    threshold: "Baby moving less, or not at all", src: `${DOC.cho_anc}, p.17 and p.27 (decreased or absent foetal movements)`,
+  { code: "anc_fetal_movement", type: "anc", severity: "refer_now", urgent: true,
+    threshold: "Baby moving less, or not at all", src: `${DOC.cho_anc}, p.17 and p.27 (decreased or absent foetal movements). Urgent: the ASHA guidance quoted in eval/vignettes2 (v2-24) says to go to the PHC/FRU immediately, day or night; that page was not re-checked by us`,
     when: (r) => r.fetal_movement === "reduced" || r.fetal_movement === "absent",
     title: "Baby moving less", why: (r) => r.fetal_movement === "absent" ? "No foetal movement felt." : "Foetal movement is reduced.",
     action: "Take her to the PHC or FRU today to check the baby's heartbeat.",
@@ -201,7 +202,7 @@ const RULES = [
     action: "Take her to the PHC today; her Hb must be checked.",
     say: { en: "She is breathless. Take her to the PHC today.", hi: "साँस फूल रही है। आज ही पीएचसी ले जाइए।", mr: "दम लागतो आहे. आजच पीएचसीला न्या." } },
   { code: "anc_abdominal_pain", type: "anc", severity: "refer_now", urgent: true, covers: ["abdominal_pain", "epigastric_pain"],
-    threshold: "Severe stomach pain said", src: `${DOC.cho_anc}, p.31 (pain in abdomen: refer the woman to the MO at the FRU). Mild pain is asked about, not referred`,
+    threshold: "Stomach pain said (urgent when said as severe, or upper-stomach pain)", src: `${DOC.cho_anc}, p.31 (pain in abdomen: refer the woman to the MO at the FRU). Mild pain is asked about, not referred; pain said without a severity word refers to the FRU today`,
     when: (r) => S(r, "abdominal_pain") || S(r, "epigastric_pain"),
     title: "Severe stomach pain", why: () => "Severe abdominal pain in pregnancy needs a doctor at the FRU.",
     action: "Take her to the FRU (hospital) now. Call 102 or 108.",
@@ -272,11 +273,17 @@ const RULES = [
     title: "Dizziness or weakness", why: () => "Dizziness or weakness can be a sign of anaemia.",
     action: "Get her Hb checked; tell the nurse (ANM) today.",
     say: { en: "Dizziness can be a sign of anaemia. Get her hemoglobin checked, and tell the nurse.", hi: "चक्कर खून की कमी का निशान हो सकता है। हीमोग्लोबिन जँचवाइए, और एएनएम को बताइए।", mr: "चक्कर हे रक्ताच्या कमतरतेचे लक्षण असू शकते. हिमोग्लोबिन तपासा, आणि एएनएमला कळवा." } },
+  { code: "anc_self_harm", type: "anc", severity: "refer_now", urgent: true, covers: ["self_harm"],
+    threshold: "Thoughts of harming herself or the baby said", src: `${DOC.telemanas}; ASHA guidance quoted in eval/vignettes2 (v2-26): "Ask for thoughts of suicide. If present, discuss with the Medical Officer immediately" (page not re-checked by us)`,
+    when: (r) => S(r, "self_harm"),
+    title: "Thoughts of self-harm", why: () => "She spoke of harming herself or the baby.",
+    action: "Do not leave her alone. Tell the nurse (ANM) or medical officer now. Call Tele-MANAS 14416 (free, 24 hours) with her.",
+    say: { en: "Do not leave her alone. Tell the nurse or doctor now, and call one four four one six together.", hi: "उन्हें अकेला मत छोड़िए। अभी एएनएम या डॉक्टर को बताइए, और साथ में एक चार चार एक छह पर फ़ोन कीजिए।", mr: "तिला एकटं सोडू नका. आत्ताच एएनएम किंवा डॉक्टरांना कळवा, आणि सोबत एक चार चार एक सहा वर फोन करा." } },
   { code: "anc_high_risk", type: "anc", severity: "watch", urgent: false,
-    threshold: "Age under 18 or over 35, height under 145 cm, 4 or more births before, previous caesarean, PPH, APH, eclampsia, stillbirth or newborn death, preterm or small baby, diabetes, heart disease, Rh negative, HIV or syphilis positive",
-    src: `${DOC.pmsma}, p.2-3 (High-Risk Pregnancy categories: HIV, syphilis, gestational diabetes, previous LSCS, history of stillbirth, negative blood group, teenage pregnancy, elderly primi, grand multipara, short stature); ${DOC.cho_anc}, p.18 (refer to the 24-hour PHC for ANC and delivery: stillbirth or neonatal loss, premature births, previous baby under 2500 g, Rh negative, past systemic illness) and p.21 Table 2 (under 18 years, under 145 cm). The PIB sheet gives no numbers for 'elderly' or 'grand multipara'; over 35 years and 4 or more births are used here`,
-    when: (r) => (has(r.age) && (r.age < 18 || r.age > 35)) || (has(r.height_cm) && r.height_cm < 145) || (has(r.previous_births) && r.previous_births >= 4) || ["prev_caesarean", "prev_pph", "prev_aph", "prev_eclampsia", "prev_stillbirth", "prev_preterm", "diabetes", "heart_disease", "rh_negative", "hiv_syphilis"].some((k) => r[k] === true),
-    title: "High-risk pregnancy", why: (r) => [has(r.age) && r.age < 18 && `age ${r.age}`, has(r.age) && r.age > 35 && `age ${r.age}`, has(r.height_cm) && r.height_cm < 145 && `height ${r.height_cm} cm`, r.prev_caesarean && "previous caesarean", r.prev_pph && "bleeding after a previous delivery", r.prev_aph && "bleeding in a previous pregnancy", r.prev_eclampsia && "fits or eclampsia before", r.prev_stillbirth && "a stillbirth or newborn death before", r.prev_preterm && "a preterm or small baby before", r.diabetes && "diabetes", r.heart_disease && "heart disease", r.rh_negative && "Rh negative", r.hiv_syphilis && "HIV or syphilis positive", has(r.previous_births) && r.previous_births >= 4 && `${r.previous_births} births before`].filter(Boolean).join(", ") + ".",
+    threshold: "Age under 18 or over 35, height under 145 cm, 4 or more births before, previous caesarean, PPH, APH, eclampsia, stillbirth or newborn death, preterm or small baby, diabetes, heart disease, epilepsy, Rh negative, HIV or syphilis positive",
+    src: `${DOC.pmsma}, p.2-3 (High-Risk Pregnancy categories: HIV, syphilis, gestational diabetes, previous LSCS, history of stillbirth, negative blood group, teenage pregnancy, elderly primi, grand multipara, short stature); ${DOC.cho_anc}, p.18 (refer to the 24-hour PHC for ANC and delivery: stillbirth or neonatal loss, premature births, previous baby under 2500 g, Rh negative, past systemic illness) and p.21 Table 2 (under 18 years, under 145 cm). Epilepsy on medicine is a past systemic illness (CHO p.18). The PIB sheet gives no numbers for 'elderly' or 'grand multipara'; over 35 years and 4 or more births are used here`,
+    when: (r) => (has(r.age) && (r.age < 18 || r.age > 35)) || (has(r.height_cm) && r.height_cm < 145) || (has(r.previous_births) && r.previous_births >= 4) || ["prev_caesarean", "prev_pph", "prev_aph", "prev_eclampsia", "prev_stillbirth", "prev_preterm", "diabetes", "heart_disease", "rh_negative", "hiv_syphilis", "epilepsy"].some((k) => r[k] === true),
+    title: "High-risk pregnancy", why: (r) => [has(r.age) && r.age < 18 && `age ${r.age}`, has(r.age) && r.age > 35 && `age ${r.age}`, has(r.height_cm) && r.height_cm < 145 && `height ${r.height_cm} cm`, r.prev_caesarean && "previous caesarean", r.prev_pph && "bleeding after a previous delivery", r.prev_aph && "bleeding in a previous pregnancy", r.prev_eclampsia && "fits or eclampsia before", r.prev_stillbirth && "a stillbirth or newborn death before", r.prev_preterm && "a preterm or small baby before", r.diabetes && "diabetes", r.heart_disease && "heart disease", r.epilepsy && "epilepsy (fits) on medicine", r.rh_negative && "Rh negative", r.hiv_syphilis && "HIV or syphilis positive", has(r.previous_births) && r.previous_births >= 4 && `${r.previous_births} births before`].filter(Boolean).join(", ") + ".",
     action: "High-risk pregnancy: tell the nurse (ANM) today. Plan her ANC and the delivery at the 24-hour PHC or FRU, with the PMSMA check-up (9th of the month) and extra visits.",
     say: { en: "This is a high-risk pregnancy. Tell the nurse today, and plan the delivery in a hospital.", hi: "यह ज़्यादा जोखिम वाली गर्भावस्था है। आज एएनएम को बताइए, और डिलीवरी अस्पताल में करवाइए।", mr: "ही जास्त जोखमीची गर्भधारणा आहे. आज एएनएमला कळवा, आणि प्रसूती दवाखान्यात करा." } },
 
@@ -341,9 +348,17 @@ const RULES = [
     title: "Possible urine infection", why: (r) => (S(r, "fever") || tAtLeast(r, 37.5)) ? "Burning urine with fever." : "Burning urine after delivery.",
     action: "Take her to the PHC today.",
     say: { en: "Burning urine may be an infection. Take her to the PHC today.", hi: "पेशाब में जलन इन्फ़ेक्शन हो सकता है। आज ही पीएचसी ले जाइए।", mr: "लघवीला जळजळ हा संसर्ग असू शकतो. आजच पीएचसीला न्या." } },
+  // Puerperal sepsis: foul discharge with fever above 100 F (or fever said with no reading), or with stomach pain
+  { code: "pnc_sepsis", type: "pnc", severity: "refer_now", urgent: true, covers: ["foul_discharge", "fever", "high_fever", "abdominal_pain"],
+    threshold: "Foul-smelling discharge with a temperature above 100 °F (fever said with no reading counts), or with stomach pain",
+    src: `${DOC.hbnc}, p.19 (foul-smelling discharge with fever more than 100 F: refer); ${DOC.ssbsk}, Form 4 p.115 (vaginal infection: foul smelling white discharge, fever over 100 F); ${DOC.cho_bk}`,
+    when: (r) => sepsis(r),
+    title: "Possible infection of the womb (sepsis)", why: (r) => S(r, "abdominal_pain") ? "Foul-smelling discharge with stomach pain." : has(tempC(r)) ? `Foul-smelling discharge with ${showT(r)}.` : "Foul-smelling discharge with fever.",
+    action: "Possible sepsis after delivery. Take her to the FRU (hospital with a doctor and blood) now. Call 108.",
+    say: { en: "Foul discharge with fever after delivery can be a serious infection. Take her to the hospital now and call one zero eight.", hi: "डिलीवरी के बाद बदबूदार पानी और बुखार गंभीर इन्फ़ेक्शन हो सकता है। अभी अस्पताल ले जाइए और एक सौ आठ पर फ़ोन कीजिए।", mr: "प्रसूतीनंतर दुर्गंधी स्राव आणि ताप हा गंभीर संसर्ग असू शकतो. आत्ताच दवाखान्यात न्या आणि एकशे आठ वर फोन करा." } },
   { code: "pnc_infection", type: "pnc", severity: "refer_now", urgent: false, covers: ["foul_discharge", "fever"],
-    threshold: "Foul-smelling discharge said", src: `${DOC.ssbsk}, Form 4 p.115 (vaginal infection: foul smelling white discharge, fever over 100 F); ${DOC.hbnc}, p.19`,
-    when: (r) => S(r, "foul_discharge"),
+    threshold: "Foul-smelling discharge said, without fever above 100 °F or stomach pain", src: `${DOC.ssbsk}, Form 4 p.115 (vaginal infection: foul smelling white discharge, fever over 100 F); ${DOC.hbnc}, p.19`,
+    when: (r) => S(r, "foul_discharge") && !sepsis(r),
     title: "Possible infection", why: (r) => (S(r, "fever") || tAboveF(r, 100)) ? "Foul-smelling discharge with fever." : "Foul-smelling discharge.",
     action: "Take her to the PHC today.",
     say: { en: "Foul discharge may be an infection. Take her to the PHC today.", hi: "बदबूदार पानी इन्फ़ेक्शन हो सकता है। आज ही पीएचसी ले जाइए।", mr: "दुर्गंधी स्राव हा संसर्ग असू शकतो. आजच पीएचसीला न्या." } },
@@ -640,7 +655,7 @@ const WHERE = {
   anc_multiple_pregnancy: D.phcWeek, anc_vomiting: D.tellAnm, anc_dizziness: D.tellAnm, anc_high_risk: D.anc24,
   pnc_heavy_bleeding: D.fruNow, pnc_severe_hypertension: D.fruNow, pnc_hypertension: D.phcToday, pnc_severe_anaemia: D.fruNow,
   pnc_low_hb: D.fruToday, pnc_anaemia_signs: D.phcToday, pnc_moderate_anaemia: D.iron, pnc_high_fever: D.fruNow, pnc_uti: D.phcToday,
-  pnc_infection: D.phcToday, pnc_fever: D.phcToday, pnc_low_fever: D.tomorrow, pnc_convulsions: D.fruNow, pnc_neuro: D.fruNow,
+  pnc_infection: D.phcToday, pnc_sepsis: D.fruNow, pnc_fever: D.phcToday, pnc_low_fever: D.tomorrow, pnc_convulsions: D.fruNow, pnc_neuro: D.fruNow,
   pnc_headache: D.fruNow, pnc_breathless: D.fruNow, pnc_abdominal_pain: D.phcToday, pnc_swelling: D.phcToday, pnc_jaundice: D.phcToday,
   pnc_incontinence: D.phcToday, pnc_wound_infection: D.phcToday, pnc_calf_pain: D.phcToday, pnc_low_mood: D.choWeek,
   pnc_self_harm: D.selfHarm, pnc_breast: D.nbAnm,
@@ -651,7 +666,7 @@ const WHERE = {
   nb_cord_infection: D.nbAnm, nb_skin_pustules: D.nbAnm, nb_eye_discharge: D.nbAnm, nb_sepsis_signs: D.nbNow, nb_weak_cry: D.daily,
   nb_vomiting: D.daily, nb_diarrhoea: D.tellAnm,
   nb_very_low_weight_gaining: D.atRisk, nb_weight_loss: D.phcToday, nb_not_regained: D.atRisk,
-  anc_jaundice: D.phcToday, anc_pulse: D.phcToday, pnc_mild_anaemia: D.iron,
+  anc_jaundice: D.phcToday, anc_pulse: D.phcToday, anc_self_harm: D.selfHarm, pnc_mild_anaemia: D.iron,
 };
 
 // SSBSK 2026 p.22: danger signs need "pre referral stabilization, and immediate referral";
@@ -667,8 +682,47 @@ const ON_WAY_TEXT = {
   [ON_WAY_FITS]: { hi: "उन्हें बाईं करवट लिटाइए, साँस का रास्ता साफ़ रखिए, साथ जाइए, और एमसीपी कार्ड ले जाइए।", mr: "तिला डाव्या कुशीवर झोपवा, श्वासाचा मार्ग मोकळा ठेवा, सोबत जा, आणि एमसीपी कार्ड न्या." },
   [ON_WAY_BLEED]: { hi: "उन्हें लिटाकर गरम रखिए, पेट के ऊपर से बच्चेदानी को सख़्त होने तक मलिए, खून दे सकने वाले घरवाले को साथ ले जाइए, और एमसीपी कार्ड भी।", mr: "तिला झोपवून उबदार ठेवा, पोटावरून गर्भाशय कडक होईपर्यंत चोळा, रक्त देऊ शकणाऱ्या घरच्या व्यक्तीला सोबत न्या, आणि एमसीपी कार्डही." },
 };
-// Roman letters for the spoken Hindi and Marathi lines, so a screen can show them without Devanagari
-const roman = (t) => romanize(t).replace(/\s+([.,!?])/g, "$1");
+// Two Roman forms of the spoken Hindi and Marathi lines.
+// `tts` is the letter-by-letter transliteration a speech engine reads ("emsipi kard", "rakhie").
+// `roman` is for the screen: readable Roman Hindi/Marathi ("MCP card", "maa", "rakhiye"), with the
+// numbers as digits ("108 par phone kijiye").
+const tts = (t) => romanize(t).replace(/\s+([.,!?])/g, "$1");
+const DEV_PRE = [ // Devanagari words with a fixed Roman form, replaced before transliteration
+  [/एक चार चार एक (छह|सहा)/g, "14416"], [/एक सौ आठ|एकशे आठ/g, "108"], [/एक सौ दो|एकशे दोन/g, "102"], [/एकशे दहापेक्षा/g, "110 peksha"], [/एक सौ दस|एकशे दहा/g, "110"],
+  [/अठारह सौ|अठराशे/g, "1800"], [/ग्रॅमपेक्षा/g, "gram peksha"], [/सातपेक्षा/g, "7 peksha"], [/दहापेक्षा/g, "10 peksha"], [/तासांपेक्षा/g, "taas peksha"],
+  [/(^|\s)बारह(?=\s)/g, "$112"], [/(^|\s)बारा(?=\s)/g, "$112"], [/(^|\s)साठ(?=\s)/g, "$160"], [/(^|\s)सात(?=\s)/g, "$17"],
+  [/एमसीपी/g, "MCP"], [/बीपी/g, "BP"], [/एएनएम/g, "ANM"], [/पीएचसी/g, "PHC"], [/ओआरएस/g, "ORS"], [/एसएनसीयू/g, "SNCU"], [/एफआरयू/g, "FRU"], [/सीएचओ/g, "CHO"],
+  [/कार्ड/g, "card"], [/डॉक्टर(?![ा-ौं])/g, "doctor"], [/आयरन/g, "iron"], [/(इन्फेक्शन|इंफेक्शन)/g, "infection"], [/(डिलीवरी|डिलिवरी)/g, "delivery"],
+  [/(फ़ोन|फोन)/g, "phone"], [/(मिनट|मिनिट)/g, "minute"], [/(विज़िट|विजिट)/g, "visit"], [/(एल्ब्यूमिन|अल्ब्युमिन|एल्बुमिन|अल्ब्यूमिन)/g, "albumin"],
+  [/प्री-?एक्लेम्प्?सिया/g, "pre-eclampsia"], [/(हीमोग्लोबिन|हिमोग्लोबिन)/g, "hemoglobin"], [/(ग्राम|ग्रॅम)/g, "gram"], [/(माँ|मां)(?=[\s,.।]|$)/g, "maa"],
+];
+const WORD_FIX = { // transliteration → how Roman Hindi and Marathi are usually written
+  aj: "aaj", ajach: "aajach", attach: "aattach", ahe: "aahe", ahet: "aahet", jast: "jaast", sath: "saath", pas: "paas", bad: "baad", khun: "khoon",
+  dudh: "doodh", pani: "paani", panihi: "paanihi", sans: "saans", thik: "theek", pili: "peeli", pile: "peele", piliya: "peeliya", nile: "neele",
+  thora: "thoda", thori: "thodi", pira: "peeda", nari: "naadi", jurva: "judwa", barh: "badh", chhorie: "chhodiye", kichar: "keechad", ajib: "ajeeb",
+  taklif: "takleef", janch: "jaanch", janchne: "jaanchne", janchenge: "jaanchenge", janchie: "jaanchiye", janchvaie: "jaanchvaiye", nal: "naal",
+  tapman: "taapmaan", saval: "sawaal", puchhie: "poochhiye", nishan: "nishaan", apatkal: "aapatkaal", bain: "baayin", rasta: "raasta", saf: "saaf",
+  ana: "aana", jana: "jaana", hathon: "haathon", aungi: "aaungi", aichya: "aaichya", aila: "aaila", men: "mein", tin: "teen", ganbhir: "gambhir",
+  aspatal: "aspataal", aie: "aaiye", pi: "pee", pilaie: "pilaiye", pilane: "pilaane", pilana: "pilaana", pilate: "pilaate", ulta: "ulta", pahle: "pehle",
+  vazan: "vazan", hil: "hil", bar: "baar", rahie: "rahiye", dikhaie: "dikhaiye", lie: "liye", chahie: "chahiye", a: "aa", jhatke: "jhatke",
+  doktaranchi: "doctoranchi", doktaranna: "doctoranna", doktarkade: "doctorkade", doktar: "doctor", "pri-eklempasiya": "pre-eclampsia", infekshan: "infection",
+  ankhen: "aankhen", ankh: "aankh", pari: "padi", phul: "phool", dharkan: "dhadkan", asamany: "asamanya", ultan: "ulta", balan: "bala", ektan: "ekta",
+  ap: "aap", hath: "haath", paid: "pad", ped: "pad", poti: "potty", mavad: "mawad", kartan: "karta", pitan: "pita", radtan: "radta", lagtan: "lagta",
+  "hath-pair": "haath-pair", phuglan: "phugla", svathhun: "swatahun", chiz: "cheez", nit: "neet", tap: "taap", pilapan: "peelapan", apoap: "aapoaap",
+  tankon: "taankon", at: "aat", janm: "janam", nalela: "naalela", "bar-bar": "baar-baar", gai: "gayi", vah: "woh",
+};
+const roman = (t) => {
+  let s = String(t);
+  for (const [re, to] of DEV_PRE) s = s.replace(re, to);
+  s = romanize(s).replace(/\s+([.,!?])/g, "$1");
+  s = s.replace(/[A-Za-z]+(?:-[A-Za-z]+)?/g, (w) => {
+    const lo = w.toLowerCase();
+    if (/[A-Z]{2}/.test(w)) return w; // MCP, BP, ANM
+    const fixed = WORD_FIX[lo] ?? lo.replace(/([a-z])ie$/, "$1iye");
+    return w[0] === w[0].toUpperCase() && w[0] !== w[0].toLowerCase() ? fixed[0].toUpperCase() + fixed.slice(1) : fixed;
+  });
+  return s.replace(/^([a-z])/, (c) => c.toUpperCase()).replace(/([.?!]\s+)([a-z])/g, (m, p, c) => p + c.toUpperCase());
+};
 for (const r of RULES) {
   if (r.type === "newborn" && r.urgent) { r.onTheWay = ON_WAY_NB; r.action += " On the way: " + ON_WAY_NB.charAt(0).toLowerCase() + ON_WAY_NB.slice(1); r.src += "; on the way: SSBSK 2026 p.22 (pre-referral stabilisation)"; }
   else if (r.code === "anc_bleeding" || r.code === "pnc_heavy_bleeding") { r.onTheWay = ON_WAY_BLEED; r.src += "; on the way: SBA 2010 p.51 (uterine massage) and p.8 (blood donors)"; }
@@ -678,6 +732,8 @@ for (const r of RULES) {
   if (!r.where) throw new Error("rule " + r.code + " has no destination");
   r.sayRoman = { hi: roman(r.say.hi), mr: roman(r.say.mr) };
   r.onTheWayRoman = r.onTheWay ? { hi: roman(ON_WAY_TEXT[r.onTheWay].hi), mr: roman(ON_WAY_TEXT[r.onTheWay].mr) } : null;
+  r.sayTts = { hi: tts(r.say.hi), mr: tts(r.say.mr) };
+  r.onTheWayTts = r.onTheWay ? { hi: tts(ON_WAY_TEXT[r.onTheWay].hi), mr: tts(ON_WAY_TEXT[r.onTheWay].mr) } : null;
 }
 // A BP or Hb read off the card (not taken today) does not send her to the hospital by 108: it asks
 // whether she has been seen, and tells the nurse today.
@@ -719,7 +775,7 @@ export const FIELD_LABELS = {
   rh_negative: "Rh negative", hiv_syphilis: "HIV or syphilis positive", previous_births: "Births before this pregnancy", malpresentation: "Baby not head down",
   td_doses: "Td injections", weeks_at_birth: "Weeks at birth", preterm: "Born early", birth_place: "Place of birth",
   pulse: "Pulse a minute", bp_source: "BP taken today or from the card", bp_date: "Date of the BP on the card", hb_source: "Hb tested today or from the card",
-  hb_date: "Date of the Hb on the card", prev_weight_g: "Weight at the last visit (g)",
+  hb_date: "Date of the Hb on the card", prev_weight_g: "Weight at the last visit (g)", pain_severe: "Stomach pain said as severe", epilepsy: "Epilepsy (fits) on medicine",
 };
 export const symptomLabel = (type, code) => SYMPTOM_LABELS[type]?.[code] || String(code).replace(/_/g, " ");
 export const fieldLabel = (field) => FIELD_LABELS[field] || String(field).replace(/_/g, " ");
@@ -744,19 +800,32 @@ export function checkRecord(record) {
     const f = {
       code: r.code, severity: r.severity, urgent: !!r.urgent, title: r.title,
       why, action: r.action, where: r.where, onTheWay: r.onTheWay, source: r.src, threshold: r.threshold, say: r.say,
-      sayRoman: r.sayRoman, onTheWayRoman: r.onTheWayRoman,
+      sayRoman: r.sayRoman, onTheWayRoman: r.onTheWayRoman, sayTts: r.sayTts, onTheWayTts: r.onTheWayTts,
     };
     const kind = CARD_AWARE[r.code];
-    if (kind && record[kind + "_source"] === "card") {
+    // Pregnancy stomach pain said without a severity word: FRU today, not by 108
+    if (r.code === "anc_abdominal_pain" && record.pain_severe !== true && !S(record, "epigastric_pain")) {
+      Object.assign(f, { urgent: false, onTheWay: null, onTheWayRoman: null, onTheWayTts: null, where: D.fruToday, title: "Stomach pain",
+        action: "Take her to the FRU (hospital) today. If the pain is severe, or she bleeds or leaks water, go now and call 108.",
+        say: { en: "Stomach pain in pregnancy. Take her to the hospital today. If it is severe, go now.", hi: "गर्भावस्था में पेट में दर्द है। आज ही अस्पताल ले जाइए। दर्द तेज़ हो तो अभी जाइए।", mr: "गरोदरपणात पोटात दुखत आहे. आजच दवाखान्यात न्या. खूप दुखत असेल तर आत्ताच जा." } });
+      f.sayRoman = { hi: roman(f.say.hi), mr: roman(f.say.mr) }; f.sayTts = { hi: tts(f.say.hi), mr: tts(f.say.mr) };
+    }
+    const src = kind && record[kind + "_source"];
+    if (src === "card" || src === "earlier") {
       const when = record[kind + "_date"] ? ` from ${record[kind + "_date"]}` : "";
       const what = kind === "bp" ? "severe BP" : "very low Hb";
+      const shows = src === "card" ? "The card shows" : "An earlier reading (not today's) shows";
+      const hiW = kind === "bp" ? "बीपी बहुत ज़्यादा" : "हीमोग्लोबिन बहुत कम", mrW = kind === "bp" ? "बीपी खूप जास्त" : "हिमोग्लोबिन खूप कमी";
       Object.assign(f, {
-        urgent: false, onTheWay: null, onTheWayRoman: null, where: D.tellAnm, fromCard: true,
-        why: `The card shows ${what}${when}. ${why}`,
-        action: `The card shows ${what}${when}: has she been seen by a doctor since? Tell the nurse (ANM) today; if she has new signs, take her today.`,
-        say: { en: `The card shows ${what}${when}. Has she been seen? Tell the nurse today.`, hi: `कार्ड पर ${kind === "bp" ? "बीपी बहुत ज़्यादा" : "हीमोग्लोबिन बहुत कम"} लिखा है। क्या डॉक्टर ने देखा है? आज एएनएम को बताइए।`, mr: `कार्डवर ${kind === "bp" ? "बीपी खूप जास्त" : "हिमोग्लोबिन खूप कमी"} लिहिले आहे. डॉक्टरांनी पाहिले का? आज एएनएमला कळवा.` },
+        urgent: false, onTheWay: null, onTheWayRoman: null, onTheWayTts: null, where: D.tellAnm, fromCard: true,
+        why: `${shows} ${what}${when}. ${why}`,
+        action: `${shows} ${what}${when}: has she been seen by a doctor since? Tell the nurse (ANM) today; if she has new signs, take her today.`,
+        say: src === "card"
+          ? { en: `The card shows ${what}${when}. Has she been seen? Tell the nurse today.`, hi: `कार्ड पर ${hiW} लिखा है। क्या डॉक्टर ने देखा है? आज एएनएम को बताइए।`, mr: `कार्डवर ${mrW} लिहिले आहे. डॉक्टरांनी पाहिले का? आज एएनएमला कळवा.` }
+          : { en: `An earlier reading shows ${what}${when}. Has she been seen? Tell the nurse today.`, hi: `पहले ${hiW} था। क्या डॉक्टर ने देखा है? आज एएनएम को बताइए।`, mr: `आधी ${mrW} होते. डॉक्टरांनी पाहिले का? आज एएनएमला कळवा.` },
       });
       f.sayRoman = { hi: roman(f.say.hi), mr: roman(f.say.mr) };
+      f.sayTts = { hi: tts(f.say.hi), mr: tts(f.say.mr) };
     }
     out.push(f);
   }
@@ -779,7 +848,7 @@ export function noted(record, flags) {
     .map(([code]) => ({ code, label_en: symptomLabel(record.type, code) }));
 }
 
-export const RULE_TABLE = RULES.map((r) => ({ code: r.code, type: r.type, severity: r.severity, urgent: !!r.urgent, title: r.title, threshold: r.threshold, action: r.action, where: r.where, onTheWay: r.onTheWay, source: r.src, sayRoman: r.sayRoman, onTheWayRoman: r.onTheWayRoman }));
+export const RULE_TABLE = RULES.map((r) => ({ code: r.code, type: r.type, severity: r.severity, urgent: !!r.urgent, title: r.title, threshold: r.threshold, action: r.action, where: r.where, onTheWay: r.onTheWay, source: r.src, sayRoman: r.sayRoman, onTheWayRoman: r.onTheWayRoman, sayTts: r.sayTts, onTheWayTts: r.onTheWayTts }));
 
 /**
  * Questions the app should ask when a rule needs a value that was not said:
@@ -787,7 +856,7 @@ export const RULE_TABLE = RULES.map((r) => ({ code: r.code, type: r.type, severi
  */
 export function askExtra(record) {
   const out = [];
-  const add = (field, en, hi, mr) => out.push({ field, say_en: en, say_hi: hi, say_mr: mr, sayRoman: { hi: roman(hi), mr: roman(mr) } });
+  const add = (field, en, hi, mr) => out.push({ field, say_en: en, say_hi: hi, say_mr: mr, sayRoman: { hi: roman(hi), mr: roman(mr) }, sayTts: { hi: tts(hi), mr: tts(mr) } });
   if (!record || !record.type) return out;
   const sym = record.symptoms || {};
   if (record.type === "newborn") {
@@ -809,7 +878,7 @@ export const ASK_PROMPTS = {
     hb: { en: "What Hb is written on the card, and from which date?", hi: "कार्ड पर हीमोग्लोबिन कितना लिखा है, किस तारीख़ का?", mr: "कार्डवर हिमोग्लोबिन किती लिहिले आहे, कोणत्या तारखेचे?" },
   },
 };
-for (const t of Object.values(ASK_PROMPTS)) for (const q of Object.values(t)) q.sayRoman = { hi: roman(q.hi), mr: roman(q.mr) };
+for (const t of Object.values(ASK_PROMPTS)) for (const q of Object.values(t)) { q.sayRoman = { hi: roman(q.hi), mr: roman(q.mr) }; q.sayTts = { hi: tts(q.hi), mr: tts(q.mr) }; }
 
 /**
  * Group fired flags by what to do, so a screen or slip says each destination once.
@@ -832,4 +901,42 @@ export function groupFlags(flags) {
     g.flags.push(f);
   }
   return groups;
+}
+
+/**
+ * Short yes/no check questions so the app can ask every SSBSK Table 3.3 danger sign (newborn), every
+ * SSBSK Form 4 item (mother after birth) and the MCP-card danger signs (pregnancy) that the ASHA did not
+ * mention. ASK_CHECKS[type] = [{ id, codes, en, hi, mr, roman: {hi, mr}, tts: {hi, mr}, quiet? }]: `codes`
+ * are the symptom codes (and record fields) one question covers; `quiet` marks a sensitive question to
+ * show on screen rather than play on the speaker. askChecks(record) returns the questions none of whose
+ * codes has been said yet.
+ */
+export const ASK_CHECKS = {
+  newborn: [
+    { id: "nb_move", codes: ["lethargy", "convulsions"], en: "Does the baby move on its own, or only when touched? Any fits?", hi: "क्या बच्चा अपने आप हाथ-पैर चलाता है, या छूने पर ही? कोई झटके?", mr: "बाळ स्वतःहून हालचाल करतं का, की स्पर्श केल्यावरच? झटके येतात का?" },
+    { id: "nb_feed", codes: ["feeding", "weak_cry"], en: "Is the baby feeding well, and crying strongly?", hi: "क्या बच्चा ठीक से दूध पी रहा है, और ज़ोर से रोता है?", mr: "बाळ नीट दूध पितं का, आणि जोरात रडतं का?" },
+    { id: "nb_breath", codes: ["resp_rate", "difficulty_breathing", "chest_indrawing", "cyanosis"], en: "Is the breathing fast or hard, is the chest pulling in, or are the lips blue?", hi: "क्या साँस तेज़ है या लेने में तकलीफ़ है, पसली चल रही है, या होंठ नीले हैं?", mr: "श्वास जलद आहे का, छाती आत ओढली जाते का, किंवा ओठ निळे आहेत का?" },
+    { id: "nb_temp", codes: ["temp_c", "hot_to_touch", "cold_to_touch", "jaundice_palms_soles"], en: "Does the baby feel hot or cold to touch? Are the palms or soles yellow?", hi: "क्या बच्चा छूने पर गरम या ठंडा लगता है? क्या हथेली या तलवे पीले हैं?", mr: "बाळ स्पर्शाला गरम किंवा थंड लागतं का? तळहात किंवा तळवे पिवळे आहेत का?" },
+    { id: "nb_belly", codes: ["abdominal_distension", "blood_stool", "cord_pus", "eye_discharge", "skin_pustules"], en: "Is the belly swollen? Any blood in the stool? Any pus at the cord, eyes or skin?", hi: "क्या पेट फूला है? पॉटी में खून? नाभि, आँख या त्वचा पर मवाद?", mr: "पोट फुगलं आहे का? शीमध्ये रक्त? नाळ, डोळे किंवा त्वचेवर पू?" },
+  ],
+  anc: [
+    { id: "anc_bleed", codes: ["bleeding", "leaking_fluid"], en: "Any bleeding, or water leaking?", hi: "क्या खून या पानी जा रहा है?", mr: "रक्त किंवा पाणी जात आहे का?" },
+    { id: "anc_head", codes: ["severe_headache", "blurred_vision", "convulsions"], en: "Any severe headache, blurred vision, or fits?", hi: "क्या तेज़ सिरदर्द, धुंधला दिखना, या झटके हैं?", mr: "खूप डोकेदुखी, धूसर दिसणे, किंवा झटके आहेत का?" },
+    { id: "anc_swell", codes: ["swelling_face_hands", "fever", "high_fever", "temp_c"], en: "Any swelling of the face or hands, or fever?", hi: "क्या चेहरे या हाथों पर सूजन, या बुखार है?", mr: "चेहऱ्यावर किंवा हातांवर सूज, किंवा ताप आहे का?" },
+    { id: "anc_baby", codes: ["fetal_movement", "abdominal_pain", "labour_pain"], en: "Is the baby moving as usual? Any stomach pain or labour pains?", hi: "क्या पेट में बच्चा हमेशा जैसा हिल रहा है? पेट में दर्द या प्रसव पीड़ा?", mr: "पोटातील बाळाची हालचाल नेहमीसारखी आहे का? पोटदुखी किंवा कळा?" },
+    { id: "anc_other", codes: ["breathless", "pallor", "dizziness", "burning_urine", "foul_discharge"], en: "Any breathlessness, paleness, giddiness, burning urine, or bad-smelling discharge?", hi: "क्या साँस फूलती है, पीलापन, चक्कर, पेशाब में जलन, या बदबूदार पानी?", mr: "दम लागतो का, फिकटपणा, चक्कर, लघवीला जळजळ, किंवा दुर्गंधी स्राव?" },
+  ],
+  pnc: [
+    { id: "pnc_bleed", codes: ["pads", "heavy_bleeding"], en: "How many pads a day? Any clots or heavy bleeding?", hi: "दिन में कितने पैड बदलती हैं? थक्के या ज़्यादा खून?", mr: "दिवसाला किती पॅड बदलते? गाठी किंवा जास्त रक्तस्राव?" },
+    { id: "pnc_infect", codes: ["fever", "high_fever", "temp_c", "foul_discharge", "abdominal_pain", "burning_urine"], en: "Any fever, bad-smelling discharge, stomach pain, or burning urine?", hi: "क्या बुखार, बदबूदार पानी, पेट में दर्द, या पेशाब में जलन है?", mr: "ताप, दुर्गंधी स्राव, पोटदुखी, किंवा लघवीला जळजळ आहे का?" },
+    { id: "pnc_neuro", codes: ["severe_headache", "blurred_vision", "convulsions", "abnormal_speech", "breathless"], en: "Any severe headache, blurred vision, fits, strange speech, or difficulty breathing?", hi: "क्या तेज़ सिरदर्द, धुंधला दिखना, झटके, अजीब बोलना, या साँस लेने में तकलीफ़ है?", mr: "खूप डोकेदुखी, धूसर दिसणे, झटके, विचित्र बोलणे, किंवा श्वास घ्यायला त्रास आहे का?" },
+    { id: "pnc_mood", codes: ["low_mood", "self_harm"], quiet: true, en: "In the last two weeks, has she had little interest in things, or felt down or hopeless?", hi: "पिछले दो हफ़्तों में क्या उनका किसी चीज़ में मन नहीं लगता, या वह उदास या निराश रहती हैं?", mr: "गेल्या दोन आठवड्यांत तिला कशातच रस वाटत नाही का, किंवा ती उदास किंवा निराश असते का?" },
+    { id: "pnc_body", codes: ["swelling_face_hands", "calf_pain", "breast_problem", "jaundice", "incontinence", "wound_infection"], en: "Any swelling of the face, hands or calf, breast pain, yellow eyes, leaking urine, or pus at the stitches?", hi: "क्या चेहरे, हाथ या पिंडली में सूजन, स्तन में दर्द, आँखें पीली, पेशाब अपने आप, या टांकों में मवाद है?", mr: "चेहरा, हात किंवा पोटरीला सूज, स्तनात दुखणे, डोळे पिवळे, लघवी आपोआप, किंवा टाक्यांना पू आहे का?" },
+  ],
+};
+for (const list of Object.values(ASK_CHECKS)) for (const q of list) { q.roman = { hi: roman(q.hi), mr: roman(q.mr) }; q.tts = { hi: tts(q.hi), mr: tts(q.mr) }; }
+export function askChecks(record) {
+  if (!record || !ASK_CHECKS[record.type]) return [];
+  const said = (c) => has(record[c]) || (record.symptoms && record.symptoms[c] !== undefined);
+  return ASK_CHECKS[record.type].filter((q) => !q.codes.some(said));
 }

@@ -1,0 +1,832 @@
+{
+ "run_at": "2026-11-27T12:25:55.659Z",
+ "set": "vignettes2",
+ "ruleset": "mohfw-2026.6",
+ "items": 40,
+ "refer": {
+  "positives": 27,
+  "negatives": 13,
+  "tp": 27,
+  "fn": 0,
+  "tn": 13,
+  "fp": 0,
+  "sensitivity": 100,
+  "specificity": 100
+ },
+ "urgent": {
+  "gold": 23,
+  "caught": 23,
+  "recall": 100,
+  "predicted": 24,
+  "precision": 95.8
+ },
+ "rows": [
+  {
+   "id": "v2-01",
+   "type": "newborn",
+   "said": "Sister, day four baby, very sleepy since morning, doesn't cry, he only moves when we touch him or shake his feet, otherwise just lying",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "nb_lethargy"
+   ],
+   "record": {
+    "type": "newborn",
+    "name": "Sister",
+    "day": 4,
+    "symptoms": {
+     "lethargy": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-02",
+   "type": "newborn",
+   "said": "didi das din ka baccha hai, aaj subah se potty mein khoon aa raha hai, do baar dekha laal laal",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "nb_blood_stool"
+   ],
+   "record": {
+    "type": "newborn",
+    "day": 10,
+    "symptoms": {
+     "blood_stool": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-03",
+   "type": "newborn",
+   "said": "बच्चा कल शाम से दूध नहीं खींच रहा, मुँह में लेता है फिर छोड़ देता है, रात भर कुछ नहीं पिया",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "nb_not_feeding"
+   ],
+   "record": {
+    "type": "newborn",
+    "feeding": "none"
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-04",
+   "type": "newborn",
+   "said": "बाळ दहा दिवसाचं आहे, आज बघितलं तर तळवे आणि तळपाय पण पिवळे दिसतात, डोळे पण पिवळे",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "nb_jaundice_palms"
+   ],
+   "record": {
+    "type": "newborn",
+    "day": 10,
+    "symptoms": {
+     "jaundice_palms_soles": true,
+     "jaundice": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-05",
+   "type": "newborn",
+   "said": "Day seven visit done. Baby weight two point nine kg. No fever, no fits, no fast breathing, no yellowness, feeding every two hours, cord is dry",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [],
+   "record": {
+    "type": "newborn",
+    "weight_g": 2900,
+    "day": 7,
+    "feeding": "good",
+    "symptoms": {
+     "cord_pus": false,
+     "difficulty_breathing": false,
+     "convulsions": false,
+     "jaundice": false,
+     "hot_to_touch": false
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-06",
+   "type": "newborn",
+   "said": "teesra din hai, bukhar nahi hai, jhatke nahi aaye, saans normal chal rahi hai, peeliya nahi hai, doodh achhe se pee raha hai, haath pair garam hain",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [],
+   "record": {
+    "type": "newborn",
+    "day": 3,
+    "feeding": "good",
+    "symptoms": {
+     "convulsions": false,
+     "jaundice": false,
+     "hot_to_touch": false
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-07",
+   "type": "newborn",
+   "said": "tisrya divshi baalacha chehra thoda pivla disto, pan talve ani talpay pivle nahit, dudh vyavasthit pito, zopet pan theek ahe",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [],
+   "record": {
+    "type": "newborn",
+    "day": 3,
+    "feeding": "good",
+    "symptoms": {
+     "jaundice_palms_soles": false,
+     "jaundice": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-08",
+   "type": "newborn",
+   "said": "maine ek minute saans gini, sattar aayi, aur pasli bhi chal rahi hai, chhati andar ja rahi hai",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "nb_fast_breathing",
+    "nb_chest_indrawing",
+    "nb_sepsis_signs"
+   ],
+   "record": {
+    "type": "newborn",
+    "resp_rate": 70,
+    "symptoms": {
+     "chest_indrawing": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-09",
+   "type": "newborn",
+   "said": "Baby feels cold to touch, I checked axillary temperature, it is thirty five point five",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "nb_hypothermia"
+   ],
+   "record": {
+    "type": "newborn",
+    "symptoms": {
+     "cold_to_touch": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-10",
+   "type": "newborn",
+   "said": "बच्चे का बदन गरम है, थर्मामीटर में सौ पॉइंट दो फारेनहाइट आया, आठवाँ दिन है",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "nb_fever"
+   ],
+   "record": {
+    "type": "newborn",
+    "temp_c": 37.9,
+    "temp_f": 100.2,
+    "day": 8,
+    "symptoms": {
+     "hot_to_touch": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-11",
+   "type": "newborn",
+   "said": "बच्चे के हाथ पैर अकड़ गए थे और दो बार झटके आए, अभी सो रहा है",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "nb_convulsions"
+   ],
+   "record": {
+    "type": "newborn",
+    "symptoms": {
+     "convulsions": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-12",
+   "type": "newborn",
+   "said": "नाळेतून थोडा पू येतोय, आजूबाजूला लालसर आहे, बाकी बाळ दूध पितं, ताप नाही",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": false,
+   "flags": [
+    "nb_cord_infection"
+   ],
+   "record": {
+    "type": "newborn",
+    "name": "Ajubaju",
+    "feeding": "good",
+    "symptoms": {
+     "cord_pus": true,
+     "hot_to_touch": false
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-13",
+   "type": "newborn",
+   "said": "Home delivery last night, I weighed the baby on the scale, only one point six kilo, baby is small but crying",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "nb_very_low_weight"
+   ],
+   "record": {
+    "type": "newborn",
+    "weight_g": 1600,
+    "birth_place": "home"
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-14",
+   "type": "newborn",
+   "said": "maa bol rahi hai doodh kam aata hai, par baccha din mein das baara baar peeta hai, saat aath baar susu karta hai, vajan bhi badha hai",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [],
+   "record": {
+    "type": "newborn",
+    "feeding": "good"
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-15",
+   "type": "newborn",
+   "said": "Day fourteen, weight two point four kg, she is feeding well, warm, active, no danger sign, mother doing KMC",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [
+    "nb_low_weight"
+   ],
+   "record": {
+    "type": "newborn",
+    "name": "Doing",
+    "weight_g": 2400,
+    "day": 14,
+    "feeding": "good",
+    "symptoms": {
+     "lethargy": false
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-16",
+   "type": "anc",
+   "said": "saatwa mahina chal raha hai, kal raat se thoda thoda khoon aa raha hai neeche se, zyada nahi hai",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "anc_bleeding"
+   ],
+   "record": {
+    "type": "anc",
+    "symptoms": {
+     "bleeding": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-17",
+   "type": "anc",
+   "said": "नववा महिना आहे, सकाळपासून पाणी जातंय, कळा अजून सुरू नाहीत",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "anc_leaking"
+   ],
+   "record": {
+    "type": "anc",
+    "month": 9,
+    "symptoms": {
+     "leaking_fluid": true,
+     "labour_pain": false
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-18",
+   "type": "anc",
+   "said": "She has very bad headache since morning, says everything looks blurry, face and hands are swollen",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "anc_headache_vision",
+    "anc_swelling"
+   ],
+   "record": {
+    "type": "anc",
+    "symptoms": {
+     "swelling_face_hands": true,
+     "severe_headache": true,
+     "blurred_vision": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-19",
+   "type": "anc",
+   "said": "pichhli baar BP ek sau das by sattar tha, aaj ANM didi ne naapa to ek sau saath by ek sau baarah aaya",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "anc_imminent_eclampsia"
+   ],
+   "record": {
+    "type": "anc",
+    "bp_sys": 160,
+    "bp_dia": 112,
+    "bp_source": "today"
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-20",
+   "type": "anc",
+   "said": "हीमोग्लोबिन आज साढ़े ग्यारह आया, पिछले महीने साढ़े छह था तब खून चढ़ाया था, अब ठीक लग रही है",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [],
+   "record": {
+    "type": "anc",
+    "hb": 11.5,
+    "hb_source": "today"
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-21",
+   "type": "anc",
+   "said": "sahava mahina, raktasrav nahi, pani gela nahi, dokedukhi nahi, baal vyavasthit halta, BP ekshe vees by aiyshi",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [],
+   "record": {
+    "type": "anc",
+    "month": 6,
+    "symptoms": {
+     "severe_headache": false,
+     "leaking_fluid": false,
+     "bleeding": false
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-22",
+   "type": "anc",
+   "said": "Fourth month, she has nausea and some vomiting in the morning, heartburn and constipation, but she is eating and drinking okay",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [
+    "anc_vomiting"
+   ],
+   "record": {
+    "type": "anc",
+    "month": 4,
+    "symptoms": {
+     "vomiting": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-23",
+   "type": "anc",
+   "said": "shaam ko pairon mein thodi sujan aa jaati hai, subah utar jaati hai, chehra theek hai, BP ek sau bees by assi",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [],
+   "record": {
+    "type": "anc",
+    "bp_sys": 120,
+    "bp_dia": 80,
+    "symptoms": {
+     "swelling_feet": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-24",
+   "type": "anc",
+   "said": "आठवाँ महीना है, कल से बच्चा बिल्कुल हिल नहीं रहा, पेट में कोई हलचल नहीं",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "anc_fetal_movement"
+   ],
+   "record": {
+    "type": "anc",
+    "month": 8,
+    "fetal_movement": "absent"
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-25",
+   "type": "anc",
+   "said": "हिमोग्लोबिन साडेसहा आलं, थोडं चाललं तरी दम लागतो, खूप थकवा आहे",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "anc_severe_anaemia",
+    "anc_breathless"
+   ],
+   "record": {
+    "type": "anc",
+    "hb": 6.5,
+    "symptoms": {
+     "breathless": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-26",
+   "type": "anc",
+   "said": "सहावा महिना आहे, ती म्हणते मला आता जगायचं नाही, सगळं संपवून टाकावं असं वाटतं",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "anc_self_harm"
+   ],
+   "record": {
+    "type": "anc",
+    "month": 6,
+    "symptoms": {
+     "self_harm": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-27",
+   "type": "anc",
+   "said": "teen din se tez bukhar hai, ek sau do, kanpkanpi ke saath aata hai, paanchva mahina",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "anc_high_fever"
+   ],
+   "record": {
+    "type": "anc",
+    "temp_c": 38.9,
+    "temp_f": 102,
+    "month": 5,
+    "symptoms": {
+     "high_fever": true,
+     "fever": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-28",
+   "type": "anc",
+   "said": "BP is one forty-eight by ninety-four today, urine albumin nil, no headache, no swelling",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": false,
+   "flags": [
+    "anc_hypertension"
+   ],
+   "record": {
+    "type": "anc",
+    "bp_sys": 148,
+    "bp_dia": 94,
+    "albumin": "nil",
+    "bp_source": "today",
+    "symptoms": {
+     "severe_headache": false,
+     "swelling_face_hands": false,
+     "swelling_feet": false
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-29",
+   "type": "pnc",
+   "said": "delivery ko chhe din hue, bukhar ek sau ek hai aur neeche se badbu wala paani aa raha hai, pet mein dard bhi",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_sepsis",
+    "pnc_abdominal_pain"
+   ],
+   "record": {
+    "type": "pnc",
+    "temp_c": 38.3,
+    "temp_f": 101,
+    "day": 6,
+    "symptoms": {
+     "abdominal_pain": true,
+     "fever": true,
+     "foul_discharge": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-30",
+   "type": "pnc",
+   "said": "आधे घंटे में तीन पैड भीग गए, बड़े बड़े थक्के निकल रहे हैं, कल ही डिलीवरी हुई",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_heavy_bleeding"
+   ],
+   "record": {
+    "type": "pnc",
+    "pads": 3,
+    "symptoms": {
+     "heavy_bleeding": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-31",
+   "type": "pnc",
+   "said": "aaj sakalpasun saha pad badlale, chakkar yete, khup ashakta vatate",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_heavy_bleeding",
+    "pnc_anaemia_signs"
+   ],
+   "record": {
+    "type": "pnc",
+    "pads": 6,
+    "symptoms": {
+     "dizziness": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-32",
+   "type": "pnc",
+   "said": "Day seven PNC. Bleeding is less, two pads a day, no fever, no foul smell, BP one eighteen by seventy six, breastfeeding well",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [],
+   "record": {
+    "type": "pnc",
+    "bp_sys": 118,
+    "bp_dia": 76,
+    "day": 7,
+    "pads": 2,
+    "symptoms": {
+     "heavy_bleeding": false,
+     "fever": false,
+     "foul_discharge": false
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-33",
+   "type": "pnc",
+   "said": "pehle din chhe pad lage the, ab gyarah din ho gaye, ek do pad roz lagta hai, bukhar nahi hai",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [],
+   "record": {
+    "type": "pnc",
+    "day": 11,
+    "pads": 2,
+    "symptoms": {
+     "fever": false
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-34",
+   "type": "pnc",
+   "said": "didi woh keh rahi hai ab jeene ka mann nahi karta, sab khatam kar dungi, baccha bhi theek se nahi sambhal rahi",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_self_harm"
+   ],
+   "record": {
+    "type": "pnc",
+    "symptoms": {
+     "self_harm": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-35",
+   "type": "pnc",
+   "said": "She told me quietly she sometimes gets thoughts of hurting the baby, like dropping him, and she is scared of herself",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_self_harm"
+   ],
+   "record": {
+    "type": "pnc",
+    "symptoms": {
+     "self_harm": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-36",
+   "type": "pnc",
+   "said": "गेले तीन आठवडे ती उदास असते, कशातच मन लागत नाही, बाळाकडे पण लक्ष देत नाही",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": false,
+   "flags": [
+    "pnc_low_mood"
+   ],
+   "record": {
+    "type": "pnc",
+    "name": "Gele",
+    "symptoms": {
+     "low_mood": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-37",
+   "type": "pnc",
+   "said": "paanchva din hai, thodi udaas hai, baat baat pe ro deti hai, baaki khana kha rahi hai, doodh pila rahi hai",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [],
+   "record": {
+    "type": "pnc",
+    "day": 5
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-38",
+   "type": "pnc",
+   "said": "वो कल से अजीब अजीब बातें कर रही है, रात भर सोई नहीं, घरवालों को पहचान नहीं रही",
+   "should_refer": true,
+   "urgent": false,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_neuro"
+   ],
+   "record": {
+    "type": "pnc",
+    "symptoms": {
+     "abnormal_speech": true
+    }
+   },
+   "agree": false
+  },
+  {
+   "id": "v2-39",
+   "type": "pnc",
+   "said": "Ten days after delivery, she has burning while passing urine and fever one hundred three",
+   "should_refer": true,
+   "urgent": true,
+   "got_refer": true,
+   "got_urgent": true,
+   "flags": [
+    "pnc_high_fever",
+    "pnc_uti"
+   ],
+   "record": {
+    "type": "pnc",
+    "temp_c": 39.4,
+    "temp_f": 103,
+    "symptoms": {
+     "fever": true,
+     "burning_urine": true
+    }
+   },
+   "agree": true
+  },
+  {
+   "id": "v2-40",
+   "type": "pnc",
+   "said": "sirf do baar khana kha rahi hai din mein, bhookh kam hai bolti, baaki sab theek, bleeding kam hai",
+   "should_refer": false,
+   "urgent": false,
+   "got_refer": false,
+   "got_urgent": false,
+   "flags": [],
+   "record": {
+    "type": "pnc",
+    "symptoms": {
+     "heavy_bleeding": false
+    }
+   },
+   "agree": true
+  }
+ ]
+}

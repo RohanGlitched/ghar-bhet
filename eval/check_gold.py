@@ -13,7 +13,7 @@ Usage: python check_gold.py dev.jsonl heldout.jsonl
        python check_gold.py --fix dev.jsonl dev2.jsonl   (rewrite flags from the
        gold records with the current rule table, then check)
 Exit code 0 when no problems.
-Rule set: mohfw-2026.5 (SPEC.md v5).
+Rule set: mohfw-2026.6 (SPEC.md v6).
 """
 import json
 import sys
@@ -40,7 +40,8 @@ FIELDS = {
             "hiv_syphilis": BOOL, "previous_births": INT, "malpresentation": BOOL,  # v3
             "td_doses": INT,                                                       # v3
             "pulse": INT, "bp_source": "source", "bp_date": STR, "hb_source": "source",  # v5
-            "hb_date": STR},                                                       # v5
+            "hb_date": STR,                                                        # v5
+            "pain_severe": BOOL, "epilepsy": BOOL},                                # v6
     "pnc": {"day": INT, "pads": INT, "temp_c": NUM,
             "temp_f": NUM, "bp_sys": INT, "bp_dia": INT, "hb": NUM,                # v2
             "bp_source": "source", "bp_date": STR, "hb_source": "source", "hb_date": STR},  # v5
@@ -56,7 +57,8 @@ SYMPTOMS = {
             "vomiting", "dizziness", "burning_urine", "foul_discharge",
             "high_fever", "labour_pain",                                           # v3
             "pallor",                                                              # v4
-            "jaundice", "epigastric_pain"},                                        # v5
+            "jaundice", "epigastric_pain",                                         # v5
+            "self_harm"},                                                          # v6
     "pnc": {"heavy_bleeding", "fever", "foul_discharge", "convulsions", "blurred_vision",
             "abnormal_speech", "breathless", "abdominal_pain", "burning_urine",
             "swelling_face_hands", "breast_problem", "dizziness",
@@ -75,7 +77,7 @@ ALBUMIN = {"nil", "trace", "1", "2", "3", "4"}
 FETAL = {"normal", "reduced", "absent"}
 FEEDING = {"good", "poor", "none"}
 BIRTHPLACE = {"home", "facility"}
-SOURCE = {"today", "card"}
+SOURCE = {"today", "card", "earlier"}
 
 R, W = "refer_now", "watch"
 SEVERITY = {
@@ -87,9 +89,9 @@ SEVERITY = {
     "anc_labour_prolonged": R, "anc_multiple_pregnancy": R, "anc_vomiting": W,
     "anc_dizziness": W, "anc_high_risk": W,
     "anc_high_fever": R, "anc_low_fever": W, "anc_preterm_labour": R, "anc_labour": R,
-    "anc_malpresentation": R, "anc_anaemia_breathless": R, "anc_pallor": R, "anc_jaundice": R, "anc_pulse": R,
+    "anc_malpresentation": R, "anc_anaemia_breathless": R, "anc_pallor": R, "anc_jaundice": R, "anc_pulse": R, "anc_self_harm": R,
     "pnc_heavy_bleeding": R, "pnc_severe_hypertension": R, "pnc_hypertension": R,
-    "pnc_severe_anaemia": R, "pnc_high_fever": R, "pnc_uti": R, "pnc_infection": R,
+    "pnc_severe_anaemia": R, "pnc_high_fever": R, "pnc_uti": R, "pnc_infection": R, "pnc_sepsis": R,
     "pnc_fever": R, "pnc_convulsions": R, "pnc_neuro": R, "pnc_headache": R,
     "pnc_breathless": R, "pnc_abdominal_pain": R, "pnc_swelling": R, "pnc_jaundice": R,
     "pnc_incontinence": R, "pnc_breast": R,
@@ -188,6 +190,8 @@ def compute_flags(r):
             out.add("anc_abdominal_pain")
         if yes("jaundice"):
             out.add("anc_jaundice")
+        if yes("self_harm"):
+            out.add("anc_self_harm")
         if g("pulse") is not None and (g("pulse") > 90 or g("pulse") < 60):
             out.add("anc_pulse")
         hb = g("hb")
@@ -241,7 +245,7 @@ def compute_flags(r):
                 or (pb is not None and pb >= 4)
                 or any(g(k) is True for k in ("prev_caesarean", "prev_pph", "prev_aph", "prev_eclampsia",
                                                "prev_stillbirth", "prev_preterm", "diabetes", "heart_disease",
-                                               "rh_negative", "hiv_syphilis"))):
+                                               "rh_negative", "hiv_syphilis", "epilepsy"))):
             out.add("anc_high_risk")
     elif t == "pnc":
         if (g("pads") is not None and g("pads") >= 5) or yes("heavy_bleeding"):
@@ -269,7 +273,9 @@ def compute_flags(r):
         if yes("burning_urine"):
             out.add("pnc_uti")
         if yes("foul_discharge"):
-            out.add("pnc_infection")
+            sepsis = (above_f(r, 100) or yes("high_fever") or yes("abdominal_pain")
+                      or (yes("fever") and temp is None))                           # v6
+            out.add("pnc_sepsis" if sepsis else "pnc_infection")
         if ((yes("fever") or above_f(r, 100)) and not high
                 and not yes("burning_urine") and not yes("foul_discharge")):
             out.add("pnc_fever")

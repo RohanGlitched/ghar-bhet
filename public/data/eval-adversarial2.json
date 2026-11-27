@@ -1,7 +1,7 @@
 {
  "set": "adversarial2",
- "run_at": "2026-11-27T11:26:24.188Z",
- "ruleset": "mohfw-2026.5",
+ "run_at": "2026-11-27T12:25:55.101Z",
+ "ruleset": "mohfw-2026.6",
  "typed": {
   "mode": "typed",
   "items": 60,
@@ -1020,7 +1020,7 @@
     ],
     "flags_want": [
      "pnc_abdominal_pain",
-     "pnc_infection"
+     "pnc_sepsis"
     ],
     "flags_got": [
      "nb_fever"

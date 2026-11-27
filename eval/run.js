@@ -3,9 +3,11 @@
 //   node eval/run.js dev|dev2|dev3|dev4|dev5|heldout|adversarial|adversarial2 [--misses] [--publish]
 //       Field recall/precision, danger visits caught, false alarms, flag recall.
 //       "typed" = the visit type is given (the ASHA picked it); "auto" = guessed.
-//   node eval/run.js vignettes [--misses] [--publish]
+//   node eval/run.js vignettes|vignettes2 [--misses] [--publish]
 //       52 clinical vignettes labelled only should_refer / urgent from the
 //       guideline texts (not from rules.js). Reports sensitivity and specificity.
+//       vignettes2: 40 more, written and labelled by a separate agent that never saw the code;
+//       run 1 is frozen in eval/vignettes2-run1.* (never rewritten by this script).
 //   node eval/run.js realspeech <results.json> [--misses] [--out=DIR]
 //       Results from public/dictation.html: {engine, results:[{id, lang, heard}]}.
 //       Scores the reader on what the speech engine heard, side by side with the
@@ -118,8 +120,8 @@ const printMisses = (r) => { for (const m of r.misses) console.log(`\n${m.id}  $
 const strip = ({ rows, ...r }) => r;
 
 /* ---------------- clinical vignettes ---------------- */
-function vignettes() {
-  const items = readJsonl("vignettes");
+function vignettes(name = "vignettes") {
+  const items = readJsonl(name);
   let tp = 0, fn = 0, tn = 0, fp = 0, uGold = 0, uHit = 0, uPred = 0, uPredOk = 0;
   const rows = [];
   for (const v of items) {
@@ -134,16 +136,16 @@ function vignettes() {
     rows.push({ id: v.id, type: v.type, said: v.said, should_refer: v.should_refer, urgent: v.urgent, got_refer: refer, got_urgent: urgent, flags: flags.map((f) => f.code), record: res.record, agree });
   }
   const r = {
-    set: "vignettes", ruleset: RULESET.id, items: items.length,
+    set: name, ruleset: RULESET.id, items: items.length,
     refer: { positives: tp + fn, negatives: tn + fp, tp, fn, tn, fp, sensitivity: pct(tp, tp + fn), specificity: pct(tn, tn + fp) },
     urgent: { gold: uGold, caught: uHit, recall: pct(uHit, uGold), predicted: uPred, precision: pct(uPredOk, uPred) },
     rows,
   };
-  console.log(`vignettes: ${items.length} items, labels from guideline text (ruleset ${RULESET.id})`);
+  console.log(`${name}: ${items.length} items, labels from guideline text (ruleset ${RULESET.id})`);
   console.log(`should refer: sensitivity ${r.refer.sensitivity}% (${tp}/${tp + fn}) · specificity ${r.refer.specificity}% (${tn}/${tn + fp})`);
   console.log(`urgent      : ${uHit}/${uGold} urgent vignettes got an urgent flag (${r.urgent.recall}%) · ${uPredOk}/${uPred} urgent flags were labelled urgent`);
   for (const x of rows.filter((x) => !x.agree)) console.log(`  ${x.id} want refer=${x.should_refer} urgent=${x.urgent}, got refer=${x.got_refer} urgent=${x.got_urgent} [${x.flags.join(",") || "-"}]${showMisses ? "\n     " + x.said + "\n     " + JSON.stringify(x.record) : ""}`);
-  if (publish) out("eval-vignettes", { run_at: new Date().toISOString(), ...r });
+  if (publish) out("eval-" + name, { run_at: new Date().toISOString(), ...r });
 }
 
 /* ---------------- real speech (dictation page) ---------------- */
@@ -181,6 +183,6 @@ function sets() {
   if (publish) out(`eval-${which}`, { set: which, run_at: new Date().toISOString(), ruleset: RULESET.id, typed: strip(typed), auto: strip(auto) });
 }
 
-if (which === "vignettes") vignettes();
+if (which === "vignettes" || which === "vignettes2") vignettes(which);
 else if (which === "realspeech") realspeech(args.filter((a) => !a.startsWith("--"))[1]);
 else sets();

@@ -1,6 +1,6 @@
 # Field map: official visit forms vs the Ghar Bhet record
 
-Ghar Bhet fills the **danger-sign and vital fields** of a home visit from what the ASHA says. It does not yet fill every item of the official forms. This table lists the items on the forms, the record field that holds each one, and whether the reader captures it today (rule set `mohfw-2026.5`, 27 Nov 2026).
+Ghar Bhet fills the **danger-sign and vital fields** of a home visit from what the ASHA says. It does not yet fill every item of the official forms. This table lists the items on the forms, the record field that holds each one, and whether the reader captures it today (rule set `mohfw-2026.6`, 27 Nov 2026).
 
 Sources: Mother and Child Protection (MCP) card, NHM-hosted English card (see `RESEARCH.md` section 3); SSBSK Operational Guidelines 2026, official final of 06-08-2026: Form 2B and Form 3 (newborn, ASHA) pp.112-114, Form 4 (mother after birth) p.115; RCH register PW-2 (pregnancy visit). Page numbers are the printed ones.
 
@@ -20,7 +20,7 @@ Legend: **yes** = read from speech and checked by the rules where a rule exists;
 | Previous stillbirth or newborn death | `prev_stillbirth` | yes |
 | Previous preterm birth or baby under 2500 g | `prev_preterm` | yes |
 | Obstructed labour, congenital anomaly, infertility treatment (CHO p.18 history list) | — | not yet |
-| Past history: hypertension, heart disease, diabetes, TB, asthma | `heart_disease`, `diabetes` | heart disease and diabetes yes; others not yet |
+| Past history: hypertension, heart disease, diabetes, epilepsy, TB, asthma | `heart_disease`, `diabetes`, `epilepsy` | heart disease, diabetes and epilepsy on medicine yes (high-risk watch; for epilepsy the app asks whether she had a fit since the last visit); others not yet |
 | Weight (kg) | `weight_kg` | yes (no rule) |
 | Height | `height_cm` | yes (cm, or feet and inches; under 145 cm is high risk) |
 | Pulse rate | `pulse` | yes (above 90 or below 60 refers, CHO p.27) |
@@ -81,14 +81,14 @@ Legend: **yes** = read from speech and checked by the rules where a rule exists;
 | Fever | `symptoms.fever`, temperature | yes |
 | Severe anaemia: pads 5 or more a day, giddiness, paleness, weakness | `pads`, `symptoms.heavy_bleeding`, `symptoms.dizziness`, `symptoms.pallor`, `hb`, `hb_source`, `hb_date` | yes (Hb under 7 urgent, 7-7.9 refers today, 8-10.9 moderate and 11-11.9 mild are watch with IFA; today's pads beat yesterday's) |
 | Urinary tract infection: fever over 102 °F, burning urination | `symptoms.burning_urine`, temperature | yes |
-| Vaginal infection: foul-smelling discharge, fever over 100 °F | `symptoms.foul_discharge`, temperature | yes |
+| Vaginal infection: foul-smelling discharge, fever over 100 °F | `symptoms.foul_discharge`, temperature | yes (with fever above 100 °F or stomach pain: `pnc_sepsis`, urgent, FRU now) |
 | Abdominal pain | `symptoms.abdominal_pain`, `symptoms.epigastric_pain` | yes (upper-stomach pain after birth joins the severe-headache rule, SBA p.52) |
 | Neurological: blurred vision, convulsion, abnormal speech | `symptoms.blurred_vision`, `symptoms.convulsions`, `symptoms.abnormal_speech` (and `symptoms.severe_headache`) | yes |
 | Oedema of face, hands and legs | `symptoms.swelling_face_hands`, `symptoms.calf_pain` | face and hands yes; a painful or swollen calf yes; ankle swelling alone not yet |
 | Difficulty in breathing | `symptoms.breathless` | yes |
 | Jaundice | `symptoms.jaundice` | yes |
 | Incontinence of stool and urine | `symptoms.incontinence` | yes |
-| Psychological distress (two questions) | `symptoms.low_mood`, `symptoms.self_harm` | yes: low mood refers to the CHO/MO this week and tells the ASHA to ask the two questions; thoughts of harming herself or the baby are urgent (Tele-MANAS 14416) |
+| Psychological distress (two questions) | `symptoms.low_mood`, `symptoms.self_harm` (also in pregnancy) | yes: low mood refers to the CHO/MO this week and tells the ASHA to ask the two questions; thoughts of harming herself or the baby are urgent (Tele-MANAS 14416) |
 | BP (MCP postpartum table; CHO manual: every postnatal visit) | `bp_sys`, `bp_dia`, `bp_source`, `bp_date` | yes (card values as in pregnancy) |
 | High fever | `symptoms.high_fever`, temperature | yes ("tez/bahut bukhar" or above 102 °F is urgent) |
 | Breasts engorged, nipples cracked (Form 3, MCP table) | `symptoms.breast_problem` | yes |

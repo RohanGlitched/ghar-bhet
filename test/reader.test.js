@@ -58,7 +58,7 @@ test("thresholds sit exactly where the manuals put them", () => {
 });
 
 test("every rule names its source", () => {
-  assert.equal(RULE_TABLE.length, 88);
+  assert.equal(RULE_TABLE.length, 90);
   for (const r of RULE_TABLE) {
     assert.ok(r.source && r.source.length > 10, r.code);
     assert.ok(r.threshold && r.threshold.length > 3, r.code + " has a threshold");

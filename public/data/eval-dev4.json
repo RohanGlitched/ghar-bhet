@@ -1,7 +1,7 @@
 {
  "set": "dev4",
- "run_at": "2026-11-27T11:26:22.111Z",
- "ruleset": "mohfw-2026.5",
+ "run_at": "2026-11-27T12:25:53.281Z",
+ "ruleset": "mohfw-2026.6",
  "typed": {
   "mode": "typed",
   "items": 51,

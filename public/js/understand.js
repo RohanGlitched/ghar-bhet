@@ -213,11 +213,11 @@ const SYMPTOMS = {
     fever: P(["बुखार", "ताप", "बदन गरम", "अंग गरम", "bukhar", "bukhaar", "fever", "taap", "tap aahe"]),
     // "tez bukhar": MCP card "high fever ... immediately"
     high_fever: P(["bahut bukhar", "bahut tez bukhar", "बहुत बुखार", "khup tap", "khup taap", "tez bukhar", "tej bukhar", "tez bukhaar", "bahut tez bukhar", "तेज़ बुखार", "तेज बुखार", "बहुत तेज़ बुखार", "खूप ताप", "जोराचा ताप", "joracha tap", "khup tap", "high fever", "very high fever"]),
-    labour_pain: P(["pains", "delivery wale dard", "delivery wala dard", "delivery ke dard", "delivery ka dard", "dard uth rahe", "dard uth raha", "dard uthna", "kamar se pet tak", "labour wala", "labour vala", "labour waala", "labour pain", "labor pain", "labour pains", "labour shuru", "labor shuru", "labour start", "in labour", "dard shuru", "प्रसव पीड़ा", "प्रसव पीडा", "prasav peeda", "prasav pida", "दर्द शुरू", "कळा", "kalaa yet", "kala yet", "kala suru", "contractions"]),
+    labour_pain: P(["pains", "jaise delivery", "delivery jaise", "delivery jaisa", "jaisa delivery", "delivery jaisi", "जैसे डिलीवरी", "डिलीवरी जैसा", "delivery wale dard", "delivery wala dard", "delivery ke dard", "delivery ka dard", "dard uth rahe", "dard uth raha", "dard uthna", "kamar se pet tak", "labour wala", "labour vala", "labour waala", "labour pain", "labor pain", "labour pains", "labour shuru", "labor shuru", "labour start", "in labour", "dard shuru", "प्रसव पीड़ा", "प्रसव पीडा", "prasav peeda", "prasav pida", "दर्द शुरू", "कळा", "kalaa yet", "kala yet", "kala suru", "contractions"]),
     breathless: P(["breathing problem", "breathing difficulty", "difficulty in breathing", "साँस की तकलीफ", "साँस फूल", "सांस फूल", "साँस लेने में", "सांस लेने में", "दम लाग", "धाप लाग", "श्वास घ्यायला", "saans phool", "sans phool", "saans lene mein", "breathless", "breathlessness", "short of breath", "difficulty breathing", "dum lag"]),
     abdominal_pain: P(["पोटदुखी", "पेट में तेज़ दर्द", "पेट में तेज दर्द", "पेट में बहुत दर्द", "पेट दर्द", "पोटात दुख", "पोटदुखी", "पोटात खूप दुख", "pet mein dard", "pet me dard", "pet dard", "abdominal pain", "stomach pain", "tummy pain", "pain in abdomen", "pottat dukh"]),
     vomiting: P(["उल्टी", "उलटी", "ulti", "vomiting", "vomit", "omit", "उलट्या"]),
-    dizziness: P(["fainted", "faint", "fainting", "fainted twice", "behosh", "बेहोश", "बेशुद्ध", "beshuddh", "unconscious", "gir gayi", "gir padi", "गिर गई", "गिर पड़ी", "giddy", "feels giddy", "डोळ्यासमोर अंधारी", "डोळ्यांसमोर अंधार", "dolyasamor andhari", "चक्कर", "आँखों के आगे अंधेरा", "आंखों के आगे अंधेरा", "आँखों के सामने अंधेरा", "आंखों के सामने अंधेरा", "कमज़ोरी", "कमजोरी", "अशक्तपणा", "डोळ्यांसमोर अंधारी", "chakkar", "kamzori", "kamjori", "dizzy", "dizziness", "giddiness", "weakness"]),
+    dizziness: P(["fainted", "faint", "fainting", "fainted twice", "behosh", "बेहोश", "बेशुद्ध", "beshuddh", "unconscious", "gir gayi", "gir padi", "गिर गई", "गिर पड़ी", "giddy", "feels giddy", "डोळ्यासमोर अंधारी", "डोळ्यांसमोर अंधार", "dolyasamor andhari", "चक्कर", "आँखों के आगे अंधेरा", "आंखों के आगे अंधेरा", "आँखों के सामने अंधेरा", "आंखों के सामने अंधेरा", "कमज़ोरी", "कमजोरी", "अशक्तपणा", "डोळ्यांसमोर अंधारी", "chakkar", "kamzori", "kamjori", "dizzy", "dizziness", "giddiness", "weakness", "aankh ke aage andhera", "aankhon ke aage andhera", "ankhon ke aage andhera", "aankh ke saamne andhera", "aankhon ke saamne andhera", "andhera chha", "andhera aa"]),
     burning_urine: P(["laghvila jaljal", "laghvi la jaljal", "laghvi kartana jal", "peshab me jalan", "peshab karte jalan", "jalan peshab", "पेशाब में जलन", "पेशाब करते समय जलन", "लघवीला जळजळ", "लघवी करताना जळ", "peshab mein jalan", "burning urine", "burning urination", "burning while urinating"]),
     foul_discharge: P(["badbu wala", "badbu", "badbuwala", "badbudaar", "badbudar", "badboodar", "bad smelling", "smelly", "वास येणारा", "वास येणारा स्राव", "vas yenara", "vaas yenara", "foul smell", "बदबू", "बदबूदार", "दुर्गंध", "वास येत", "badboo", "foul", "smelly discharge", "bad smell"]),
   },
@@ -249,9 +249,10 @@ const SYMPTOMS = {
 };
 // upper stomach (epigastric) pain: with high BP a sign of severe pre-eclampsia (CHO p.30, SBA p.52)
 const EPIGASTRIC_WORDS = ["upper stomach", "upper abdomen", "upper abdominal", "epigastric", "pet ke upar", "pet ke upar dard", "upar pet", "seene ke neeche", "chhati ke neeche dard", "पेट के ऊपर", "ऊपरी पेट", "सीने के नीचे", "छाती के नीचे दर्द", "पोटाच्या वरच्या"];
-const PALLOR_WORDS = ["pale eyelids", "pale nails", "pale palms", "eyelids pale", "nails pale", "palms pale", "palak safed", "palkein safed", "nakhun safed", "hatheli safed", "पलकें सफेद", "पलकें सफ़ेद", "नाखून सफेद", "नाखून सफ़ेद", "हथेली सफेद", "पांढरा पड", "pandhra pad", "pandhari padli", "फीका", "pheeka", "fika", "सफ़ेद पड़", "सफेद पड़", "फीकी", "पांढरी पड", "फिकट", "safed pad", "pheeki", "fiki", "pandhari pad", "fikat", "pale", "paleness", "pallor", "looks pale"];
+const PALLOR_WORDS = ["pale eyelids", "pale nails", "pale palms", "eyelids pale", "nails pale", "palms pale", "palak safed", "palkein safed", "nakhun safed", "hatheli safed", "पलकें सफेद", "पलकें सफ़ेद", "नाखून सफेद", "नाखून सफ़ेद", "हथेली सफेद", "पांढरा पड", "pandhra pad", "pandhari padli", "फीका", "pheeka", "fika", "सफ़ेद पड़", "सफेद पड़", "फीकी", "पांढरी पड", "फिकट", "safed pad", "pheeki", "fiki", "pandhari pad", "fikat", "pale", "paleness", "pallor", "looks pale", "aankhen safed", "ankhen safed", "aankh safed", "aankhein safed", "आँखें सफेद", "आंखें सफेद", "आँखें सफ़ेद", "nakhun peele", "palkein peeli"];
 SYMPTOMS.anc.pallor = P(PALLOR_WORDS);
 SYMPTOMS.anc.epigastric_pain = P(EPIGASTRIC_WORDS);
+SYMPTOMS.anc.self_harm = null; // filled from the after-birth list below
 SYMPTOMS.pnc = {
   // both word orders: "bahut khoon ja raha", "khoon zyada ja raha", "रक्त जास्त जातंय"
   heavy_bleeding: P(["thakke", "khoon ke thakke", "थक्के", "खून के थक्के", "clots", "blood clots", "गुठळ्या", "गाठी पडत", "khup raktasrav", "jast raktasrav", "jaast raktasrav", "raktasrav khup", "raktasrav jast", "बहुत खून", "ज़्यादा खून", "ज्यादा खून", "खूब खून", "खूप रक्तस्राव", "जास्त रक्तस्राव", "खूप रक्त", "जास्त रक्त", "bahut khoon", "zyada khoon", "jyada khoon", "khoob khoon", "khub khoon",
@@ -263,7 +264,7 @@ SYMPTOMS.pnc = {
   jaundice: P(["पीलिया", "कावीळ", "आँखें पीली", "आंखें पीली", "आँख पीली", "डोळे पिवळे", "त्वचा पिवळी", "peeliya", "piliya", "pilia", "jaundice", "kavil", "kaavil", "aankhein peeli", "ankhen peeli", "aankh peeli", "dole pivle", "yellow eyes", "eyes yellow", "eyes are yellow", "skin yellow", "skin is yellow"]),
   incontinence: P(["पेशाब अपने आप", "पेशाब अपने-आप", "पेशाब निकल जा", "मल अपने आप", "लघवी आपोआप", "शौच आपोआप", "peshab apne aap", "peshab apne-aap", "laghvi aapoaap", "laghvi apoaap", "laghvi aapoap", "urine leaks", "leaking urine", "urine leaking", "incontinence", "wets herself", "passes urine without", "cannot hold urine", "can't hold urine", "cannot hold her urine", "cannot control urine"]),
   // thoughts of harming herself or the baby (SSBSK Form 4 distress; Tele-MANAS 14416)
-  self_harm: P(["end her life", "end my life", "end her own life", "take her life", "take her own life", "wants to die", "want to die", "wish to die", "kill myself", "khud ko khatam", "khud ko maar", "khud ko mar", "apne aap ko khatam", "apne aap ko maar", "khudkushi", "khudkhushi", "khud khushi", "aatmahatya", "aatmhatya", "aatmahatye", "atmahatye", "आत्महत्य", "marne ki baat", "marne ki baatein", "marne ka", "mar jaun", "mar jaaun", "mar jaungi", "mar jaaungi", "mar jau", "jaan de", "jaan dene", "jaan degi", "jaan deni", "फाशी", "fashi", "faashi", "जीव देण", "जीव दे", "jeev den", "jeev de", "khud ko nuksan", "khud ko nukasan", "apne aap ko nuksan", "apne ko nuksan", "marna chahti", "mar jaana chahti", "mar jana chahti", "jaan dena chahti", "jeev dyaycha", "jeev dyayacha", "जीव द्यायचा", "मरना चाहती", "मर जाना चाहती", "जान देना चाहती", "खुद को नुकसान", "baby ko nuksan", "bachche ko nuksan", "बच्चे को नुकसान", "बाळाला इजा", "suicide", "suicidal", "self harm", "self-harm", "kill herself", "hurt herself", "harm herself", "hurt the baby", "harm the baby", "aatmhatya", "atmahatya", "आत्महत्या"]),
+  self_harm: P(["end her life", "end my life", "end her own life", "take her life", "take her own life", "wants to die", "want to die", "wish to die", "kill myself", "khud ko khatam", "khud ko maar", "khud ko mar", "apne aap ko khatam", "apne aap ko maar", "khudkushi", "khudkhushi", "khud khushi", "aatmahatya", "aatmhatya", "aatmahatye", "atmahatye", "आत्महत्य", "marne ki baat", "marne ki baatein", "marne ka", "mar jaun", "mar jaaun", "mar jaungi", "mar jaaungi", "mar jau", "jaan de", "jaan dene", "jaan degi", "jaan deni", "फाशी", "fashi", "faashi", "जीव देण", "जीव दे", "jeev den", "jeev de", "khud ko nuksan", "khud ko nukasan", "apne aap ko nuksan", "apne ko nuksan", "marna chahti", "mar jaana chahti", "mar jana chahti", "jaan dena chahti", "jeev dyaycha", "jeev dyayacha", "जीव द्यायचा", "मरना चाहती", "मर जाना चाहती", "जान देना चाहती", "खुद को नुकसान", "baby ko nuksan", "bachche ko nuksan", "बच्चे को नुकसान", "बाळाला इजा", "suicide", "suicidal", "self harm", "self-harm", "संपवून टाक", "sampavun tak", "sab khatam kar", "sab khatm kar", "सब खत्म कर", "सब ख़त्म कर", "jeev sampav", "जीव संपव", "kill herself", "hurt herself", "harm herself", "hurt the baby", "harm the baby", "aatmhatya", "atmahatya", "आत्महत्या"]),
   // stitches: "tanke mein pus"
   wound_infection: P(["tanke mein pus", "tanke me pus", "taanke mein pus", "tanke pak", "taanke pak", "tanko mein pus", "टांके में मवाद", "टाँके में मवाद", "टांके पक", "टाक्यांना पू", "टाके पिकले", "stitches pus", "pus from stitches", "stitch infection", "wound infection", "wound pus"]),
   // calf pain or swelling (SSBSK Form 4 oedema of legs; a clot needs a doctor)
@@ -283,10 +284,12 @@ SYMPTOMS.pnc = {
   breast_problem: P(["stan bhaari", "stan bhari", "stan bhaari aur dard", "nipple fat", "nipple phat", "nipple fat gaye", "nipples cracked", "nipple cracked", "निप्पल फट", "स्तन भारी", "स्तन", "स्तनाला सूज", "स्तनाला", "स्तनात", "breast problem", "breast", "स्तन में दर्द", "स्तन में सूजन", "स्तनात सूज", "स्तन में गांठ", "दूध नहीं उतर", "छाती में दर्द", "स्तनात दुख", "स्तनात गाठ", "stan mein dard", "stan dard", "stan sujan", "stan soojan", "stan mein sujan", "stan me sujan", "stan mein gaanth", "breast pain", "breast lump", "breast swelling", "cracked nipple", "nipple cracked", "engorged"]),
   dizziness: SYMPTOMS.anc.dizziness,
 };
+SYMPTOMS.anc.self_harm = SYMPTOMS.pnc.self_harm;
 
 // Phrases whose meaning is fixed: [code, phrases, value]
 const ABSENT = {
   newborn: [
+    ["lethargy", P(["not active", "inactive", "less active", "not very active", "na active", "active nahi", "active nahin", "hilta dulta nahi", "hilta-dulta nahi", "hil dul nahi", "hilta dulta nahin", "हिलता डुलता नहीं", "हलचाल नाही", "hilna dulna band", "not responding", "doesnt respond"]), true],
     ["cord_pus", P(["naabhi sookhi", "naabhi sukhi", "naabhi saaf", "nabhi saaf", "नाभि सूखी", "नाभि साफ़", "नाभि साफ", "नाळ सुकली", "नाळ कोरडी", "नाळ स्वच्छ", "naal sookh", "naal sukh", "naal sukl", "naal sukal", "naal sukali", "naal suklee", "nabhi sookhi", "cord clean", "cord is clean", "cord dry", "cord is dry", "कोई मवाद नहीं", "मवाद नहीं", "पू नाही", "pus nahi", "no pus"]), false],
     ["weak_cry", P(["रोती ज़ोर", "रोती जोर", "रोता ज़ोर", "रोता जोर", "रोते ज़ोर", "ज़ोर से रोती", "ज़ोर से रोता", "जोरात रडतं", "जोरात रडते", "ज़ोर से रो", "जोर से रो", "रोता भी ज़ोर", "रोता भी जोर", "रोती भी ज़ोर", "जोरात रडत", "जोरात रडतं", "zor se ro", "jor se ro", "cries loudly", "crying loudly", "strong cry", "cries well", "crying well", "good cry"]), false],
     ["lethargy", P(["हातपाय हलवत", "हात पाय हलवत", "हाथ पैर चला", "हाथ-पैर चला", "haath pair chala", "active", "moving well", "moves well", "खूप हालचाल", "हालचाल चांगली"]), false],
@@ -310,7 +313,7 @@ const ABSENT = {
     // the negation word is part of the sign: "she cannot hold her urine"
     ["abnormal_speech", P(["bol nahi pa rahi", "bol nahin pa rahi", "बोल नहीं पा रही", "बोलता येत नाही", "bolta yet nahi"]), true],
     ["low_mood", P(["no interest", "lost interest", "koi dilchaspi nahi", "dil nahi lagta", "man nahi lagta", "मन नहीं लगता"]), true],
-    ["self_harm", P(["jeena nahi chahti", "jina nahi chahti", "जीना नहीं चाहती", "jagaycha nahi", "जगायचं नाही"]), true],
+    ["self_harm", P(["jagaycha nahi", "जगायचं नाही", "jeena nahi chahti", "jina nahi chahti", "जीना नहीं चाहती", "jagaycha nahi", "जगायचं नाही"]), true],
     ["incontinence", P(["पेशाब रुकता नहीं", "पेशाब रुक नहीं", "पेशाब पर कंट्रोल नहीं", "लघवी थांबत नाही", "लघवी आवरत नाही", "लघवीवर ताबा नाही", "peshab rukta nahi", "peshab ruk nahi", "laghvi thambat nahi", "laghvi aavrat nahi", "can not hold urine", "cannot hold her urine", "no control over urine", "peshab rok nahi", "peshab rok nahin", "peshab rok na", "laghvi thambavta yet nahi", "laghvi thambavta", "लघवी थांबवता येत नाही", "thambavta yet nahi", "पेशाब रोक नहीं", "पेशाब रोक न", "latrine rok nahi", "potty rok nahi", "लघवी रोखता येत नाही", "laghvi rokhta yet nahi"]), true],
   ],
 };
@@ -416,9 +419,67 @@ function fillSignStart() {
   for (const list of Object.values(ANCHOR)) for (const seq of list) if (seq[0].length > 1) SIGN_START.add(seq[0]);
   for (const w of ["water", "pani", "paani", "पानी", "पाणी"]) SIGN_START.add(w);
 }
+// Negated lists. "no fever, fits, or chest indrawing", "koi bukhar, jhatke ya ulti nahi",
+// "बुखार, झटके, उल्टी कुछ नहीं": one negation covers every sign in the list. An item of the list is a
+// sign phrase on its own (every word belongs to a sign phrase); the list stops at the first item that
+// says more ("fits since morning", "jhatke aaye"), at a full stop, or at "but".
+let SIGN_LISTS = null;
+const LIST_JOIN = new Set([",", "or", "ya", "aur", "and", "nor", "kiva", "kinva", "किंवा", "ani", "आणि", "या", "और", "/", "&", "va", "व"]);
+const LIST_LEAD = new Set(["no", "koi", "कोई", "bina", "बिना", "without", "denies", "denied", "deny", "nil", "na", "न", "कुठलाही", "कुठलीही", "कसलाही", "kasla", "kuthlahi"]);
+const LIST_FILL = new Set(["any", "the", "a", "of", "koi", "कोई", "or", "h", "o", "c", "complaints", "complaint", "history"]);
+const LIST_TAIL = [["kuch", "nahi"], ["kuch", "nahin"], ["कुछ", "नहीं"], ["कुछ", "नही"], ["काही", "नाही"], ["kahi", "nahi"], ["kaahi", "nahi"], ["koi", "nahi"], ["कोई", "नहीं"], ["kuthlahi", "nahi"], ["none"], ["nil"], ["nahi"], ["nahin"], ["नहीं"], ["नही"], ["नाही"], ["absent"]];
+const SENT_END = new Set([".", "।", "?", "!", ";", "॥"]);
+const LIST_STOP = /^(but|lekin|लेकिन|magar|मगर|par|पण|however|except|sirf|सिर्फ|only|फक्त|fakt)$/;
+const negListCache = new WeakMap();
+function listNegated(tok) {
+  if (negListCache.has(tok)) return negListCache.get(tok);
+  if (!SIGN_LISTS) { SIGN_LISTS = []; for (const t of Object.values(SYMPTOMS)) for (const list of Object.values(t)) SIGN_LISTS.push(list); }
+  const cov = new Array(tok.length).fill(false);
+  for (const list of SIGN_LISTS) for (const h of findAll(tok, list)) for (let k = h.i0; k < h.i1; k++) cov[k] = true;
+  const mask = new Set();
+  const isJoin = (k) => LIST_JOIN.has(tok[k].t) || LIST_JOIN.has(tok[k].lo);
+  // one item: tokens [s, e] are all sign words (or list fillers) and at least one is a sign word
+  const itemOk = (s, e) => e >= s && e - s < 5 && tok.slice(s, e + 1).every((x, q) => cov[s + q] || LIST_FILL.has(x.lo) || LIST_LEAD.has(x.lo)) && tok.slice(s, e + 1).some((x, q) => cov[s + q]);
+  const collect = (from, dir) => { // walk items from `from` in direction dir (+1 forward, -1 back)
+    const items = []; let k = from;
+    while (k >= 0 && k < tok.length) {
+      while (k >= 0 && k < tok.length && isJoin(k)) k += dir;
+      if (k < 0 || k >= tok.length || SENT_END.has(tok[k].t) || LIST_STOP.test(tok[k].lo)) break;
+      let e = k; while (e + dir >= 0 && e + dir < tok.length && !isJoin(e + dir) && !SENT_END.has(tok[e + dir].t) && !LIST_STOP.test(tok[e + dir].lo) && !(dir > 0 && NEG.has(tok[e + dir].lo))) e += dir;
+      const [s, t] = dir > 0 ? [k, e] : [e, k];
+      if (!itemOk(s, t)) break;
+      items.push([s, t]); k = e + dir;
+    }
+    return items;
+  };
+  for (let k = 0; k < tok.length; k++) {
+    // a leading negation: "no fever, fits, or chest indrawing", "bina bukhar aur jhatke ke"
+    if (LIST_LEAD.has(tok[k].lo) && !(tok[k].lo === "na" && !cov[k + 1])) {
+      const items = collect(k + 1, 1);
+      if (items.length >= 2) for (const [s, e] of items) for (let q = s; q <= e; q++) mask.add(q);
+    }
+    // a trailing negation: "bukhar, jhatke, ulti, kuch nahi"
+    for (const seq of LIST_TAIL) {
+      if (!seq.every((w, q) => tok[k + q]?.lo === w)) continue;
+      const after = tok[k + seq.length];
+      const closes = !after || SENT_END.has(after.t) || after.t === "," || /^(hai|hain|है|हैं|आहे|aahe|ahe|aahet|आहेत|hota|hoti|होता|होती|tha|thi|था|थी)$/.test(after.lo);
+      const strong = seq.length > 1 || ["none", "nil"].includes(seq[0]);
+      if (!closes && !strong) continue;
+      const items = collect(k - 1, -1);
+      // a bare "nahi" covers the list only when it is a list of alternatives: "bukhar ya jhatke nahi",
+      // "koi bukhar, jhatke ya ulti nahi" ("जळजळ, आणि दम लागतो, ताप नाही" denies only the fever)
+      const alt = items.length && (tok.slice(items[items.length - 1][0], items[0][1] + 1).some((x) => /^(ya|or|nor|kiva|kinva|किंवा|या)$/.test(x.lo)) || /^(koi|कोई)$/.test(tok[items[items.length - 1][0]].lo));
+      if ((strong && items.length) || (items.length >= 2 && alt)) for (const [s, e] of items) for (let q = s; q <= e; q++) mask.add(q);
+      break;
+    }
+  }
+  negListCache.set(tok, mask);
+  return mask;
+}
 function negated(tok, hit) {
   fillSignStart();
   if (hit.neg) return true;
+  { const m = listNegated(tok); for (let k = hit.i0; k < hit.i1; k++) if (m.has(k)) return true; }
   const [a, b] = clauseOf(tok, hit.i0);
   for (let k = hit.i1; k <= Math.min(b, hit.i1 + 4); k++) {
     if (/^(denies|denied|deny|denying|without)$/.test(tok[k].lo)) break; // "denies" negates what follows it
@@ -557,8 +618,13 @@ function isLexicon(lo) {
   return false;
 }
 const LEXSTART = /^(नाळ|नाभ|डोळ|पोट|छात|दिवस|दिन|महीन|महिन|आठवड|हफ|बाळ|बच्च|बाळंत|प्रसूत|डिलीव|डिलिव|delivery|तापमान|टेम्प|हीमो|हिमो|वजन|वज़न|अल्ब्य|एल्ब)/;
+// A word that is a sign on its own ("झटके", "ulti", "jaundice"), a time word or a pronoun is never a name
+let SIGN_WORD = null;
+const NOT_NAME_RE = /^(pichh?l[aeiy]|पिछल[ाीे]|pehl[aei]|पहल[ाीे]|jeen[ae]|jine|जीने|जीना|jeev|जीव|chukl|चुकल|ti|ती|तिचा|तिची|तिचे|तिला|tichi|ticha|tila|usko|usse|unko|inko|wo|woh|vo|ye|yeh|वो|ये|वह|यह|उसको|उनको|kal|कल|aaj|आज|ab|अब|mahine|महीने|baar|बार|galat|गलत|galti|गलती|dobara|दोबारा|recount|matlab|मतलब)$/;
 function okName(w) {
   const lo = K(w);
+  if (!SIGN_WORD) { SIGN_WORD = new Set(); for (const t of Object.values(SYMPTOMS)) for (const list of Object.values(t)) for (const sq of list) if (sq.length === 1 && sq[0].length >= 3) SIGN_WORD.add(sq[0]); }
+  if (SIGN_WORD.has(lo) || NOT_NAME_RE.test(lo) || /^(चुकल|chukl|गलत|galat|aatmahat|आत्महत|khudkush|जगाय|jagay|घरवा|gharwa|gharva|संपव|sampav|बहिण|बहीण|बहन|सास|ससुर|नणंद|नवर|भाऊ|आजी|शेजार|bahin|behen|bahen|nanad|navr|aaji|shejar)/.test(lo)) return false;
   return w && lo.length >= 2 && !NOT_NAMES.has(lo) && !POSS.has(lo) && !FILLER.has(lo) && !NAME_CUE.has(lo) && !/^[0-9]/.test(w) && !isLexicon(lo) && !BABY_WORDS.has(lo) && !LEXSTART.test(lo) && !findAll([{ lo }], TYPE_WORDS.anc.concat(TYPE_WORDS.pnc, TYPE_WORDS.newborn)).length;
 }
 const MR_POSS = /^([\u0900-\u097f]{2,}?)(\u091a\u0902|\u091a\u0947|\u091a\u0940|\u091a\u093e|\u091a\u094d\u092f\u093e|\u0932\u093e)$/; // -चं -चे -ची -चा -च्या -ला
@@ -600,7 +666,7 @@ function findName(tok) {
     if (rmp && okName(rmp[1]) && okName(w)) cands.push({ i, score: BABY_WORDS.has(tok[i + 1]?.lo) || /^(baal|bal|baby)/.test(tok[i + 1]?.lo || "") ? 6 : 3, stem: rmp[1] });
     // Marathi "सुरेखाचं बाळ", "प्रतिभाचं"
     const m = w.match(MR_POSS);
-    if (m && okName(m[1]) && okName(w) && !/(ायला|यला|ण्याला|ताना)$/.test(w) && !/(ण्या|त्ये|ल्या)$/.test(m[1])) cands.push({ i, score: BABY_WORDS.has(tok[i + 1]?.lo) ? 6 : 3, stem: m[1] });
+    if (m && m[1].length >= 3 && okName(m[1]) && okName(w) && !/(ायला|यला|ण्याला|ताना)$/.test(w) && !/(ण्या|त्ये|ल्या)$/.test(m[1])) cands.push({ i, score: BABY_WORDS.has(tok[i + 1]?.lo) ? 6 : 3, stem: m[1] });
     // "पूनम, 34 हफ्ते" / "Archana, 30 hafte" / "सुनीता सातवें महीने"
     const nxt = tok[i + 1]?.t === "," ? i + 2 : i + 1;
     if (okName(w) && /^[A-Z\u0900-\u097f]/.test(w) && (i === 0 || BREAK.has(tok[i - 1].t) || JOIN.has(tok[i - 1].lo)) && tok[nxt] && (readNumber(tok, nxt) || ORD[tok[nxt].lo] != null || ordinalOf(tok[nxt].lo) != null)) {
@@ -645,7 +711,7 @@ const SINCE = KS(["se", "से", "पासून", "pasun", "since", "from"]);
 export const FIELDS = {
   anc: ["name", "weeks", "month", "bp_sys", "bp_dia", "hb", "weight_kg", "albumin", "fetal_movement", "ifa_tablets", "age", "height_cm", "labour_hours", "twins", "prev_caesarean", "prev_pph", "prev_aph", "prev_eclampsia",
     "temp_c", "temp_f", "prev_stillbirth", "prev_preterm", "diabetes", "heart_disease", "rh_negative", "hiv_syphilis", "previous_births", "malpresentation", "td_doses",
-    "pulse", "bp_source", "bp_date", "hb_source", "hb_date"],
+    "pulse", "bp_source", "bp_date", "hb_source", "hb_date", "pain_severe", "epilepsy"],
   pnc: ["name", "day", "pads", "temp_c", "temp_f", "bp_sys", "bp_dia", "hb", "bp_source", "bp_date", "hb_source", "hb_date"],
   newborn: ["name", "day", "weight_g", "birth_weight_g", "temp_c", "temp_f", "resp_rate", "feeding", "weeks_at_birth", "preterm", "birth_place", "prev_weight_g"],
 };
@@ -673,18 +739,28 @@ export function understand(text, hint) {
   const set = (k, v, sp) => { rec[k] = v; ev[k] = sp; };
   const doubt = (field, heard, say) => { if (!doubts.some((d) => d.field === field && d.code === say.code)) doubts.push({ field, heard: heard == null ? null : String(heard), ...say }); };
 
-  // A number is "past" when its clause has a past marker and no now marker
-  const pastAt = (i) => {
-    const [a, b] = nearOf(tok, i, 5, 4);
+  // A reading (tokens i..i1-1) is "past" when its own part of the clause has a past marker and no now
+  // marker. With two numbers in one clause ("hb 11 pichhli baar 6 tha", "6 tha, aaj 11") each number
+  // owns the words before it back to the previous number, and the trailing tha/was after it; a
+  // leading marker after it ("pichhli baar") belongs to the next number.
+  const TRAIL_PAST = /^(tha|thi|the|था|थी|थे|was|were|होता|होती|होते|hota|hoti|hote|hotan|होतं|ago)$/;
+  const pastAt = (i, i1 = i + 1) => {
+    const [ca, cb] = clauseOf(tok, i);
+    const a0 = Math.max(ca, i - 5), b0 = Math.min(cb, i1 - 1 + 4);
+    const prevN = [...nums].reverse().find((n) => n.i1 <= i && n.i1 > a0);
+    const nextN = nums.find((n) => n.i0 >= i1 && n.i0 <= b0);
+    const a = prevN ? prevN.i1 : a0, b = nextN ? nextN.i0 - 1 : b0;
     let past = false, now = false;
     for (let k = a; k <= b; k++) {
-      const lo = tok[k].lo;
-      if (NOW.has(lo)) now = true;
-      else if (PAST.has(lo)) {
-        if ((lo === "kal" || lo === "कल" || lo === "kaal" || lo === "काल") && SINCE.has(tok[k + 1]?.lo)) continue; // "kal se" = since yesterday, still going on
-        if ((lo === "pehle" || lo === "pahle" || lo === "पहले") && (DAY.has(tok[k + 1]?.lo) || /^(din|दिन|day|दिवस)/.test(tok[k + 1]?.lo || ""))) continue; // "pehle din" = first day
-        past = true;
-      }
+      if (k >= i && k < i1) continue;
+      const lo = tok[k].lo, before = k < i;
+      if (NOW.has(lo)) { if (before || !nextN) now = true; continue; }
+      if (!PAST.has(lo)) continue;
+      if ((lo === "kal" || lo === "कल" || lo === "kaal" || lo === "काल") && SINCE.has(tok[k + 1]?.lo)) continue; // "kal se" = since yesterday, still going on
+      if ((lo === "pehle" || lo === "pahle" || lo === "पहले") && (DAY.has(tok[k + 1]?.lo) || /^(din|दिन|day|दिवस)/.test(tok[k + 1]?.lo || ""))) continue; // "pehle din" = first day
+      if (before && prevN && TRAIL_PAST.test(lo)) continue; // "6 tha aaj 11": the "tha" is the 6's
+      if (!before && nextN && !TRAIL_PAST.test(lo)) continue; // "11 pichhli baar 6": the 6's
+      past = true;
     }
     return past && !now;
   };
@@ -744,7 +820,14 @@ export function understand(text, hint) {
   };
   const birthAt = (i) => { const [a, b] = nearOf(tok, i, 5, 1); for (let k = a; k <= b; k++) if (BIRTH.has(tok[k].lo)) return true; return false; };
   // last candidate said for now; if all are past, the last one
-  const preferNow = (cands) => { const live = cands.filter((c) => !pastAt(c.i0)); return LAST(live.length ? live : cands) || null; };
+  const endOf = (c) => c.end ?? c.n?.i1 ?? c.i1 ?? c.i0 + 1;
+  const seen = []; // readings understood but not kept (an earlier or past value): never "unread"
+  const preferNow = (cands) => {
+    const live = cands.filter((c) => !pastAt(c.i0, endOf(c)));
+    const pick = LAST(live.length ? live : cands) || null;
+    for (const c of cands) if (c !== pick) seen.push(span(tok, Math.min(c.i0, endOf(c) - 1), endOf(c)));
+    return pick;
+  };
   // "…, aaj 99" / "ab 2600 hai": a number right after a now-marker restates the field named just before
   const restated = (anchors, ok) => nums.filter((n) => NOW.has(tok[n.i0 - 1]?.lo) && ok(n) && anchors.some((an) => an.i1 <= n.i0 && n.i0 - an.i1 <= 12 && !tok.slice(an.i1, n.i0).some((x) => x.t === "।" || x.t === "." || x.t === "?")));
 
@@ -764,7 +847,7 @@ export function understand(text, hint) {
       const sep = between.length <= 2 && between.some((w) => SEP_BP.has(w));
       // "BP 140 90": no separator, right after the BP word
       const bare = between.length === 0 && a.value > b.value && anchors.some((an) => an.i1 <= a.i0 && a.i0 - an.i1 <= 2);
-      if ((sep || bare) && okSys(a) && okDia(b) && a.value > b.value) pairs.push({ a, b, i0: a.i0 });
+      if ((sep || bare) && okSys(a) && okDia(b) && a.value > b.value) pairs.push({ a, b, i0: a.i0, end: b.i1 });
       else if (sep && a.value >= 40 && b.value <= 260 && a.value <= b.value && b.value >= 70) doubt("bp", `${a.value}/${b.value}`, { say_en: `Did you say BP ${b.value} by ${a.value}?`, say_hi: `क्या बीपी ${b.value} बटा ${a.value} है?`, say_mr: `बीपी ${b.value} बाय ${a.value} आहे का?` });
     }
     const up = tok.findIndex((x) => ["upar", "ऊपर", "उपर", "oopar", "वरचा", "वरचं", "varcha", "systolic", "upper"].includes(x.lo));
@@ -774,11 +857,11 @@ export function understand(text, hint) {
     let ud = null;
     if (up >= 0 && dn >= 0) for (const f of [numBefore, numAfter]) {
       const s = f(up), d = f(dn);
-      if (s && d && s !== d && okSys(s) && okDia(d) && s.value > d.value) { ud = { a: s, b: d, i0: Math.min(s.i0, d.i0) }; break; }
+      if (s && d && s !== d && okSys(s) && okDia(d) && s.value > d.value) { ud = { a: s, b: d, i0: Math.min(s.i0, d.i0), end: Math.max(s.i1, d.i1) }; break; }
     }
     // later mentions correct earlier ones ("140 by 90, nahi nahi, 150 by 100"); past ones lose
     const pick = preferNow((ud ? [...pairs, ud].sort((x, y) => x.i0 - y.i0) : pairs).filter((x) => !otherAt(x.a.i0)));
-    if (pick && pastAt(pick.i0)) past.bp = true;
+    if (pick && pastAt(pick.i0, pick.end)) past.bp = true;
     if (pick) { set("bp_sys", Math.round(pick.a.value), span(tok, pick.a.i0, pick.a.i1)); set("bp_dia", Math.round(pick.b.value), span(tok, pick.b.i0, pick.b.i1)); }
     else if (anchors.length && !pairs.length && !ud) {
       const [a, b] = clauseOf(tok, anchors[0].i0);
@@ -793,7 +876,8 @@ export function understand(text, hint) {
     const cands = [];
     for (const an of findAll(tok, ANCHOR.hb)) {
       const after = nums.filter((n) => n.i0 >= an.i1 && n.i0 - an.i1 <= 12 && n.value >= 3 && n.value <= 18 && !UNITISH(tok[n.i1]?.lo) && !tok.slice(an.i1, n.i0).some((x) => x.t === "।" || (x.t === "." && n.i0 - an.i1 > 6)));
-      const n = after.length ? LAST(after) : numberNear(tok, nums, an, { ahead: 5, behind: 3 });
+      if (after.length) { for (const x of after) if (!cands.some((c) => c.i0 === x.i0)) cands.push(lowEnd(x)); continue; }
+      const n = numberNear(tok, nums, an, { ahead: 5, behind: 3 });
       if (n && n.value >= 3 && n.value <= 18) cands.push(lowEnd(n));
       else {
         // "Hb 65": the speech engine dropped the point
@@ -814,7 +898,7 @@ export function understand(text, hint) {
     }
     cands.sort((a, b) => a.i0 - b.i0);
     const hb = preferNow(cands.filter((c) => !otherAt(c.i0)));
-    if (hb && pastAt(hb.i0)) past.hb = true;
+    if (hb && pastAt(hb.i0, hb.i1)) past.hb = true;
     if (hb) set("hb", round1(hb.value), span(tok, hb.i0, hb.i1));
   }
 
@@ -890,7 +974,7 @@ export function understand(text, hint) {
     if (type === "newborn") for (const n of nums) if (okT(n) && /^(ka|ki|ke|का|की|के|cha|chi|che)$/.test(tok[n.i0 - 1]?.lo || "") && /^(baby|bachche|bachhe|bachcha|बच्चे|बच्चा|बाळ|bal)$/.test(tok[n.i0 - 2]?.lo || "") && anchors.some((an) => an.i0 < n.i0 && n.i0 - an.i0 <= 14) && !cands.includes(n)) cands.push(n);
     cands.sort((a, b) => a.i0 - b.i0);
     const t = preferNow(cands.filter((c) => !otherAt(c.i0) || (type === "newborn" && /^(baby|bachche|bachhe|bachcha|बच्चे|बच्चा|बाळ|bal)$/.test(tok[c.i0 - 2]?.lo || ""))));
-    if (t && pastAt(t.i0)) past.temp_c = true;
+    if (t && pastAt(t.i0, t.i1)) past.temp_c = true;
     if (t) {
       let i1 = t.i1; let unitF = t.value > 45;
       for (let k = t.i1; k < Math.min(t.i1 + 3, tok.length); k++) { if (UNIT_F.has(tok[k].lo)) { unitF = true; i1 = k + 1; } if (UNIT_C.has(tok[k].lo)) { unitF = false; i1 = k + 1; } if (tok[k].t === "°" || ["degree", "डिग्री", "डिग्री."].includes(tok[k].lo)) i1 = k + 1; }
@@ -907,7 +991,7 @@ export function understand(text, hint) {
       const claimed = (n) => [ANCHOR.temp, ANCHOR.weight, ANCHOR.hb, ANCHOR.bp].some((list) => findAll(tok, list).some((h) => n.i0 >= h.i1 && n.i0 - h.i1 <= 2)) || WEEKS.has(tok[n.i1]?.lo) || DAY.has(tok[n.i1]?.lo) || /^(aathavd|athavd|haft|week|wks?|din|divas|ghant|hour|hrs?)/.test(tok[n.i1]?.lo || "") || UNIT_KG.has(tok[n.i1]?.lo) || UNIT_G.has(tok[n.i1]?.lo) || tok[n.i1]?.t === "°" || ["degree", "डिग्री"].includes(tok[n.i1]?.lo);
       const ok = inSentence.filter((n) => n.value >= 15 && n.value <= 120 && !claimed(n));
       let r = null;
-      if (ok.length) r = LAST(ok); else { const n = numberNear(tok, nums, an, { ahead: 6, behind: 4 }); if (n && n.value >= 15 && n.value <= 120 && !claimed(n)) r = n; }
+      if (ok.length) { r = LAST(ok); for (const x of ok) if (x !== r) seen.push(span(tok, x.i0, x.i1)); } else { const n = numberNear(tok, nums, an, { ahead: 6, behind: 4 }); if (n && n.value >= 15 && n.value <= 120 && !claimed(n)) r = n; }
       if (r && !cands.includes(r)) cands.push(r);
     }
     if (!cands.length) { const n = nums.find((x) => MINUTE.has(tok[x.i1]?.lo) || (["per", "प्रति", "पर"].includes(tok[x.i1]?.lo) && MINUTE.has(tok[x.i1 + 1]?.lo))); if (n && n.value >= 15 && n.value <= 120 && findAll(tok, ANCHOR.resp).length) cands.push(n); }
@@ -972,7 +1056,7 @@ export function understand(text, hint) {
     for (const n of restated(anchors, (x) => x.value >= 0 && x.value <= 30)) if (!cands.some((c) => c.n === n)) cands.push({ n, an: n, i0: n.i0 });
     cands.sort((a, b) => a.i0 - b.i0);
     const c = preferNow(cands.filter((x) => !otherAt(x.i0)));
-    if (c) { set("pads", Math.round(c.n.value), span(tok, Math.min(c.n.i0, c.an.i0), Math.max(c.n.i1, c.an.i1))); if (pastAt(c.i0)) past.pads = true; }
+    if (c) { set("pads", Math.round(c.n.value), span(tok, Math.min(c.n.i0, c.an.i0), Math.max(c.n.i1, c.an.i1))); if (pastAt(c.i0, c.n.i1)) past.pads = true; }
   }
 
   // Urine albumin: "albumin 2 plus", "albumin nahi", "trace"
@@ -1010,7 +1094,17 @@ export function understand(text, hint) {
     while (b < tok.length - 1 && b - k0 < 10 && !/^[.।?!]$/.test(tok[b + 1].t)) b++;
     const w = tok.slice(a, b + 1);
     const card = w.some((x) => /^(card|cards|कार्ड|mcp|एमसीपी|likha|likhi|लिखा|लिखी|written|लिहिल|vhsnd|vhnd|register|रजिस्टर)/.test(x.lo));
-    const today = w.some((x) => /^(aaj|आज|abhi|अभी|today|now|आता|naapa|napa|नापा|liya|लिया|checked|measured|taken)$/.test(x.lo));
+    const [ra, rb] = clauseOf(tok, k0);
+    const own = tok.slice(Math.max(a, ra - 1), Math.min(b, rb + 3) + 1); // the reading's clause and the words just after it ("..., aaj liya")
+    const today = own.some((x) => /^(aaj|आज|abhi|अभी|today|now|आता|naapa|napa|नापा|liya|लिया|checked|measured|taken)$/.test(x.lo)) && !(kind === "bp" ? past.bp : past.hb) && !own.some((x, q) => NEG.has(x.lo) && /^(liya|लिया|naapa|नापा|check|checked|kiya|किया|hua|हुआ)$/.test(own[q - 1]?.lo || own[q + 1]?.lo || ""));
+    const earlier = kind === "bp" ? past.bp : past.hb;
+    if (!card && earlier && !today) {
+      // "BP kal 170/110 tha hospital mein": an earlier reading, not today's (the rules treat it like a card value)
+      set(kind + "_source", "earlier", span(tok, a, b + 1));
+      const pm = tok.slice(Math.max(a, ra), rb + 1).findIndex((x) => /^(kal|कल|काल|yesterday|pichli|pichhli|pichle|pichhle|पिछली|पिछले|last|मागच्या|मागील|परसों|parson)$/.test(x.lo));
+      if (pm >= 0) { const at = Math.max(a, ra) + pm; const two = /^(kal|कल|काल|yesterday|परसों|parson)$/.test(tok[at].lo) ? [tok[at]] : tok.slice(at, at + 2); set(kind + "_date", two.map((x) => x.t).join(" "), span(tok, at, at + two.length)); }
+      continue;
+    }
     if (card && !(today && !w.some((x) => /^(card|कार्ड|mcp)/.test(x.lo)))) {
       set(kind + "_source", "card", span(tok, a, b + 1));
       const dk = w.findIndex((x) => /^(tarikh|tareekh|तारीख|तारीख़|tarik|तारखेला|date)$/.test(x.lo));
@@ -1100,6 +1194,7 @@ export function understand(text, hint) {
     }
     // diabetes / sugar, heart disease, Rh negative, HIV or syphilis
     { const i = at(/^(sugar|शुगर|diabetes|diabetic|मधुमेह|madhumeh|gdm|डायबिटीज|डायबिटीज़|डायबेटीस|insulin|इन्सुलिन)$/); if (i >= 0) flag("diabetes", i); }
+    { const h = phrase(["mirgi", "मिर्गी", "epilepsy", "epileptic", "फिट्सचा आजार", "mirgi ki bimari"]); if (h && rec.epilepsy == null) set("epilepsy", !negated(tok, h), span(tok, h.i0, h.i1)); }
     { const h = phrase(["dil ki bimari", "dil ki beemari", "dil ka rog", "dil ki problem", "दिल की बीमारी", "दिल का रोग", "हृदयरोग", "हृदय रोग", "hriday rog", "हृदयाचा आजार", "heart disease", "heart problem", "heart ki bimari", "heart ka problem", "heart patient"]); if (h) set("heart_disease", !negated(tok, h), span(tok, h.i0, h.i1)); }
     for (let i = 0; i < tok.length; i++) {
       if (!/^(negative|नेगेटिव|निगेटिव|निगेटिव्ह|nigetiv|negetive)$/.test(tok[i].lo)) continue;
@@ -1145,13 +1240,14 @@ export function understand(text, hint) {
     }
   }
 
-  // "paanch pad… nahi, chaar": a bare number after a correction word replaces the one just said
+  // "paanch pad… nahi, chaar", "wajan 2500, galat bola, 1500", "saans 66. dobara gina, 48":
+  // a bare number after a correction word replaces the one just said
   {
-    const CORR = KS(["nahi", "nahin", "नहीं", "नाही", "no", "sorry", "wait", "गलत", "galat", "थांबा", "matlab", "मतलब", "i", "mean"]);
+    const CORR = KS(["nahi", "nahin", "नहीं", "नाही", "no", "sorry", "wait", "गलत", "galat", "galti", "गलती", "थांबा", "matlab", "मतलब", "i", "mean", "actually", "dobara", "दोबारा", "phir", "फिर", "gina", "गिना", "gini", "recount", "recounted", "again", "चुकलं", "चुकले", "चुकला", "चुकली", "chukla", "chukle", "chukli", "chuklan", "punha", "पुन्हा", "correction"]);
     const used = new Set();
     for (const e of Object.values(ev)) if (e) for (let k = 0; k < tok.length; k++) if (tok[k].start >= e.start && tok[k].end <= e.end) used.add(k);
     for (const [field, e] of Object.entries({ ...ev })) {
-      if (!e || typeof rec[field] !== "number" || field === "bp_sys" || field === "bp_dia" || field === "weight_g" || field === "temp_f") continue;
+      if (!e || typeof rec[field] !== "number" || field === "bp_sys" || field === "bp_dia" || field === "temp_f" || field === "birth_weight_g") continue;
       const nIdx = nums.findIndex((n) => tok[n.i0].start >= e.start && tok[n.i1 - 1].end <= e.end);
       if (nIdx < 0) continue;
       const n1 = nums[nIdx], n2 = nums[nIdx + 1];
@@ -1159,6 +1255,14 @@ export function understand(text, hint) {
       const between = tok.slice(n1.i1, n2.i0).map((x) => x.lo);
       if (!between.some((w) => CORR.has(w))) continue;
       if ([...Array(n2.i1 - n2.i0).keys()].some((k) => used.has(n2.i0 + k))) continue;
+      seen.push(span(tok, n1.i0, n2.i0));
+      if (field === "weight_g") {
+        // the corrected weight keeps the unit rules: "1.5 kilo", "1500", "1 kilo 500 gram"
+        let g = UNIT_KG.has(tok[n2.i1]?.lo) || n2.value < 10 ? n2.value * 1000 : n2.value, end = n2.i1 + (UNIT_KG.has(tok[n2.i1]?.lo) || UNIT_G.has(tok[n2.i1]?.lo) ? 1 : 0);
+        if (UNIT_KG.has(tok[n2.i1]?.lo)) { const m = readNumber(tok, n2.i1 + 1); if (m && m.value < 1000 && UNIT_G.has(tok[m.i1]?.lo)) { g += m.value; end = m.i1 + 1; } }
+        if (g >= 800 && g <= 6000 && g < rec.weight_g * 3 && g > rec.weight_g / 3) { rec.weight_g = Math.round(g); ev.weight_g = span(tok, n2.i0, end); }
+        continue;
+      }
       if (field === "temp_c") {
         // the corrected number keeps the unit rule: above 45 is Fahrenheit
         const f = n2.value > 45 || (rec.temp_f != null && n2.value >= 86) ? n2.value : null;
@@ -1194,6 +1298,7 @@ export function understand(text, hint) {
       if (w.some((x) => ["उतर", "उतरत", "येतंय", "येत", "आई", "माँ", "मां", "mother"].includes(x)) && !w.some((x) => ["पी", "पीता", "पितं", "पीत", "पित", "pee", "pita", "feeding"].includes(x))) continue;
       let v;
       const tail = (b + 2 < tok.length && JOIN.has(tok[b + 1]?.lo)) ? clauseWords(b + 2).w : [];
+      if (tok.slice(Math.max(a, i - 3), i).some((x) => /^(na|न)$/.test(x.lo)) || (w.some((x) => /^(na|न|nahi|नहीं)$/.test(x)) && w.some((x) => /^(barabar|baraabar|बराबर|barobar)$/.test(x)))) { picks.push({ v: "none", i0: a, i1: b + 1, past: pastAt(i) }); continue; }
       if (w.some((x) => POOR.has(x)) || (tail.length <= 3 && tail.some((x) => POOR.has(x)))) v = "poor";
       else if (w.some((x) => NEG.has(x) || STOP.has(x) || x === "unable")) {
         const atAll = w.some((x) => /^(bilkul|बिल्कुल|ajibat|अजिबात|all|zara|ज़रा|jara)$/.test(x)) || STOP.has(w.find((x) => STOP.has(x)) || "");
@@ -1296,6 +1401,13 @@ export function understand(text, hint) {
   for (const code of codes) {
     for (const hit of findAll(tok, table[code])) {
       if (code === "lethargy" && ev.feeding && overlaps(ev.feeding, span(tok, hit.i0, hit.i1))) continue;
+      if (code === "hot_to_touch" && /^(garam|गरम|warm|उबदार|ubdar)$/.test(tok[hit.i0].lo) && clauseWords(hit.i0).w.some((x) => /^(haath|hath|हाथ|हात|pair|paon|पैर|पाय|hands?|feet|foot|limbs?|haat|paay|hatpay|हातपाय)$/.test(x)) && !clauseWords(hit.i0).w.some((x) => /^(badan|बदन|sharir|शरीर|body|pet|पेट|maatha|matha|माथा|kapal|अंग|ang|bukhar|बुखार|taap|ताप|fever)$/.test(x))) continue;
+      if (code === "cold_to_touch" && ((/^(thandi|ठंडी)$/.test(tok[hit.i0].lo) && /^(lag|lagi|लग|लगी)/.test(tok[hit.i1]?.lo || "")) || clauseWords(hit.i0).w.some((x) => /^(sardi|सर्दी|zukaam|zukam|jukam|jukaam|जुकाम|ज़ुकाम|khansi|खांसी|खाँसी|naak|नाक|सर्दि)/.test(x)))) continue;
+      if (code === "convulsions" && (type === "anc" || type === "pnc") && clauseWords(hit.i0).w.concat(tok.slice(hit.i1, hit.i1 + 6).map((x) => x.lo)).some((x) => /^(dawai|dawa|davai|दवाई|दवा|goli|गोली|medicine|tablet|tablets|mirgi|मिर्गी|epilepsy|epileptic|औषध|aushadh)/.test(x))) {
+        if (type === "anc") set("epilepsy", true, span(tok, hit.i0, hit.i1));
+        doubt("severity", null, { code: "convulsions", say_en: "She has fits (epilepsy) and takes medicine. Has she had a fit since the last visit?", say_hi: "उन्हें मिर्गी है और दवा चल रही है। क्या पिछली विज़िट के बाद झटका आया?", say_mr: "तिला फिट्सचा आजार आहे आणि औषध चालू आहे. मागच्या भेटीनंतर झटका आला का?" });
+        taken.push(hit); continue;
+      }
       // "taapmaan 35 degree" is a reading, not "hot to touch"
       if ((code === "hot_to_touch" || code === "fever") && /^(taapm|tapm|tapam|taapam|तापमान|तपमान)/.test(tok[hit.i0].lo)) continue;
       // "स्तनपान", "breastfeeding" is the baby feeding, not a breast problem
@@ -1304,6 +1416,7 @@ export function understand(text, hint) {
       if ((code === "bleeding" || code === "heavy_bleeding") && tok.slice(hit.i0, hit.i1 + 3).some((x) => /^(jaanch|janch|जांच|जाँच|test|टेस्ट|kami|कमी|matra|मात्रा|report|रिपोर्ट|chadh|चढ़|चढ|transfusion|group|ग्रुप|tapas|तपास)/.test(x.lo))) continue;
       // "sir mein halka dard": mild is not severe; ask instead of referring
       if ((code === "severe_headache" || (code === "abdominal_pain" && type === "anc")) && mildAt(hit)) { askSeverity(code, hit); continue; }
+      if (code === "low_mood" && mildAt(hit) && !negated(tok, hit) && !wrongSubject(hit)) { doubt("severity", null, { code: "low_mood", say_en: "Has she felt down or hopeless, or lost interest in things, for most of the last two weeks?", say_hi: "क्या पिछले दो हफ़्तों से ज़्यादातर वह उदास या निराश रहती हैं, या किसी चीज़ में मन नहीं लगता?", say_mr: "गेल्या दोन आठवड्यांत बहुतेक वेळा ती उदास किंवा निराश असते का, किंवा कशातच रस वाटत नाही का?" }); taken.push(hit); continue; }
       // "पिवळे फोड" are pustules, not jaundice
       if (code === "jaundice" && (tok.slice(hit.i1, hit.i1 + 2).some((x) => /^(फोड|दाने|फुंस|pustule|boil|spot|पुटकुळ)/.test(x.lo)) || /^(chipchip|चिपचिप|paani|pani|पानी|kichad|कीचड|discharge)/.test(tok[hit.i1]?.lo || ""))) continue;
       record(code, hit, !negated(tok, hit));
@@ -1316,7 +1429,7 @@ export function understand(text, hint) {
       if (w.some((x) => /^(सिर|सर|sir|sar|head|डोक|स्तन|breast|पीठ|kamar|कमर|back|leg|पैर|पाय)/.test(x))) continue;
       // labour pains with their hours are recorded as labour_hours, not as stomach pain
       if (rec.labour_hours != null && ev.labour_hours && Math.abs(tok[hit.i0].start - ev.labour_hours.start) < 80) continue;
-      if (tok.slice(Math.max(0, hit.i0 - 6), hit.i1 + 4).some((x) => /^(labou?r|prasav|प्रसव|कळा|shuru|शुरू|wale|wala|uth)$/.test(x.lo) || /^(labou?r|prasav|प्रसव|कळा|shuru|शुरू)/.test(x.lo))) continue; // labour pains
+      if (tok.slice(Math.max(0, hit.i0 - 6), hit.i1 + 4).some((x) => /^(labou?r|prasav|प्रसव|कळा|shuru|शुरू|wale|wala|uth|jaise|jaisa|जैसे|जैसा)$/.test(x.lo) || /^(labou?r|prasav|प्रसव|कळा|shuru|शुरू)/.test(x.lo))) continue; // labour pains
       if (mildAt(hit)) { askSeverity("abdominal_pain", hit); continue; }
       record("abdominal_pain", hit, !negated(tok, hit));
     }
@@ -1355,11 +1468,11 @@ export function understand(text, hint) {
   // Two words in the same clause make a sign even when other words sit between them
   const COOC = {
     newborn: [
-      ["blood_stool", /^(टट्टी|पॉटी|पोटी|मल|शौच|संडास|शी|stool|stools|potty|tatti|latrine|shauch)/, /^(खून|रक्त|blood|khoon|rakt)/],
+      ["blood_stool", /^(टट्टी|पॉटी|पोटी|मल|शौच|संडास|शी|stool|stools|potty|tatti|latrine|shauch|dast|दस्त|julab|julaab|jullab|जुलाब|loose|motion|motions)/, /^(खून|रक्त|blood|khoon|rakt)/],
       ["jaundice_palms_soles", /^(हथेल|तलव|तळव|तळहात|hathel|talw|talv|palm|sole|haath|hath|हाथ|हात|pair|paon|पैर|पाय|hands?|feet|foot)/, /^(पील|पिवळ|peel|pil|yellow|pivl)/],
       ["cyanosis", /^(honth|hont|होंठ|ओठ|lip|lips|tongue|जीभ|jeebh|jibh)$/, /^(neel|नील|निळ|blue|bluish)/],
       ["lethargy", /^(हात|हाथ|छू|छुने|छूने|touch|chhoo|chhune|haath|haat|stimul)/, /^(हलत|हलतं|हिल|हिलता|move|moves|moving|hilta|halat|halta)/],
-      ["weak_cry", /^(रोना|रोता|रोती|रडणं|रडणे|रडत|रडतं|cry|cries|crying|rona|rota|roti|radna|radta)/, /^(कमजोर|कमज़ोर|कम|कमी|धीरे|धीमा|धीमी|dheema|dheemi|dhima|halu|हळू|weak|kamzor|kam|kami|feeble|low)$/],
+      ["weak_cry", /^(रोना|रोता|रोती|रडणं|रडणे|रडत|रडतं|cry|cries|crying|rona|rota|roti|radna|radta|awaaz|awaz|aawaz|aawaaz|आवाज़|आवाज|voice)/, /^(कमजोर|कमज़ोर|कम|कमी|धीरे|धीमा|धीमी|dheema|dheemi|dhima|halu|हळू|weak|kamzor|kam|kami|feeble|low)$/],
       ["eye_discharge", /^(aankh|ankh|आँख|आंख|डोळ|dolyat|dolyatun|eye|eyes)/, /^(paani|pani|पानी|पाणी|kichad|keechad|कीचड़|कीचड|chipchip|चिपचिप|pus|पू|मवाद|mawad|discharge|sticky|ghaan)/],
       ["cord_pus", /^(नाभि|नाभी|नाळ|नाल|naal|nabhi|naabhi|naabi|nabi|cord|umbilic|navel|bellybutton)/, /^(मवाद|पू|पीप|pus|mawad|लाली|लाल|लालसर|red|redness|bleed|lal|laal|swoll|swell|smell|smelly|ooz|discharg|सूज|sujan|soojan|वास|बदबू|badbu|badboo|khoon|खून|रक्त|rakt|blood)/],
       ["difficulty_breathing", /^(saans|sans|साँस|सांस|श्वास|shwas|breath|breathing|breathes)$/, /^(tez|तेज़|तेज|fast|rapid|jaldi|जल्दी|जलद|jalad|grunt|ghurghur|घुरघुर|phool|फूल|ukhad|उखड़|atak|अटक)/],
@@ -1377,6 +1490,7 @@ export function understand(text, hint) {
       // "pad bheeg jaata hai ghante mein": a pad soaked within an hour
       ["heavy_bleeding", /^(pad|pads|पैड|पॅड|kapda|कपड़ा|कपडा)$/, /^(bheeg|bhig|भीग|भिज|bhij|soak|soaked|bhar|भर|full|tar)/],
       ["wound_infection", /^(tank|taank|टांक|टाँक|टाक|stitch|wound|zakhm|ज़ख्म|जख्म|जखम)/, /^(pus|पस|मवाद|mawad|पू|pak|पक|पिक|lal|laal|लाल|red|smell|बदबू|badbu|वास|ooz|sujan|सूज|swoll|swell)/],
+      ["breast_problem", /^(stan|स्तन|breast|breasts)$/, /^(sakht|सख्त|सख़्त|kada|kadak|कड़|कडक|कडा|hard|gaanth|गांठ|गाठ|gaath|lump|dard|दर्द|dukh|दुख|sujan|सूज|lal|laal|red|bhari|bhaari|भारी|painful|pain|swollen)/],
       ["calf_pain", /^(pindl|पिंडल|पोटर|potr|calf|calves)/, /^(dard|दर्द|dukh|दुख|pain|sujan|सूज|swell|swoll|ache|lal|red|garam)/],
     ],
   };
@@ -1424,12 +1538,36 @@ export function understand(text, hint) {
     if (wrongSubject(hit) || historyAt(i)) continue;
     sym.bleeding = !negated(tok, hit); sev["symptoms.bleeding"] = span(tok, i, i + 1); break;
   }
+  // Pregnancy stomach pain said as severe ("tez", "bahut", "severe"): the urgent rule; plain "dard" refers today
+  if (type === "anc" && sym.abdominal_pain === true && sev["symptoms.abdominal_pain"]) {
+    const k0 = tok.findIndex((x) => x.start >= sev["symptoms.abdominal_pain"].start);
+    const [a, b] = nearOf(tok, Math.max(0, k0), 4, 6);
+    if (tok.slice(a, b + 1).some((x) => /^(tez|तेज़|तेज|tej|bahut|बहुत|khup|खूप|severe|very|bad|zor|zoron|jor|ज़ोर|जोर|joracha|असह्य|unbearable|sahan|सहन|bardasht|बर्दाश्त|kharab|bhayankar|भयंकर)$/.test(x.lo))) set("pain_severe", true, sev["symptoms.abdominal_pain"]);
+  }
+  if ((type === "pnc" || type === "anc") && sym.self_harm === undefined) {
+    const DIE = /^(mar|marna|marne|marnaa|mar-jaun|maar|maarna|maarne|maar-dena|marjaun|मर|मरना|मरने|मार|मारने|मारना|मरूं|मरू|मरावं|मरायचं|maraycha|marava)$/;
+    const WISH = /^(soch|sochti|sochta|soche|सोच|सोचती|khayal|khyal|khayaal|ख्याल|ख़याल|खयाल|vichar|vichaar|विचार|man|मन|lagta|lagti|लगता|लगती|chahti|chahiye|चाहती|चाहिए|ichha|iccha|इच्छा|baat|बात|baatein|vatte|वाटतं|वाटते|vatat)$/;
+    const HARM = /^(nuksaan|nuksan|nukasan|nuksaan|नुकसान|नुक़सान|chot|चोट|harm|hurt|इजा|ija|maar|मार|maarne|मारने)$/;
+    const WHOM = /^(khud|खुद|ख़ुद|apne|apni|apna|अपने|अपनी|swatah|स्वतः|स्वतःला|herself|bachche|bachcha|baby|bachchi|बच्चे|बच्चा|बच्ची|बाळ|बाळाला|bal|balala)$/;
+    const MEANS = /^(soch|सोच|khayal|ख्याल|man|मन|degi|dungi|देगी|दूंगी|pahuchayegi|pahunchayegi|pahunchane|pahuchane|pahuchaane|पहुंचाएगी|पहुँचाने|karegi|करेगी|chahti|चाहती|kehti|कहती|kaha|कहा|bolti|बोलती|lagta|लगता|wants|want|thinks|vichar|विचार)/;
+    const LIFE = /^(jeene|jine|jeena|jina|जीने|जीना|jagaves|jagavese|jagayche|jagaycha|जगावेसे|जगावंसं|जगायचं|जगण्याची|jagnyachi|live|living)$/;
+    const NOWISH = /^(ichha|iccha|इच्छा|nahi|नहीं|नाही|man|मन|वाटत|vatat|mann)$/;
+    for (let i = 0; i < tok.length && sym.self_harm === undefined; i++) {
+      const { a, b, w } = clauseWords(i);
+      const here = w.slice(i - a);
+      let hit = false;
+      if (DIE.test(tok[i].lo) && here.slice(1, 6).some((x) => WISH.test(x))) hit = true;
+      if (HARM.test(tok[i].lo) && w.some((x) => WHOM.test(x)) && w.some((x) => MEANS.test(x))) hit = true;
+      if (LIFE.test(tok[i].lo) && here.slice(1, 6).some((x) => NOWISH.test(x)) && here.slice(1, 6).some((x) => NEG.has(x) || /^(nahi|नहीं|नाही|not)$/.test(x))) hit = true;
+      if (hit && !(tok[i].lo === "man" && false)) { sym.self_harm = true; sev["symptoms.self_harm"] = span(tok, a, b + 1); }
+    }
+  }
   // A high fever is a fever too
   if (sym.high_fever === true && sym.fever === undefined) { sym.fever = true; sev["symptoms.fever"] = sev["symptoms.high_fever"]; }
   // "peela pad gaya hai, haath pair tak": yellow reaching the hands and feet
-  if (type === "newborn" && sym.jaundice_palms_soles === undefined && tok.some((x) => /^(पील|पिवळ|peel|yellow|pivl)/.test(x.lo))) {
+  if (type === "newborn" && sym.jaundice_palms_soles === undefined && tok.some((x) => /^(पील|पिवळ|peel|yellow|pivl|jaund)/.test(x.lo))) {
     for (let k = 0; k < tok.length; k++) {
-      if (/^(haath|hath|हाथ|हात|pair|paon|पैर|पाय|hands?|feet|palms?|soles?|hatheli|हथेली|talve|तलवे|तळवे)$/.test(tok[k].lo) && tok.slice(k + 1, k + 3).some((x) => /^(tak|तक|paryant|पर्यंत|till|until|upto|up)$/.test(x.lo))) {
+      if (/^(haath|hath|हाथ|हात|pair|paon|पैर|पाय|hands?|feet|palms?|soles?|hatheli|हथेली|talve|talwe|talwon|talvon|तलवे|तलवों|तळवे)$/.test(tok[k].lo) && (tok.slice(k + 1, k + 3).some((x) => /^(tak|तक|paryant|पर्यंत|till|until|upto|up)$/.test(x.lo)) || tok.slice(Math.max(0, k - 3), k).some((x) => /^(till|until|upto|up)$/.test(x.lo)))) {
         if (!negated(tok, { i0: k, i1: k + 1 })) { sym.jaundice_palms_soles = true; sev["symptoms.jaundice_palms_soles"] = span(tok, k, k + 1); }
         break;
       }
@@ -1463,8 +1601,8 @@ export function understand(text, hint) {
   for (const k of Object.keys(rec)) if (k !== "type" && k !== "symptoms" && !FIELDS[type].includes(k)) { delete rec[k]; delete ev[k]; }
   // Never silent: a clause that names a body part or complaint but filled nothing is returned in
   // `unread`, so the app can show "Noted: words not understood, tell the nurse".
-  const BODY = /^(lips?|honth|होंठ|ओठ|blue|neel|grunt|behosh|बेहोश|unconscious|dhadkan|धड़कन|heartbeat|bolne|बोलने|zubaan|ज़ुबान|badbu|बदबू|saans|sans|साँस|सांस|श्वास|shwas|pet|पेट|पोट|khoon|खून|रक्त|rakt|peshab|पेशाब|लघवी|laghvi|nabhi|naabhi|नाभि|नाभी|नाळ|naal|aankh|आँख|आंख|डोळ|tanka|tanke|टांके|टाके|chhati|छाती|pasli|पसली|sir|सिर|सर|डोक|stan|स्तन|pindli|पिंडली|bukhar|बुखार|ताप|jhatk|झटक|daur|दौर|ulti|उल्टी|dast|दस्त|potty|tatti|chest|breath|breathing|stomach|belly|blood|urine|navel|eye|eyes|head|fits|pain|dard|दर्द|dukh|दुख|sujan|सूज|swelling)/;
-  const used = Object.values(ev).filter(Boolean);
+  const BODY = /^(chot|चोट|maar|मार|marn|मरन|मरने|nuksa|नुकस|jeen|jine|जीन|जगाव|kamzor|कमज़ोर|कमजोर|peel|पील|safed|सफेद|सफ़ेद|andher|अंधेर|thand|ठंड|sardi|सर्दी|zukaam|जुकाम|khansi|खांसी|awaaz|आवाज|doodh|दूध|mirgi|मिर्गी|dawai|दवाई|lips?|honth|होंठ|ओठ|blue|neel|grunt|behosh|बेहोश|unconscious|dhadkan|धड़कन|heartbeat|bolne|बोलने|zubaan|ज़ुबान|badbu|बदबू|saans|sans|साँस|सांस|श्वास|shwas|pet|पेट|पोट|khoon|खून|रक्त|rakt|peshab|पेशाब|लघवी|laghvi|nabhi|naabhi|नाभि|नाभी|नाळ|naal|aankh|आँख|आंख|डोळ|tanka|tanke|टांके|टाके|chhati|छाती|pasli|पसली|sir|सिर|सर|डोक|stan|स्तन|pindli|पिंडली|bukhar|बुखार|ताप|jhatk|झटक|daur|दौर|ulti|उल्टी|dast|दस्त|potty|tatti|chest|breath|breathing|stomach|belly|blood|urine|navel|eye|eyes|head|fits|pain|dard|दर्द|dukh|दुख|sujan|सूज|swelling)/;
+  const used = Object.values(ev).filter(Boolean).concat(seen);
   const UNREAD_STOP = KS(["haan", "han", "ji", "जी", "हाँ", "हां", "didi", "दीदी", "tai", "ताई", "ok", "okay", "namaste", "नमस्ते", "नमस्कार", "hello", "accha", "achha", "अच्छा", "theek", "thik", "ठीक", "sab", "सब", "sagla", "सगळं", "barobar", "बरोबर", "normal", "नॉर्मल", "fine", "good", "well",
     "hai", "hain", "है", "हैं", "tha", "thi", "the", "था", "थी", "थे", "ho", "हो", "hua", "hui", "हुआ", "हुई", "raha", "rahi", "rahe", "रहा", "रही", "रहे", "aahe", "ahe", "आहे", "aahet", "आहेत", "hota", "hoti", "होता", "होती", "kar", "kari", "karti", "karta", "कर", "करती", "करता", "gaya", "gayi", "gayi", "गया", "गई", "gai", "aaya", "aayi", "आया", "आई", "aali", "आली", "zala", "jhala", "झाला", "झाली",
     "aaj", "आज", "kal", "कल", "abhi", "अभी", "ab", "अब", "subah", "सुबह", "shaam", "शाम", "raat", "रात", "aata", "आता", "today", "now", "yesterday", "morning", "night",

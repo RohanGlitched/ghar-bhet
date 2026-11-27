@@ -45,6 +45,15 @@ test("clinical vignettes: no visit that the guidelines refer is missed", () => {
   assert.ok(r.refer.specificity >= 80, `specificity ${r.refer.specificity}%`);
 });
 
+test("second vignette set (independent writer): the after-fix level holds", () => {
+  run("vignettes2", "--publish");
+  const r = result("eval-vignettes2");
+  assert.equal(r.set, "vignettes2"); assert.equal(r.items, 40);
+  assert.equal(r.refer.sensitivity, 100);
+  assert.equal(r.urgent.recall, 100);
+  assert.ok(r.refer.specificity >= 90, `specificity ${r.refer.specificity}%`);
+});
+
 test("realspeech mode scores heard text against the held-out gold, written vs spoken", () => {
   const cards = JSON.parse(readFileSync(new URL("../public/data/realspeech-cards.json", import.meta.url), "utf8")).cards;
   const first = cards[0];

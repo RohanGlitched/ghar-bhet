@@ -1,7 +1,7 @@
 {
  "set": "adversarial",
- "run_at": "2026-11-27T11:26:22.856Z",
- "ruleset": "mohfw-2026.5",
+ "run_at": "2026-11-27T12:25:54.709Z",
+ "ruleset": "mohfw-2026.6",
  "typed": {
   "mode": "typed",
   "items": 100,

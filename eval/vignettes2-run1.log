@@ -1,0 +1,27 @@
+vignettes: 40 items, labels from guideline text (ruleset mohfw-2026.5)
+should refer: sensitivity 92.6% (25/27) · specificity 76.9% (10/13)
+urgent      : 19/23 urgent vignettes got an urgent flag (82.6%) · 19/22 urgent flags were labelled urgent
+  v2-06 want refer=false urgent=false, got refer=true urgent=true [nb_fever]
+     teesra din hai, bukhar nahi hai, jhatke nahi aaye, saans normal chal rahi hai, peeliya nahi hai, doodh achhe se pee raha hai, haath pair garam hain
+     {"type":"newborn","day":3,"feeding":"good","symptoms":{"convulsions":false,"jaundice":false,"hot_to_touch":true}}
+  v2-20 want refer=false urgent=false, got refer=true urgent=true [anc_severe_anaemia]
+     हीमोग्लोबिन आज साढ़े ग्यारह आया, पिछले महीने साढ़े छह था तब खून चढ़ाया था, अब ठीक लग रही है
+     {"type":"anc","hb":6.5,"hb_source":"today"}
+  v2-24 want refer=true urgent=true, got refer=true urgent=false [anc_fetal_movement]
+     आठवाँ महीना है, कल से बच्चा बिल्कुल हिल नहीं रहा, पेट में कोई हलचल नहीं
+     {"type":"anc","month":8,"fetal_movement":"absent"}
+  v2-26 want refer=true urgent=true, got refer=false urgent=false [-]
+     सहावा महिना आहे, ती म्हणते मला आता जगायचं नाही, सगळं संपवून टाकावं असं वाटतं
+     {"type":"anc","name":"Jagay","month":6}
+  v2-29 want refer=true urgent=true, got refer=true urgent=false [pnc_infection,pnc_abdominal_pain]
+     delivery ko chhe din hue, bukhar ek sau ek hai aur neeche se badbu wala paani aa raha hai, pet mein dard bhi
+     {"type":"pnc","temp_c":38.3,"temp_f":101,"day":6,"symptoms":{"abdominal_pain":true,"fever":true,"foul_discharge":true}}
+  v2-34 want refer=true urgent=true, got refer=false urgent=false [-]
+     didi woh keh rahi hai ab jeene ka mann nahi karta, sab khatam kar dungi, baccha bhi theek se nahi sambhal rahi
+     {"type":"pnc"}
+  v2-37 want refer=false urgent=false, got refer=true urgent=false [pnc_low_mood]
+     paanchva din hai, thodi udaas hai, baat baat pe ro deti hai, baaki khana kha rahi hai, doodh pila rahi hai
+     {"type":"pnc","day":5,"symptoms":{"low_mood":true}}
+  v2-38 want refer=true urgent=false, got refer=true urgent=true [pnc_neuro]
+     वो कल से अजीब अजीब बातें कर रही है, रात भर सोई नहीं, घरवालों को पहचान नहीं रही
+     {"type":"pnc","name":"Gharvalon","symptoms":{"abnormal_speech":true}}

@@ -30,6 +30,8 @@
 
 ## How it meets the Round 2 brief
 
+The brief asks for "something people in India do today by typing, tapping or filling forms", made to work by voice. An ASHA fills a visit form by hand for every home visit, and often types it again into an app. Ghar Bhet makes that form work by voice.
+
 The organisers' "How to approach it" has four parts. Here is each one, in their words, and how Ghar Bhet answers it.
 
 ### 1. Judge the idea: "Is the problem real and frequent, and does voice make it better?"

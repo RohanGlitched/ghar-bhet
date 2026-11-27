@@ -1,8 +1,8 @@
 <p align="center"><img src="docs/cover.png" alt="Ghar Bhet: an ASHA speaks the visit, and the record fills itself" width="100%"></p>
 
 <p align="center">
-<img alt="tests" src="https://img.shields.io/badge/tests-110%20passing-1d7347">
-<img alt="voice scenarios" src="https://img.shields.io/badge/browser%20voice%20scenarios-76%20passing-1d7347">
+<img alt="tests" src="https://img.shields.io/badge/tests-129%20passing-1d7347">
+<img alt="voice scenarios" src="https://img.shields.io/badge/browser%20voice%20scenarios-86%20passing-1d7347">
 <img alt="keys" src="https://img.shields.io/badge/API%20keys-none-16191d">
 <img alt="dependencies" src="https://img.shields.io/badge/npm%20dependencies-0-16191d">
 <img alt="languages" src="https://img.shields.io/badge/speaks-Hindi%20%C2%B7%20Marathi%20%C2%B7%20English-f2b705">
@@ -11,11 +11,11 @@
 
 # Ghar Bhet
 
-**An ASHA (village health worker) speaks a home visit in Hindi, Marathi or English. The official visit record fills itself, and fixed government rules flag the danger signs that need a same-day referral, out loud, before she leaves the house.** *Ghar bhet* means "home visit" in Hindi and Marathi.
+**An ASHA (village health worker) speaks a home visit in Hindi, Marathi or English. The danger-sign and vital fields of the official visit form fill themselves, and fixed government rules flag the danger signs that need a same-day referral, out loud, before she leaves the house.** *Ghar bhet* means "home visit" in Hindi and Marathi.
 
 - **What it does:** turns a spoken visit (newborn, pregnancy, or mother after birth) into a checked record, with the words behind every value, and raises a referral the nurse sees at once when a danger sign is present.
 - **Who it's for:** India's **10.29 lakh ASHAs** (PIB, Jan 2025) and the nurses (ANMs, auxiliary nurse-midwives) they report to.
-- **Measured accuracy, first run on 60 visit transcripts it had never seen** (written the way ASHAs speak, not recorded): **96.6%** of record fields read correctly (281 of 291), **98.6%** precision, **37 of 38** danger visits flagged, **1 of 22** normal visits wrongly flagged. On a harder independent set of 100 tricky visits, written by a separate agent that never saw the code, the first run read 88.3% of fields and caught 50 of 59 danger visits (7 of 41 false alarms); on a second independent set of 60 in mostly English clinical shorthand it read 80.3% of fields and caught 36 of 39 danger visits, but raised 9 false alarms in 21 normal visits. [Every result and every miss](https://ghar-bhet-194851097912.us-central1.run.app/evidence).
+- **Measured accuracy, first run on 60 visit transcripts it had never seen** (written the way ASHAs speak, not recorded): **96.6%** of record fields read correctly (281 of 291), **98.6%** precision, **37 of 38** danger visits flagged (against our own rule table), **1 of 22** normal visits wrongly flagged. On a harder independent set of 100 tricky visits, written by a separate agent that never saw the code, the first run read 88.3% of fields and caught 50 of 59 danger visits (7 of 41 false alarms); on a second independent set of 60 in mostly English clinical shorthand it read 80.3% of fields and caught 36 of 39 danger visits, but raised 9 false alarms in 21 normal visits. [Every result and every miss](https://ghar-bhet-194851097912.us-central1.run.app/evidence).
 - **Run it in one command:** `docker compose up`, then open http://localhost:8080. No API keys, no accounts, no AI model of our own.
 - **Live demo:** https://ghar-bhet-194851097912.us-central1.run.app (no login). Without a microphone: https://ghar-bhet-194851097912.us-central1.run.app/visit?example=1
 
@@ -50,13 +50,13 @@ The whole visit is done by voice, with one tap to start:
 - voice commands also change the visit type, the language, start a new visit ("naya") or undo ("wapas");
 - the nurse asks the board out loud: who was referred (urgent first), whose visits are due, how one person is, "Sunita dekh liya" (mark as seen), or "Sunita PHC pahunchi" / "gaye nahi" (the referral's outcome; refused or unknown cases come back as a follow-up the next day).
 
-The mic pauses while the phone speaks, so it never hears itself, and tones mark when the mic opens and closes. Typing is only a fallback, for browsers without speech recognition or a blocked mic. With no internet, the app tells her to use the keyboard's own mic (which can work offline) and reads what it types without a tap; a saved visit waits on the phone and is sent when signal returns.
+The mic pauses while the phone speaks, so it never hears itself, and tones mark when the mic opens and closes; an answer that repeats the question's words ("doodh kam pee raha hai") is never mistaken for the phone's own voice. The mic panel always shows the current question in Roman Hindi or Marathi with English underneath, and when Hindi or Marathi is chosen the alert's main line is shown in Roman script, matching what the phone says. Typing is only a fallback, for browsers without speech recognition or a blocked mic. With no internet, the app tells her to use the keyboard's own mic (which can work offline) and reads what it types without a tap; a saved visit waits on the phone and is sent when signal returns.
 
 ### 3. Build a working prototype: "Use a coding tool and Wispr Flow for one narrow use case."
 
 - **One narrow use case, end to end:** a home visit becomes a checked record and, if needed, a referral the nurse sees at once. It works on the live link and with `docker compose up`.
-- **Coding tool:** built during the hackathon (first commit 27 Nov 2026) with a coding tool. About 9,500 lines of our own code and tests: the reader (`understand.js`, about 1,400 lines), the rules (`rules.js`, about 730), the server (about 940), the pages, 110 automated tests and a 76-scenario browser voice test. What was built when: [BUILD-LOG.md](BUILD-LOG.md).
-- **Wispr Flow:** the visit page's text box works with any dictation tool that types, and we use Wispr Flow for the real-speech test: a person reads visit sentences aloud through Wispr Flow (and, separately, through the browser's mic) on the [real speech test page](https://ghar-bhet-194851097912.us-central1.run.app/dictation.html), and the reader is scored on exactly what the engine wrote. Results are on the [evidence page](https://ghar-bhet-194851097912.us-central1.run.app/evidence) once run.
+- **Coding tool:** built during the hackathon (first commit 27 Nov 2026) with a coding tool. About 10,400 lines of our own code and tests: the reader (`understand.js`, about 1,500 lines), the rules (`rules.js`, about 840), the server (about 1,080), the pages, 129 automated tests and an 86-scenario browser voice test. What was built when: [BUILD-LOG.md](BUILD-LOG.md).
+- **Wispr Flow:** the visit page's text box works with any dictation tool that types, and Wispr Flow is the dictation tool for our real-speech test (scheduled before submission): a person reads visit sentences aloud through Wispr Flow (and, separately, through the browser's mic) on the [real speech test page](https://ghar-bhet-194851097912.us-central1.run.app/dictation.html), and the reader is scored on exactly what the engine wrote. Results are on the [evidence page](https://ghar-bhet-194851097912.us-central1.run.app/evidence) once run.
 
 ### 4. Test it: "A few real users should finish the task unaided."
 
@@ -72,7 +72,7 @@ The mic pauses while the phone speaks, so it never hears itself, and tones mark 
 |---|---|---|
 | Hearing her voice | The browser's speech recognition: Google's online service in Chrome, Microsoft's in Edge (hi-IN, mr-IN, en-IN). Free, needs a connection; we store no audio. | Typing always works. Any dictation tool that types text works, such as Wispr Flow. India's own speech services (Bhashini; IIT Madras's ASR lists Hindi and Marathi) or open models such as AI4Bharat IndicConformer can be swapped in. Chrome is adding on-device recognition. |
 | Reading the visit | Our rule-based reader, `public/js/understand.js` | Nothing to stop: no AI API, no key, no fee per visit |
-| Danger rules | A fixed, cited table, `public/js/rules.js` (82 rules, rule set mohfw-2026.4) | Versioned in code; an update is a reviewed change, not a model retrain |
+| Danger rules | A fixed, cited table, `public/js/rules.js` (88 rules, rule set mohfw-2026.5) | Versioned in code; an update is a reviewed change, not a model retrain |
 | Speaking alerts | The phone's own voices | Every alert is also on screen as text |
 | No signal | Typing works offline | Saved visits wait on the phone and are sent when signal returns |
 | The register | A small Node server; on the live demo it is backed up to the app's own Cloud Storage bucket (free tier) | Runs on any server or a PHC laptop with `docker compose up` (a local JSON file) |
@@ -94,7 +94,7 @@ flowchart LR
 ```
 
 - `public/js/understand.js`: the reader. Number words in Hindi, Marathi and English (dedh sau = 150, saadhe aath = 8.5, deedshe = 150, "one forty" = 140, "ek kilo saat sau gram" = 1700 g, "2,400 grams"), Fahrenheit to Celsius, BP said as "by", "bata" or "upar/neeche", negation ("sujan nahin hai", "taap naahi", "no fits", "jhatke? nahi"), self-corrections, past values ("pichli baar") losing to today's, other people's symptoms (the mother-in-law's) left out, and odd values ("400 grams") asked back. Roman letters for display.
-- `public/js/rules.js`: 82 rules (rule set mohfw-2026.4), each with its threshold, source document and page or table, and spoken lines in Hindi, Marathi and English. `noted()` lists any sign she said that no rule covers, so nothing she says is silent.
+- `public/js/rules.js`: 88 rules (rule set mohfw-2026.5), each with its threshold, source document and page or table, and spoken lines in Hindi, Marathi and English. `noted()` lists any sign she said that no rule covers, so nothing she says is silent.
 - `public/js/visit.js`, `voice.js`, `ask.js`: the voice loop on the phone and the nurse's spoken questions.
 - `server/`: a zero-dependency Node server. It keeps the village register, re-checks every saved visit with the same rules (a client can't send its own flags), rate-limits writes, and streams referrals to the nurse's board with server-sent events.
 - `eval/`: the record spec, the test sets, the checker that re-computes every right answer from the spec, and `run.js`. [eval/README.md](eval/README.md) says which command gives which published number.
@@ -103,7 +103,7 @@ flowchart LR
 npm test                          # reader, every rule threshold, server, known failure cases
 node eval/run.js heldout          # the held-out set with today's rules
 node eval/run.js vignettes        # the guideline cases
-# 76 browser voice scenarios with a fake recogniser:
+# 86 browser voice scenarios with a fake recogniser:
 #   npm i --no-save playwright && npx playwright install chromium
 #   PORT=8091 ALLOW_RESET=1 node server/index.js   (in another terminal)
 npm run e2e -- http://localhost:8091

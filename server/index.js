@@ -5,7 +5,7 @@ import http from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { join, extname, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
-import { Store, levelOf } from "./store.js";
+import { Store, levelOf, normSid, SHARED_BOARD } from "./store.js";
 import { RULE_TABLE, RULESET } from "../public/js/rules.js";
 
 const ROOT = fileURLToPath(new URL("../public/", import.meta.url));
@@ -79,12 +79,23 @@ function limited(res, why, what) {
 
 // ---------- the live stream to the nurse's board ----------
 const SSE_MAX = num("SSE_MAX", 200), SSE_PER_VISITOR = num("SSE_PER_IP", 30); // a judging room shares one address
-const streams = new Map(); // res -> key
-function broadcast(event, data) {
-  const msg = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-  for (const res of streams.keys()) {
-    if (res.writableLength > 1_000_000) { res.destroy(); continue; } // a board that stopped reading
-    res.write(msg);
+const streams = new Map(); // res -> { key (visitor), sid (the browser's demo session, or null) }
+function write(res, msg) {
+  if (res.writableLength > 1_000_000) return res.destroy(); // a board that stopped reading
+  res.write(msg);
+}
+/** A new visit goes only to boards of the same browser session (or to every board when shared). */
+function broadcastVisit(data, sid) {
+  const msg = `event: visit\ndata: ${JSON.stringify(data)}\n\n`;
+  for (const [res, s] of streams) if (SHARED_BOARD || s.sid === sid) write(res, msg);
+}
+/** Fresh state for the boards a change can affect: that sid's, or every board (each gets its own view). */
+function broadcastState(sid, everyone = false) {
+  const views = new Map();
+  for (const [res, s] of streams) {
+    if (!everyone && !SHARED_BOARD && s.sid !== sid) continue;
+    if (!views.has(s.sid)) views.set(s.sid, `event: state\ndata: ${JSON.stringify(store.state(s.sid))}\n\n`);
+    write(res, views.get(s.sid));
   }
 }
 
@@ -112,33 +123,35 @@ async function api(req, res, url) {
     const why = allowRead(req);
     if (why) return limited(res, why, "requests");
   }
-  if (p === "/api/state" && req.method === "GET") return send(res, 200, store.state());
+  const qsid = normSid(url.searchParams.get("sid"));
+  if (p === "/api/state" && req.method === "GET") return send(res, 200, store.state(qsid));
   if (p === "/api/rules") return send(res, 200, { ruleset: RULESET, rules: RULE_TABLE });
   if (p === "/api/export.csv" && req.method === "GET") {
     const day = new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 10);
     res.writeHead(200, { "content-type": "text/csv; charset=utf-8", "content-disposition": `attachment; filename="ghar-bhet-register-${day}.csv"`, "cache-control": "no-store", ...SECURITY });
-    return res.end(store.exportCsv());
+    return res.end(store.exportCsv(qsid));
   }
   if (p === "/api/visits" && req.method === "POST") {
     const why = allowWrite(req);
     if (why) return limited(res, why, "visits");
-    const { visit: v, person, matched } = store.addVisit(await readBody(req));
-    broadcast("visit", { id: v.id, name: v.name, type: v.type, refer: !!v.referral, urgent: !!v.referral?.urgent, flags: v.flags.map((f) => f.title) });
-    broadcast("state", store.state());
+    const { visit: v, person, matched, sid } = store.addVisit(await readBody(req));
+    broadcastVisit({ id: v.id, name: v.name, type: v.type, refer: !!v.referral, urgent: !!v.referral?.urgent, flags: v.flags.map((f) => f.title) }, sid);
+    broadcastState(sid, !sid); // a save without a sid may change the shared sample data
     return send(res, 200, { ...v, person: personView(person), matched });
   }
   if (p.startsWith("/api/visits/") && req.method === "GET") {
-    const v = store.visit(p.split("/")[3]);
-    return v ? send(res, 200, { ...v, level: levelOf(v.flags), count: v.count || 1, person: store.person(v.personId), village: store.db.village }) : send(res, 404, { error: "No visit with that id." });
+    const v = store.visitAs(p.split("/")[3], qsid);
+    return v ? send(res, 200, { ...v, level: levelOf(v.flags), count: v.count || 1, person: store.person(v.personId, qsid), village: store.db.village }) : send(res, 404, { error: "No visit with that id." });
   }
   const ref = p.match(/^\/api\/referrals\/([^/]+)\/(seen|open|outcome)$/);
   if (ref && req.method === "POST") {
     const why = allowWrite(req);
     if (why) return limited(res, why, "changes");
     const b = await readBody(req);
-    const v = ref[2] === "seen" ? store.ackReferral(ref[1], b.by) : ref[2] === "open" ? store.reopenReferral(ref[1], b.by) : store.setOutcome(ref[1], b.outcome, b.by);
+    const sid = normSid(b.sid) || qsid;
+    const v = ref[2] === "seen" ? store.ackReferral(ref[1], b.by, sid) : ref[2] === "open" ? store.reopenReferral(ref[1], b.by, sid) : store.setOutcome(ref[1], b.outcome, b.by, sid);
     if (!v) return send(res, 404, { error: "No referral with that id." });
-    broadcast("state", store.state());
+    broadcastState(sid, !sid);
     const r = v.referral;
     return send(res, 200, {
       ok: true, id: v.id, status: r.status, urgent: !!r.urgent, seenAt: r.seenAt || null, seenBy: r.seenBy || null, reopenedAt: r.reopenedAt || null,
@@ -147,18 +160,18 @@ async function api(req, res, url) {
   }
   if (p === "/api/reset" && req.method === "POST") {
     if (process.env.ALLOW_RESET !== "1") return send(res, 403, { error: "Reset is turned off on this server." });
-    store.reset(); broadcast("state", store.state()); return send(res, 200, { ok: true });
+    store.reset(); broadcastState(null, true); return send(res, 200, { ok: true });
   }
   if (p === "/api/stream" && req.method === "GET") {
     const key = clientKey(req);
-    let mine = 0; for (const k of streams.values()) if (k === key) mine++;
+    let mine = 0; for (const s of streams.values()) if (s.key === key) mine++;
     if (streams.size >= SSE_MAX || mine >= SSE_PER_VISITOR) {
       res.setHeader("retry-after", "30");
       return send(res, streams.size >= SSE_MAX ? 503 : 429, { error: "Too many live boards are open. Close one, or refresh in a little while." });
     }
     res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-store", connection: "keep-alive", "x-accel-buffering": "no", ...SECURITY });
-    res.write(`retry: 5000\nevent: state\ndata: ${JSON.stringify(store.state())}\n\n`);
-    streams.set(res, key);
+    res.write(`retry: 5000\nevent: state\ndata: ${JSON.stringify(store.state(qsid))}\n\n`);
+    streams.set(res, { key, sid: qsid });
     const ping = setInterval(() => res.write(": ping\n\n"), 20000);
     res.on("close", () => { clearInterval(ping); streams.delete(res); });
     return;
@@ -188,6 +201,11 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname.startsWith("/api/")) return await api(req, res, url);
     const clean = url.pathname.replace(/\/$/, "") || "/";
     const page = PAGES[clean] || (clean.startsWith("/slip/") ? "slip.html" : null);
+    // a slip for a visit that isn't in the register still shows the page (it explains), but with a 404 status
+    if (page === "slip.html" && clean.startsWith("/slip/")) {
+      const id = clean.slice(6);
+      if (!(store.db.visits || []).some((v) => v.id === id)) return await serveFile(res, page, 404);
+    }
     if (page) return await serveFile(res, page);
     let rel;
     try { rel = decodeURIComponent(url.pathname.slice(1)); } catch { return send(res, 400, "That address isn't valid.", "text/plain; charset=utf-8"); }

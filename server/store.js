@@ -46,6 +46,57 @@ const DEMO_TTL = Number.isFinite(TTL_HOURS) && TTL_HOURS > 0 ? TTL_HOURS * 3600 
 const SEED_REFRESH = 24 * 3600 * 1000;
 const REPEAT_WINDOW = 10 * 60 * 1000;
 const stable = (x) => JSON.stringify(x, (k, v) => (v && typeof v === "object" && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => (a < b ? -1 : 1))) : v));
+// Per-browser demo: each browser sends a random sid and sees the sample village plus only its own
+// saves. Changes it makes to sample people or sample referrals are kept per sid (an overlay), so
+// one visitor can't change what another sees. SHARED_BOARD=1 turns this off (one shared register,
+// as a real village would use). Old clients without a sid see sample data plus recent no-sid saves.
+const SHARED = process.env.SHARED_BOARD === "1";
+export const SHARED_BOARD = SHARED;
+const MAX_OVERLAYS = 500;
+export const normSid = (x) => (typeof x === "string" && /^[A-Za-z0-9_-]{8,40}$/.test(x) ? x : null);
+const sidOf = (x) => x.sid || null;
+const ownView = (sid) => !SHARED && !!sid; // writes to shared sample data go to this sid's overlay
+const usesOverlay = (obj, sid) => ownView(sid) && !!obj.ov?.[sid];
+function visibleVisit(v, sid, now) {
+  if (SHARED || isSampleVisit(v)) return true;
+  // without a sid: saves made without one (older clients). On the demo these are cleared after
+  // DEMO_TTL (6 hours) like every visitor save, so this is "the last 6 hours" there.
+  return sid ? sidOf(v) === sid : !v.sid;
+}
+/** A person as this sid sees it (sample people carry the sid's own clock and risk changes). */
+function personAs(p, sid) {
+  const { ov, touchedAt, ...base } = p;
+  if (!usesOverlay(p, sid)) return base;
+  const { ovAt, ...mine } = ov[sid];
+  return { ...base, ...mine };
+}
+/** A visit's referral as this sid sees it. */
+function refAs(v, sid) {
+  if (!v.referral || !usesOverlay(v, sid)) return v.referral;
+  const { ovAt, ...mine } = v.ov[sid];
+  return mine;
+}
+function setOverlay(obj, sid, value, now) {
+  obj.ov ||= {};
+  obj.ov[sid] = { ...value, ovAt: now }; obj.touchedAt = now;
+  const keys = Object.keys(obj.ov);
+  if (keys.length > MAX_OVERLAYS) for (const k of keys.sort((a, b) => obj.ov[a].ovAt - obj.ov[b].ovAt).slice(0, keys.length - MAX_OVERLAYS)) delete obj.ov[k];
+}
+/** Drop overlays older than the TTL (they are a visitor's changes to sample data). */
+function expireOverlays(list, now, ttl) {
+  for (const o of list) if (o.ov) { for (const [k, x] of Object.entries(o.ov)) if (now - x.ovAt > ttl) delete o.ov[k]; if (!Object.keys(o.ov).length) delete o.ov; }
+}
+
+/** Names must look like a first name: no markup, '=', digits, at most 3 words, 30 characters. */
+export const NOT_A_NAME = "That doesn't look like a name. Say or type the first name only.";
+export function looksLikeName(raw) {
+  if (raw == null) return true;
+  const s = String(raw).trim();
+  if (!s) return true;
+  return s.length <= 30 && !/[<>={}[\]\\/@#$%^*|~`]/.test(s) && !/[\d०-९]/.test(s) && s.split(/\s+/).length <= 3;
+}
+const cleanBy = (by, fallback) => { const s = clean(by, 40); return s && /^[\p{L}\p{M} .'-]{1,40}$/u.test(s) ? s : fallback; };
+
 /** One word for how serious a visit's result is: go_now | refer_today | watch | fine. */
 export const levelOf = (flags = []) => (flags.some(isUrgent) ? "go_now" : flags.some((f) => f.severity === "refer_now") ? "refer_today" : flags.length ? "watch" : "fine");
 
@@ -73,6 +124,7 @@ export class Store {
     }
     if (!valid(db)) { db = seedVillage(Date.now()); this.source = "seed"; }
     this.db = db;
+    this.dropJunkNames();
     this.prune();
     this.tidy(Date.now(), true);
     this.save();
@@ -80,6 +132,18 @@ export class Store {
     return this.source;
   }
   reset() { this.db = seedVillage(Date.now()); this.save(); }
+  /** Remove visitors' saves whose name is not a name (test probes, markup). Idempotent; runs on load. */
+  dropJunkNames() {
+    const db = this.db;
+    const bad = new Set(db.people.filter((p) => !p.sample && !looksLikeName(p.name)).map((p) => p.id));
+    const before = db.visits.length + db.people.length;
+    db.visits = db.visits.filter((v) => isSampleVisit(v) || (!bad.has(v.personId) && looksLikeName(v.name) && looksLikeName(v.record?.name)));
+    const used = new Set(db.visits.map((v) => v.personId));
+    db.people = db.people.filter((p) => p.sample || (!bad.has(p.id) && used.has(p.id)));
+    const removed = before - db.visits.length - db.people.length;
+    if (removed) console.log(`Removed ${removed} visitor entries whose names were not names.`);
+    return removed;
+  }
 
   /** Write the local file soon, and the bucket a little later (one write in flight at a time). */
   save() {
@@ -160,8 +224,11 @@ export class Store {
    * 2. Same-sounding name AND an age that fits (so two babies called Sunita stay apart).
    * 3. Otherwise a new person.
    */
-  personFor(type, record, personId, now = Date.now()) {
-    const people = this.db.people, kind = KIND[type];
+  personFor(type, record, personId, now = Date.now(), sid = null, create = true) {
+    const kind = KIND[type];
+    // only people this browser can see: the sample village and its own
+    const people = this.db.people.filter((p) => SHARED || p.sample || sidOf(p) === sid);
+    const age = (p) => personAs(p, sid);
     if (personId) {
       const p = people.find((x) => x.id === personId);
       if (p && p.kind === kind) return { person: p, matched: "personId" };
@@ -171,9 +238,9 @@ export class Store {
       const same = people.filter((x) => x.kind === kind && sound(x.name) === sound(name));
       const said = spokenAge(type, record);
       if (said) {
-        const fits = same.map((p) => ({ p, gap: ageGap(p, said, now) })).filter((x) => x.gap != null && x.gap <= said.tolerance).sort((a, b) => a.gap - b.gap);
+        const fits = same.map((p) => ({ p, gap: ageGap(age(p), said, now) })).filter((x) => x.gap != null && x.gap <= said.tolerance).sort((a, b) => a.gap - b.gap);
         // a person with no clock yet can't be ruled out by age
-        const noClock = same.filter((p) => ageGap(p, said, now) === undefined);
+        const noClock = same.filter((p) => ageGap(age(p), said, now) === undefined);
         if (fits.length) return { person: fits[0].p, matched: "name_age" };
         if (noClock.length === 1) return { person: noClock[0], matched: "name_age" };
       } else if (same.length === 1) {
@@ -181,8 +248,9 @@ export class Store {
         return { person: same[0], matched: "name" };
       }
     }
-    const p = { id: id(), kind, name: name || (kind === "baby" ? "Unnamed baby" : "New mother"), addedAt: now };
-    people.push(p);
+    if (!create) return { person: null, matched: "new" };
+    const p = { id: id(), kind, name: name || (kind === "baby" ? "Unnamed baby" : "New mother"), addedAt: now, ...(sid ? { sid } : {}) };
+    this.db.people.push(p);
     return { person: p, matched: "new" };
   }
 
@@ -190,7 +258,10 @@ export class Store {
     const type = Object.hasOwn(KIND, body?.type) ? body.type : null;
     const rec = body?.record && typeof body.record === "object" && !Array.isArray(body.record) ? body.record : null;
     if (!type || !rec) throw badRequest("This visit needs a type (anc, pnc or newborn) and a record.");
+    if (!looksLikeName(rec.name)) throw badRequest(NOT_A_NAME);
+    const sid = normSid(body.sid);
     const record = sanitize({ ...rec, type });
+    for (const k of SERVER_FIELDS) delete record[k]; // only the server fills these, from the register
     if (body.said != null && !Array.isArray(body.said)) throw badRequest("said must be a list of the sentences spoken.");
     const said = (body.said || []).filter((s) => typeof s === "string").slice(0, 12).map((s) => s.slice(0, 600));
     const heard = readTranscript(type, said);
@@ -199,6 +270,20 @@ export class Store {
     const pid = typeof body.personId === "string" && /^[A-Za-z0-9_-]{1,24}$/.test(body.personId) ? body.personId : null;
     const now = Date.now();
     this.tidy(now);
+
+    // The same save again within 10 minutes (same person, type, record and words) is one visit.
+    const repeat = this.findRepeat(type, record, said, pid, now, sid);
+    if (repeat) {
+      repeat.count = (repeat.count || 1) + 1; repeat.lastAt = now;
+      this.save();
+      return { visit: repeat, person: this.person(repeat.personId, sid), matched: "repeat", sid };
+    }
+
+    // Who is it about? Then bring in what the register already knows (a newborn's last weight and
+    // birth weight), so the rules can tell a falling weight from a gaining one.
+    let { person, matched } = this.personFor(type, record, pid, now, sid, false);
+    const carried = person && type === "newborn" ? this.weightHistory(person.id, sid, now, record) : {};
+    for (const [k, x] of Object.entries(carried)) record[k] = x.value;
     let flags = [];
     try { flags = (checkRecord(record) || []).map(flagView); }
     catch (e) { console.error("The rules could not check a visit:", e.message); }
@@ -208,21 +293,17 @@ export class Store {
     const extra = transcriptFlags(record, heard.record, flags);
     flags = [...flags, ...extra.flags];
 
-    // The same save again within 10 minutes (same person, type, record and result) is one visit.
-    const repeat = this.findRepeat(type, record, flags, pid, now);
-    if (repeat) {
-      repeat.count = (repeat.count || 1) + 1; repeat.lastAt = now;
-      this.save();
-      return { visit: repeat, person: this.person(repeat.personId), matched: "repeat" };
-    }
-
-    const { person, matched } = this.personFor(type, record, pid, now);
-    // keep the person's clock in step with the newest visit, so the board shows today's day
-    if (type === "newborn" && Number.isFinite(record.day)) person.dob = now - record.day * DAY;
-    if (type === "pnc" && Number.isFinite(record.day)) person.deliveredAt = now - record.day * DAY;
-    if (type === "anc" && Number.isFinite(record.weeks)) person.lmp = now - record.weeks * 7 * DAY;
-    else if (type === "anc" && Number.isFinite(record.month)) person.lmp = now - (record.month - 0.5) * MONTH;
-    person.updatedAt = now;
+    if (!person) ({ person, matched } = this.personFor(type, record, pid, now, sid));
+    // keep the person's clock in step with the newest visit, so the board shows today's day.
+    // A visitor's visit to a sample person changes only that visitor's view of her.
+    const mine = person.sample && ownView(sid);
+    const clock = mine ? { ...(person.ov?.[sid] || {}) } : person;
+    if (mine) delete clock.ovAt;
+    if (type === "newborn" && Number.isFinite(record.day)) clock.dob = now - record.day * DAY;
+    if (type === "pnc" && Number.isFinite(record.day)) clock.deliveredAt = now - record.day * DAY;
+    if (type === "anc" && Number.isFinite(record.weeks)) clock.lmp = now - record.weeks * 7 * DAY;
+    else if (type === "anc" && Number.isFinite(record.month)) clock.lmp = now - (record.month - 0.5) * MONTH;
+    clock.updatedAt = now;
     const refer = flags.some((f) => f.severity === "refer_now");
     const urgent = flags.some(isUrgent);
     let notes = [];
@@ -232,27 +313,48 @@ export class Store {
       said, lang: ["hi", "mr", "en"].includes(body.lang) ? body.lang : "hi", via: body.via === "typed" ? "typed" : "voice",
       asha: clean(body.asha, 40) || "Asha worker",
       noted: notes, count: 1,
+      ...(Object.keys(carried).length ? { carried: Object.fromEntries(Object.entries(carried).map(([k, x]) => [k, { from: x.from, at: x.at }])) } : {}),
       transcript: { checked: heard.ok, added: extra.flags.map((f) => f.code), conflicts: extra.flags.filter((f) => f.conflict).map((f) => f.code), heard: extra.heard, disagree: extra.disagree },
       referral: refer ? { status: "open", at: now, urgent } : null,
+      ...(sid ? { sid } : {}),
     };
-    if (type === "newborn" && refer) person.atRisk = true;
-    if (type === "newborn" && record.weight_g && record.weight_g < 2500) person.atRisk = true;
+    if (type === "newborn" && refer) clock.atRisk = true;
+    if (type === "newborn" && record.weight_g && record.weight_g < 2500) clock.atRisk = true;
+    if (mine) setOverlay(person, sid, clock, now);
     this.db.visits.push(visit);
     this.prune();
     this.save();
-    return { visit, person, matched };
+    return { visit, person: personAs(person, sid), matched, sid };
   }
 
   /** A visitor's identical save of the same visit in the last 10 minutes, if any. */
-  findRepeat(type, record, flags, pid, now) {
-    const key = stable(record), codes = flags.map((f) => f.code).sort().join();
+  findRepeat(type, record, said, pid, now, sid = null) {
+    const key = stable(record), words = stable(said);
+    const own = (v) => { const r = { ...v.record }; for (const k of Object.keys(v.carried || {})) delete r[k]; return stable(r); };
     for (let i = this.db.visits.length - 1; i >= 0; i--) {
       const v = this.db.visits[i];
       if (now - (v.lastAt || v.at) > REPEAT_WINDOW) { if (now - v.at > REPEAT_WINDOW * 3) break; continue; }
-      if (v.type !== type || isSampleVisit(v) || stable(v.record) !== key || v.flags.map((f) => f.code).sort().join() !== codes) continue;
+      if (v.type !== type || isSampleVisit(v) || sidOf(v) !== sid || own(v) !== key || stable(v.said || []) !== words) continue;
       if (pid ? v.personId === pid : sound(v.record.name || "") === sound(record.name || "")) return v;
     }
     return null;
+  }
+
+  /**
+   * A newborn's weight history from her saved visits (that this sid can see): prev_weight_g is the
+   * last saved weight; birth_weight_g is carried from an earlier visit when this one lacks it.
+   * Returns { field: { value, from (visit id), at } }.
+   */
+  weightHistory(personId, sid, now, record) {
+    const vs = this.visibleVisits(sid, now).filter((v) => v.personId === personId && v.type === "newborn").sort((a, b) => a.at - b.at);
+    const out = {};
+    const lastW = [...vs].reverse().find((v) => Number.isFinite(v.record?.weight_g));
+    if (lastW) out.prev_weight_g = { value: lastW.record.weight_g, from: lastW.id, at: lastW.at };
+    if (!Number.isFinite(record.birth_weight_g)) {
+      const b = [...vs].reverse().find((v) => Number.isFinite(v.record?.birth_weight_g));
+      if (b) out.birth_weight_g = { value: b.record.birth_weight_g, from: b.id, at: b.at };
+    }
+    return out;
   }
 
   /**
@@ -273,6 +375,8 @@ export class Store {
       db.people = db.people.map((p) => (p.sample && old(p.updatedAt) ? seed.people.find((s) => s.id === p.id) || p : p));
       db.visits = db.visits.map((v) => (isSampleVisit(v) && old(v.referral?.changedAt) ? seed.visits.find((s) => s.id === v.id) || v : v));
     }
+    expireOverlays(db.people, now, DEMO_TTL);
+    expireOverlays(db.visits, now, DEMO_TTL);
     // 2. visitors' visits after the TTL, and the people only they created
     db.visits = db.visits.filter((v) => isSampleVisit(v) || now - (v.lastAt || v.at) <= DEMO_TTL);
     const used = new Set(db.visits.map((v) => v.personId));
@@ -310,54 +414,60 @@ export class Store {
   }
 
   visit(vid) { return this.db.visits.find((v) => v.id === vid) || null; }
-  person(pid) { return this.db.people.find((p) => p.id === pid) || null; }
+  person(pid, sid = null) { const p = this.db.people.find((x) => x.id === pid); return p ? personAs(p, sid) : null; }
+  /** A visit as this sid sees it (its referral with the sid's own changes), or null. */
+  visitAs(vid, sid = null) { const v = this.visit(vid); if (!v) return null; const { ov, touchedAt, ...base } = v; return { ...base, referral: refAs(v, sid) }; }
+  visibleVisits(sid = null, now = Date.now()) { return this.db.visits.filter((v) => visibleVisit(v, sid, now)); }
 
-  /** The nurse has seen a referral. */
-  ackReferral(vid, by) {
-    const v = this.visit(vid);
-    if (!v || !v.referral) return null;
-    const now = Date.now();
-    const who = clean(by, 40) || "Nurse";
-    v.referral = { ...v.referral, status: "seen", seenAt: now, seenBy: who, changedAt: now };
-    delete v.referral.by;
-    logChange(v, "seen", who, now);
+  /** Change a referral as this sid: sample referrals get a per-sid copy; the sid's own are changed in place. */
+  changeReferral(vid, sid, change) {
+    const v = this.visit(vid), now = Date.now();
+    if (!v || !v.referral || !visibleVisit(v, sid, now)) return null;
+    const next = change({ ...refAs(v, sid) }, now);
+    if (isSampleVisit(v) && ownView(sid)) setOverlay(v, sid, next, now);
+    else v.referral = next;
     this.save();
-    return v;
+    return { ...this.visitAs(vid, sid) };
+  }
+  /** The nurse has seen a referral. */
+  ackReferral(vid, by, sid = null) {
+    return this.changeReferral(vid, sid, (r, now) => {
+      const who = cleanBy(by, "Nurse");
+      delete r.by;
+      return logged({ ...r, status: "seen", seenAt: now, seenBy: who, changedAt: now }, "seen", who, now);
+    });
   }
   /** Undo "seen": the referral goes back on the board as open. */
-  reopenReferral(vid, by) {
-    const v = this.visit(vid);
-    if (!v || !v.referral) return null;
-    const now = Date.now();
-    const { seenAt, seenBy, by: oldBy, ...rest } = v.referral;
-    const who = clean(by, 40) || "Nurse";
-    v.referral = { ...rest, status: "open", reopenedAt: now, reopenedBy: who, changedAt: now };
-    logChange(v, "reopened", who, now);
-    this.save();
-    return v;
+  reopenReferral(vid, by, sid = null) {
+    return this.changeReferral(vid, sid, (r, now) => {
+      const { seenAt, seenBy, by: oldBy, ...rest } = r;
+      const who = cleanBy(by, "Nurse");
+      return logged({ ...rest, status: "open", reopenedAt: now, reopenedBy: who, changedAt: now }, "reopened", who, now);
+    });
   }
   /** What happened after the referral: reached / admitted / refused / not_reachable. */
-  setOutcome(vid, outcome, by) {
-    const v = this.visit(vid);
-    if (!v || !v.referral) return null;
-    if (!Object.hasOwn(OUTCOMES, outcome)) throw badRequest(`outcome must be one of: ${Object.keys(OUTCOMES).join(", ")}.`);
-    const now = Date.now(), who = clean(by, 40) || "ASHA";
-    v.referral = { ...v.referral, outcome, outcomeAt: now, outcomeBy: who, changedAt: now };
-    logChange(v, "outcome:" + outcome, who, now);
-    this.save();
-    return v;
+  setOutcome(vid, outcome, by, sid = null) {
+    if (!Object.hasOwn(OUTCOMES, outcome)) {
+      if (!this.visit(vid)?.referral) return null;
+      throw badRequest(`outcome must be one of: ${Object.keys(OUTCOMES).join(", ")}.`);
+    }
+    return this.changeReferral(vid, sid, (r, now) => {
+      const who = cleanBy(by, "ASHA");
+      return logged({ ...r, outcome, outcomeAt: now, outcomeBy: who, changedAt: now }, "outcome:" + outcome, who, now);
+    });
   }
 
   /**
    * Referrals that need another visit: refused or not reachable (due from the next day, IST),
    * or no outcome 24 hours after the referral. A newer visit to the same person closes it.
    */
-  followups(now = Date.now()) {
+  followups(now = Date.now(), sid = null) {
     const out = [];
+    const visits = this.visibleVisits(sid, now);
     const lastVisit = new Map();
-    for (const v of this.db.visits) if ((lastVisit.get(v.personId) || 0) < v.at) lastVisit.set(v.personId, v.at);
-    for (const v of this.db.visits) {
-      const r = v.referral;
+    for (const v of visits) if ((lastVisit.get(v.personId) || 0) < v.at) lastVisit.set(v.personId, v.at);
+    for (const v of visits) {
+      const r = refAs(v, sid);
       if (!r) continue;
       let due, reason;
       if (r.outcome === "refused" || r.outcome === "not_reachable") {
@@ -376,19 +486,27 @@ export class Store {
   }
 
   /** The register as CSV, for the ANM's monthly register. */
-  exportCsv() { return toCsv(this.db); }
+  exportCsv(sid = null) { const now = Date.now(); this.tidy(now); return toCsv(this.db, this.visibleVisits(sid, now).map((v) => viewOf(v, sid))); }
 
-  state() {
+  state(sid = null) {
     const now = Date.now();
     this.tidy(now);
-    const visits = this.db.visits;
+    const visits = this.visibleVisits(sid, now).map((v) => viewOf(v, sid));
+    const seen = new Set(visits.map((v) => v.personId));
+    const mine = this.db.people.filter((p) => SHARED || p.sample || (sid ? sidOf(p) === sid : !p.sid && seen.has(p.id))).map((p) => personAs(p, sid));
     const byPerson = new Map();
     for (const v of visits) { if (!byPerson.has(v.personId)) byPerson.set(v.personId, []); byPerson.get(v.personId).push(v); }
-    const sampleIds = new Set(this.db.people.filter((p) => p.sample).map((p) => p.id));
-    const people = this.db.people.map((p) => {
+    const sampleIds = new Set(mine.filter((p) => p.sample).map((p) => p.id));
+    const people = mine.map((p) => {
       const vs = (byPerson.get(p.id) || []).slice().sort((a, b) => a.at - b.at);
       const last = vs[vs.length - 1] || null;
       const out = { ...p, sample: !!p.sample, visits: vs.length, last: last ? { id: last.id, at: last.at, level: levelOf(last.flags), flags: last.flags.map((f) => f.code), refer: last.flags.some((f) => f.severity === "refer_now"), watch: last.flags.some((f) => f.severity === "watch") } : null };
+      if (p.kind === "baby") {
+        const ws = vs.filter((v) => Number.isFinite(v.record?.weight_g));
+        const lw = ws[ws.length - 1], pw = ws[ws.length - 2];
+        const bw = [...vs].reverse().find((v) => Number.isFinite(v.record?.birth_weight_g));
+        out.weight = lw ? { last_g: lw.record.weight_g, at: lw.at, prev_g: pw ? pw.record.weight_g : null, birth_g: bw ? bw.record.birth_weight_g : null, trend: pw ? Math.sign(lw.record.weight_g - pw.record.weight_g) : null } : null;
+      }
       if (p.kind === "baby" && p.dob) {
         out.dayOfLife = Math.floor((now - p.dob) / DAY);
         const plan = p.atRisk ? NB_AT_RISK : NB_HEALTHY;
@@ -419,7 +537,7 @@ export class Store {
       fromTranscript: (v.transcript?.added || []).length > 0, conflict: (v.transcript?.conflicts || []).length > 0, count: v.count || 1, level: levelOf(v.flags),
       sample: sampleIds.has(v.personId) && isSampleVisit(v), samplePerson: sampleIds.has(v.personId),
     }));
-    const followups = this.followups(now);
+    const followups = this.followups(now, sid);
     // who changed what, so a referral cleared by mistake (or by a stranger on the demo) can be put back
     const changes = visits.flatMap((v) => (v.referral?.log || []).map((c) => ({ referralId: v.id, name: v.name, ...c }))).sort((a, b) => b.at - a.at).slice(0, 15);
     const week = visits.filter((v) => now - v.at < 7 * DAY);
@@ -442,13 +560,15 @@ export class Store {
 
 const valid = (db) => !!(db && typeof db === "object" && Array.isArray(db.people) && Array.isArray(db.visits));
 const referralUrgent = (v) => (typeof v.referral?.urgent === "boolean" ? v.referral.urgent : v.flags.some(isUrgent));
-function logChange(v, action, by, at) { v.referral.log = [...(v.referral.log || []), { action, by, at }].slice(-20); }
+function logged(r, action, by, at) { r.log = [...(r.log || []), { action, by, at }].slice(-20); return r; }
+/** A visit as one sid sees it, without the other sids' overlays. */
+function viewOf(v, sid) { const { ov, touchedAt, ...base } = v; return { ...base, referral: refAs(v, sid) }; }
 
 /** Read the joined transcript with the same reader the phone uses. */
 function readTranscript(type, said) {
   const text = said.join(". ").trim();
   if (!text) return { ok: false, record: { type } };
-  try { return { ok: true, record: sanitize({ ...(understand(text, type)?.record || {}), type }) }; }
+  try { const r = sanitize({ ...(understand(text, type)?.record || {}), type }); for (const k of SERVER_FIELDS) delete r[k]; return { ok: true, record: r }; }
   catch (e) { console.error("Could not re-read a transcript:", e.message); return { ok: false, record: { type } }; }
 }
 // Readings that only make sense together: take the whole group from one side.
@@ -525,7 +645,9 @@ const COLUMNS = [
   ["Breaths per minute", (v) => v.record.resp_rate],
   ["Breastfeeding", (v) => v.record.feeding],
   ["Danger signs present", (v) => Object.entries(v.record.symptoms || {}).filter(([, x]) => x === true).map(([k]) => label(v.type, k)).join("; ")],
-  ["Checked, not present", (v) => Object.entries(v.record.symptoms || {}).filter(([, x]) => x === false).map(([k]) => label(v.type, k)).join("; ")],
+  // a sign her words say is present while the record says absent is not "checked, not present": it is in "Nurse to check"
+  ["Checked, not present", (v) => Object.entries(v.record.symptoms || {}).filter(([k, x]) => x === false && !v.transcript?.disagree?.["symptoms." + k]).map(([k]) => label(v.type, k)).join("; ")],
+  ["Nurse to check (her words disagree with the record)", (v) => Object.entries(v.transcript?.disagree || {}).map(([k, d]) => (k.startsWith("symptoms.") ? `${label(v.type, k.slice(9))}: said present, record says absent` : `${k}: said ${d.said}, record ${d.record}`)).join("; ")],
   ["Other readings", (v) => Object.entries(v.record).filter(([k]) => !SHOWN.has(k)).map(([k, x]) => `${k}=${x}`).join("; ")],
   ["Flags (rule codes)", (v) => v.flags.map((f) => f.code + (f.from === "transcript" ? " (from her words)" : "")).join("; ")],
   ["Refer", (v) => (v.referral ? "yes" : "no")],
@@ -543,13 +665,13 @@ function cell(x) {
   if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // a spreadsheet must never run a cell as a formula
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
-function toCsv(db) {
+function toCsv(db, visits = db.visits) {
   const lines = [
     "# Ghar Bhet village register export. Columns follow the field names of the MCP card (ANC and PNC) and the SSBSK 2026 / HBNC home-visit forms. One row per home visit, oldest first. Dates and times are IST.",
     `# Village: ${clean(db.village?.name, 60) || "?"}${db.village?.sample ? " (sample data: made-up people)" : ""}. Rules: ${RULESET.id}. Exported ${new Date(Date.now() + IST).toISOString().slice(0, 16).replace("T", " ")} IST.`,
     COLUMNS.map(([h]) => cell(h)).join(","),
   ];
-  for (const v of [...db.visits].sort((a, b) => a.at - b.at)) lines.push(COLUMNS.map(([, f]) => { try { return cell(f(v)); } catch { return ""; } }).join(","));
+  for (const v of [...visits].sort((a, b) => a.at - b.at)) lines.push(COLUMNS.map(([, f]) => { try { return cell(f(v)); } catch { return ""; } }).join(","));
   return "﻿" + lines.join("\r\n") + "\r\n";
 }
 
@@ -575,20 +697,22 @@ export function mergeRegisters(a, b) {
   if (!valid(a)) return b;
   if (!valid(b)) return a;
   const people = new Map(a.people.map((p) => [p.id, p]));
-  for (const p of b.people) { const o = people.get(p.id); if (!o || (p.updatedAt || 0) > (o.updatedAt || 0)) people.set(p.id, p); }
+  for (const p of b.people) { const o = people.get(p.id); if (!o || Math.max(p.updatedAt || 0, p.touchedAt || 0) > Math.max(o.updatedAt || 0, o.touchedAt || 0)) people.set(p.id, p); }
   const visits = new Map(a.visits.map((v) => [v.id, v]));
-  for (const v of b.visits) { const o = visits.get(v.id); if (!o || (v.referral?.changedAt || 0) > (o.referral?.changedAt || 0)) visits.set(v.id, v); }
+  for (const v of b.visits) { const o = visits.get(v.id); if (!o || Math.max(v.referral?.changedAt || 0, v.touchedAt || 0, v.lastAt || 0) > Math.max(o.referral?.changedAt || 0, o.touchedAt || 0, o.lastAt || 0)) visits.set(v.id, v); }
   return { ...a, ...b, people: [...people.values()], visits: [...visits.values()].sort((x, y) => x.at - y.at), meta: { ...(a.meta || {}), ...(b.meta || {}) } };
 }
 
 // ---------- the record: keep only fields the spec knows, with sane types and ranges ----------
-const NUM = { age: [10, 60], height_cm: [100, 200], labour_hours: [0, 96], temp_f: [86, 112], birth_weight_g: [300, 7000], weeks: [1, 45], month: [1, 10], bp_sys: [50, 280], bp_dia: [30, 200], hb: [2, 20], weight_kg: [20, 200], ifa_tablets: [0, 500], day: [0, 120], pads: [0, 40], temp_c: [30, 44], weight_g: [300, 7000], resp_rate: [5, 150] };
-const ENUM = { albumin: ["nil", "trace", "1", "2", "3", "4"], fetal_movement: ["normal", "reduced", "absent"], feeding: ["good", "poor", "none"] };
+// filled only by the server from the register; a client's value is ignored
+const SERVER_FIELDS = ["prev_weight_g"];
+const NUM = { pulse: [30, 220], prev_weight_g: [300, 7000], age: [10, 60], height_cm: [100, 200], labour_hours: [0, 96], temp_f: [86, 112], birth_weight_g: [300, 7000], weeks: [1, 45], month: [1, 10], bp_sys: [50, 280], bp_dia: [30, 200], hb: [2, 20], weight_kg: [20, 200], ifa_tablets: [0, 500], day: [0, 120], pads: [0, 40], temp_c: [30, 44], weight_g: [300, 7000], resp_rate: [5, 150] };
+const ENUM = { bp_source: ["card", "today"], hb_source: ["card", "today"], albumin: ["nil", "trace", "1", "2", "3", "4"], fetal_movement: ["normal", "reduced", "absent"], feeding: ["good", "poor", "none"] };
 // Per-type fields from eval/SPEC.md (pnc also takes BP and Hb for the postnatal BP / anaemia rules).
 // If rules.js exports FIELDS = { anc: [...], pnc: [...], newborn: [...] }, those are added.
 const BASE_FIELDS = {
-  anc: ["weeks", "month", "bp_sys", "bp_dia", "hb", "weight_kg", "albumin", "fetal_movement", "ifa_tablets"],
-  pnc: ["day", "pads", "temp_c", "bp_sys", "bp_dia", "hb"],
+  anc: ["weeks", "month", "bp_sys", "bp_dia", "hb", "weight_kg", "albumin", "fetal_movement", "ifa_tablets", "pulse", "bp_source", "bp_date", "hb_source", "hb_date"],
+  pnc: ["day", "pads", "temp_c", "bp_sys", "bp_dia", "hb", "bp_source", "bp_date", "hb_source", "hb_date"],
   newborn: ["day", "weight_g", "temp_c", "resp_rate", "feeding"],
 };
 function fieldsFor(type) {
@@ -609,6 +733,8 @@ export function sanitize(r) {
     if (v == null) continue;
     if (NUM[k]) { const n = Number(v); if (typeof v !== "boolean" && v !== "" && Number.isFinite(n) && n >= NUM[k][0] && n <= NUM[k][1]) out[k] = n; }
     else if (ENUM[k]) { if (ENUM[k].includes(String(v))) out[k] = String(v); }
+    // the date written on the card, as said ("20 Nov", "pichle hafte", "पिछले हफ्ते")
+    else if (k.endsWith("_date")) { const d = typeof v === "string" ? v.trim() : ""; if (/^[\p{L}\p{M}\p{N} ./-]{1,30}$/u.test(d)) out[k] = d; }
     else if (typeof v === "boolean") out[k] = v;
     // a field the rules added that we don't know: accept a plain finite number or a short code word
     else if (typeof v === "number" && Number.isFinite(v) && Math.abs(v) < 1e6) out[k] = v;

@@ -388,6 +388,163 @@ test("on the public demo, visitors' visits are cleared after the TTL and the sam
   assert.equal(s.referrals.find((r) => r.id === sudhaRef.id).status, "open", "the sample referral is open again");
 });
 
+// ---------- each browser sees the sample village plus only its own saves ----------
+const SID_A = "browserA_" + Math.random().toString(36).slice(2, 10), SID_B = "browserB_" + Math.random().toString(36).slice(2, 10);
+const stateOf = async (sid) => (await fetch(BASE + "/api/state" + (sid ? `?sid=${sid}` : ""))).json();
+
+test("a save with a sid is seen only by that browser's board and CSV", async () => {
+  const v = await (await post(BASE, "/api/visits", { sid: SID_A, type: "newborn", record: { name: "Sidonea", day: 4, weight_g: 1600 } })).json();
+  assert.equal(v.referral.status, "open");
+  const a = await stateOf(SID_A), b = await stateOf(SID_B), none = await stateOf();
+  assert.ok(a.people.some((p) => p.name === "Sidonea") && a.referrals.some((r) => r.id === v.id) && a.recent.some((r) => r.id === v.id));
+  for (const s of [b, none]) {
+    assert.ok(!s.people.some((p) => p.name === "Sidonea"));
+    assert.ok(!s.referrals.some((r) => r.id === v.id));
+    assert.ok(s.people.filter((p) => p.sample).length === 15, "everyone sees the sample village");
+  }
+  assert.ok((await (await fetch(BASE + `/api/export.csv?sid=${SID_A}`)).text()).includes("Sidonea"));
+  assert.ok(!(await (await fetch(BASE + `/api/export.csv?sid=${SID_B}`)).text()).includes("Sidonea"));
+  // another browser can't act on it, and doesn't merge into it
+  assert.equal((await post(BASE, `/api/referrals/${v.id}/seen`, { sid: SID_B })).status, 404);
+  const same = await (await post(BASE, "/api/visits", { sid: SID_B, type: "newborn", record: { name: "Sidonea", day: 4, weight_g: 1600 } })).json();
+  assert.notEqual(same.id, v.id); assert.notEqual(same.personId, v.personId);
+  assert.equal((await post(BASE, `/api/referrals/${v.id}/seen`, { sid: SID_A })).status, 200);
+  // a bad sid is ignored, as if none was sent
+  const odd = await (await post(BASE, "/api/visits", { sid: "<x>", type: "newborn", record: { name: "Sidodd", day: 4, weight_g: 2900 } })).json();
+  assert.equal(odd.sid, undefined);
+});
+
+test("a browser's changes to sample people and referrals are its own", async () => {
+  const base = await stateOf(SID_B);
+  const sunita = base.people.find((p) => p.sample && p.name === "Sunita" && p.kind === "baby");
+  const sudha = base.referrals.find((r) => r.sample && r.name === "Sudha");
+  await post(BASE, "/api/visits", { sid: SID_A, type: "newborn", personId: sunita.id, record: { name: "Sunita", day: 3, weight_g: 2900 } });
+  await post(BASE, `/api/referrals/${sudha.id}/seen`, { sid: SID_A, by: "Nurse Kale" });
+  await post(BASE, `/api/referrals/${sudha.id}/outcome`, { sid: SID_A, outcome: "reached" });
+  const a = await stateOf(SID_A), b = await stateOf(SID_B), none = await stateOf();
+  assert.equal(a.people.find((p) => p.id === sunita.id).dayOfLife, 3);
+  assert.equal(a.referrals.find((r) => r.id === sudha.id).status, "seen");
+  assert.equal(a.referrals.find((r) => r.id === sudha.id).outcome, "reached");
+  assert.ok(a.changes.some((c) => c.referralId === sudha.id && c.by === "Nurse Kale"));
+  for (const s of [b, none]) {
+    assert.equal(s.people.find((p) => p.id === sunita.id).dayOfLife, sunita.dayOfLife, "others still see the seeded age");
+    assert.equal(s.referrals.find((r) => r.id === sudha.id).status, sudha.status);
+    assert.ok(!s.changes.some((c) => c.by === "Nurse Kale"));
+  }
+  assert.ok(!JSON.stringify(a).includes('"ov"'), "other browsers' overlays never leak into state");
+});
+
+test("live boards only get visits from their own browser", async () => {
+  const open = (sid) => { const ac = new AbortController(); return { ac, res: fetch(BASE + `/api/stream?sid=${sid}`, { signal: ac.signal }) }; };
+  const read = async ({ res }, ms) => {
+    const r = await res, reader = r.body.getReader(), dec = new TextDecoder(); let text = "";
+    const stop = Date.now() + ms;
+    while (Date.now() < stop) {
+      const chunk = await Promise.race([reader.read(), wait(stop - Date.now()).then(() => null)]);
+      if (!chunk || chunk.done) break;
+      text += dec.decode(chunk.value);
+    }
+    return text;
+  };
+  const a = open(SID_A), b = open(SID_B);
+  await Promise.all([a.res, b.res]); await wait(100);
+  const ra = read(a, 800), rb = read(b, 800);
+  await wait(100);
+  await post(BASE, "/api/visits", { sid: SID_A, type: "newborn", record: { name: "Streambaby", day: 2, weight_g: 1500 } });
+  const [ta, tb] = await Promise.all([ra, rb]);
+  a.ac.abort(); b.ac.abort();
+  assert.match(ta, /event: visit\ndata: .*Streambaby/);
+  assert.ok(!tb.includes("Streambaby"), "the other browser's board hears nothing about it");
+});
+
+test("names that are not names are refused on save", async () => {
+  for (const name of ["<img src=x onerror=alert(1)>", "a=b", "Sunita Devi Rani Kumari", "Sunita2", "x".repeat(31), "Zztestimg src=x onerror=alert("]) {
+    const r = await post(BASE, "/api/visits", { type: "newborn", record: { name, day: 3, weight_g: 2900 } });
+    assert.equal(r.status, 400, name);
+    assert.equal((await r.json()).error, "That doesn't look like a name. Say or type the first name only.");
+  }
+  for (const name of ["Rekha", "Rekha Bai", "सुनीता", "Shabnam"]) assert.equal((await post(BASE, "/api/visits", { sid: SID_B, type: "newborn", record: { name, day: 11, weight_g: 3000 } })).status, 200, name);
+});
+
+test("visitor saves with junk names are removed when the register loads", async () => {
+  const { Store } = await import("../server/store.js");
+  const dir = mkdtempSync(join(tmpdir(), "gbj-"));
+  const one = new Store(dir, { bucket: "" });
+  await one.load(); clearTimeout(one.timer);
+  const good = one.addVisit({ type: "anc", record: { name: "Goodname", weeks: 20, hb: 12 } }).visit;
+  one.db.people.push({ id: "junk1", kind: "baby", name: "Zztestimg src=x onerror=alert(", addedAt: Date.now() });
+  one.db.visits.push({ ...good, id: "junkv1", personId: "junk1", name: "Zztestimg src=x onerror=alert(", record: { type: "newborn", name: "Zztestimg src=x onerror=alert(", day: 2 } });
+  await one.writeLocal(); clearTimeout(one.timer);
+  const two = new Store(dir, { bucket: "" });
+  await two.load(); clearTimeout(two.timer);
+  assert.ok(!two.db.people.some((p) => p.id === "junk1"));
+  assert.ok(!two.db.visits.some((v) => v.id === "junkv1"));
+  assert.ok(two.db.visits.some((v) => v.id === good.id), "real saves stay");
+  assert.equal(two.db.people.filter((p) => p.sample).length, 15, "sample village intact");
+});
+
+test("the CSV puts a disagreeing sign under 'Nurse to check', not 'Checked, not present'", async () => {
+  await post(BASE, "/api/visits", { sid: SID_B, type: "newborn", record: { name: "Csvconflict", day: 5, weight_g: 3000, symptoms: { convulsions: false, jaundice: false } }, said: ["baby ko jhatke aa rahe hain"] });
+  const lines = (await (await fetch(BASE + `/api/export.csv?sid=${SID_B}`)).text()).split("\r\n");
+  const split = (l) => l.match(/("([^"]|"")*"|[^,]*)(,|$)/g).map((c) => c.replace(/,$/, "").replace(/^"|"$/g, ""));
+  const head = split(lines[2]);
+  const cols = split(lines.find((l) => l.includes("Csvconflict")));
+  const col = (h) => cols[head.indexOf(h)];
+  assert.ok(head.includes("Nurse to check (her words disagree with the record)"));
+  assert.match(col("Nurse to check (her words disagree with the record)"), /said present, record says absent/);
+  assert.ok(!/fits|convulsion/i.test(col("Checked, not present")), col("Checked, not present"));
+  assert.ok(col("Checked, not present").length > 0, "jaundice is still listed as checked");
+});
+
+// ---------- a newborn's weight history comes from the register ----------
+test("the server brings in the last weight, so a gaining small baby is not 'go now' but a falling one is", async () => {
+  const sid = "weights_" + Math.random().toString(36).slice(2, 10);
+  const save = async (record, extra = {}) => (await (await post(BASE, "/api/visits", { sid, type: "newborn", record, ...extra })).json());
+  const first = await save({ name: "Weightbaby", day: 5, weight_g: 1700 });
+  assert.equal(first.record.prev_weight_g, undefined);
+  assert.ok(first.flags.some((f) => f.code === "nb_very_low_weight" && f.urgent), "first weight under 1800 g: go now");
+  const gain = await save({ name: "Weightbaby", day: 7, weight_g: 1750 }, { personId: first.personId });
+  assert.equal(gain.personId, first.personId);
+  assert.equal(gain.record.prev_weight_g, 1700);
+  assert.deepEqual(gain.carried.prev_weight_g.from, first.id);
+  assert.ok(!gain.flags.some((f) => f.code === "nb_very_low_weight"), gain.flags.map((f) => f.code).join());
+  assert.ok(gain.flags.some((f) => f.code === "nb_very_low_weight_gaining"));
+  const fall = await save({ name: "Weightbaby", day: 9, weight_g: 1650 }, { personId: first.personId });
+  assert.equal(fall.record.prev_weight_g, 1750);
+  assert.ok(fall.flags.some((f) => f.code === "nb_very_low_weight" && f.urgent), "falling weight: go now again");
+  const p = (await stateOf(sid)).people.find((x) => x.id === first.personId);
+  assert.deepEqual({ last: p.weight.last_g, prev: p.weight.prev_g, trend: p.weight.trend }, { last: 1650, prev: 1750, trend: -1 });
+});
+
+test("birth weight is carried from an earlier visit; a client can't send prev_weight_g", async () => {
+  const sid = "birthwt_" + Math.random().toString(36).slice(2, 10);
+  const a = await (await post(BASE, "/api/visits", { sid, type: "newborn", record: { name: "Birthbaby", day: 3, weight_g: 2900, birth_weight_g: 3000, prev_weight_g: 100 } })).json();
+  assert.equal(a.record.prev_weight_g, undefined, "a client's prev_weight_g is ignored");
+  const b = await (await post(BASE, "/api/visits", { sid, type: "newborn", personId: a.personId, record: { name: "Birthbaby", day: 7, weight_g: 2600 } })).json();
+  assert.equal(b.record.birth_weight_g, 3000);
+  assert.equal(b.record.prev_weight_g, 2900);
+  assert.equal(b.carried.birth_weight_g.from, a.id);
+  assert.ok(b.flags.some((f) => f.code === "nb_weight_loss"), b.flags.map((f) => f.code).join());
+  assert.equal((await stateOf(sid)).people.find((x) => x.id === a.personId).weight.birth_g, 3000);
+  // another browser can't reach this baby's history
+  const other = await (await post(BASE, "/api/visits", { sid: "elsewhere_1234", type: "newborn", personId: a.personId, record: { name: "Birthbaby", day: 7, weight_g: 2600 } })).json();
+  assert.notEqual(other.personId, a.personId);
+  assert.equal(other.record.prev_weight_g, undefined);
+  // the same save twice is still one visit, even though the server added the history
+  const again = await (await post(BASE, "/api/visits", { sid, type: "newborn", personId: a.personId, record: { name: "Birthbaby", day: 7, weight_g: 2600 } })).json();
+  assert.equal(again.id, b.id); assert.equal(again.count, 2);
+});
+
+test("new card fields and symptom codes are kept", async () => {
+  const anc = await (await post(BASE, "/api/visits", { type: "anc", record: { name: "Cardwoman", weeks: 30, pulse: 96, bp_sys: 150, bp_dia: 100, bp_source: "card", bp_date: "20 Nov", hb: 9, hb_source: "today", hb_date: "पिछले हफ्ते", symptoms: { jaundice: true, epigastric_pain: true } } })).json();
+  for (const [k, x] of Object.entries({ pulse: 96, bp_source: "card", bp_date: "20 Nov", hb_source: "today", hb_date: "पिछले हफ्ते" })) assert.equal(anc.record[k], x, k);
+  assert.deepEqual(anc.record.symptoms, { jaundice: true, epigastric_pain: true });
+  const pnc = await (await post(BASE, "/api/visits", { type: "pnc", record: { name: "Cardmother", day: 4, bp_sys: 150, bp_dia: 100, bp_source: "nonsense", bp_date: "<b>", hb: 8, hb_source: "card", symptoms: { high_fever: true, epigastric_pain: true } } })).json();
+  assert.equal(pnc.record.bp_source, undefined); assert.equal(pnc.record.bp_date, undefined);
+  assert.equal(pnc.record.hb_source, "card");
+  assert.deepEqual(pnc.record.symptoms, { high_fever: true, epigastric_pain: true });
+});
+
 test("the ASHA name is cleaned and ids are random", async () => {
   const v = await (await post(BASE, "/api/visits", { type: "newborn", asha: "<img src=x onerror=alert(1)>", record: { name: "Idbaby", day: 3, weight_g: 2800 } })).json();
   assert.ok(!/[<>"'`]/.test(v.asha));
